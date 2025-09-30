@@ -1,0 +1,52 @@
+﻿<div class="app-shell" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="logo">SES</span>
+      <div class="brand-text">
+        <strong>Plataforma EAD</strong>
+        <span>Secretaria de Educação e Saber</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+        [title]="item.description"
+      >
+        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <div class="labels">
+          <span class="label">{{ item.label }}</span>
+          <span class="description">{{ item.description }}</span>
+        </div>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="sidebar-toggle" type="button" (click)="toggleSidebar()" aria-label="Alternar menu">
+        <span class="icon" aria-hidden="true">☰</span>
+      </button>
+
+      <div class="topbar-info">
+        <h1>{{ title }}</h1>
+        <p class="subtitle">Ambiente unificado para cursos, turmas e experiências de aprendizagem.</p>
+      </div>
+
+      <div class="user-badge" role="button" tabindex="0">
+        <span class="avatar" aria-hidden="true">WV</span>
+        <div class="details">
+          <span class="name">Wallace Vidal</span>
+          <span class="role">Administrador</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content" role="main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
