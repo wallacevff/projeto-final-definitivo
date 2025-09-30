@@ -130,3 +130,26 @@ footer button.secondary {
     flex: 1 1 100%;
   }
 }
+
+.activities .description {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+  font-size: 0.95rem;
+}
+
+.state {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--surface-600);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+
+

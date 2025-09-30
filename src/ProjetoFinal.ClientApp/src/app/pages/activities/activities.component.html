@@ -1,35 +1,54 @@
 ﻿<section class="activities">
   <header>
-    <h2>Atividades avaliativas</h2>
+    <div>
+      <h2>Atividades avaliativas</h2>
+      <p class="description">Organize prazos e acompanhe a distribuicao das atividades por turma.</p>
+    </div>
     <button type="button">Criar atividade</button>
   </header>
 
-  <div class="activities__list">
-    <article *ngFor="let activity of activities" class="activity">
-      <div class="activity__meta">
-        <h3>{{ activity.title }}</h3>
-        <span class="tag">{{ activity.allowLate ? 'Aceita atrasos' : 'Sem prorrogacao' }}</span>
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <div class="activities__list" *ngIf="activities().length; else emptyState">
+        <article *ngFor="let activity of activities(); trackBy: trackByActivity" class="activity">
+          <div class="activity__meta">
+            <h3>{{ activity.title }}</h3>
+            <span class="tag">{{ activity.allowLate ? 'Aceita atrasos' : 'Sem prorrogacao' }}</span>
+          </div>
+
+          <dl>
+            <div>
+              <dt>Prazo</dt>
+              <dd>{{ activity.dueDateLabel }}</dd>
+            </div>
+            <div>
+              <dt>Turmas</dt>
+              <dd>{{ activity.audiences.length ? activity.audiences.join(', ') : 'Disponivel para todos' }}</dd>
+            </div>
+            <div>
+              <dt>Anexos</dt>
+              <dd>{{ activity.attachments }}</dd>
+            </div>
+          </dl>
+
+          <footer>
+            <button type="button">Ver detalhes</button>
+            <button type="button" class="secondary">Gerenciar correcoes</button>
+          </footer>
+        </article>
       </div>
-
-      <dl>
-        <div>
-          <dt>Prazo</dt>
-          <dd>{{ activity.dueDate }}</dd>
-        </div>
-        <div>
-          <dt>Curso / Turma</dt>
-          <dd>{{ activity.course }} · {{ activity.classGroup }}</dd>
-        </div>
-        <div>
-          <dt>Submissoes</dt>
-          <dd>{{ activity.submissions.received }} / {{ activity.submissions.total }}</dd>
-        </div>
-      </dl>
-
-      <footer>
-        <button type="button">Ver detalhes</button>
-        <button type="button" class="secondary">Gerenciar correcoes</button>
-      </footer>
-    </article>
-  </div>
+    </ng-container>
+  </ng-container>
 </section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando atividades...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state state--info">Nenhuma atividade cadastrada por enquanto.</div>
+</ng-template>
