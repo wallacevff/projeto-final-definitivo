@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="CadastroDto\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj" />
+        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

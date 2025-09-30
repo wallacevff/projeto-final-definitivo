@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
+    </ItemGroup>
+
+</Project>
