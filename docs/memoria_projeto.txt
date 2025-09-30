@@ -14,6 +14,7 @@ Data: 2025-09-29 22:02:37
  - Shell reformulado com sidebar, topbar e avatar, preparado para navegação entre módulos (`app.component.*`).
  - Shell reformulado com sidebar, topbar e avatar, preparado para navegacao entre modulos (`app.component.*`).
  - Paginas reais para cursos, turmas, atividades e forum com dados mockados e layout responsivo (`pages/courses`, `pages/class-groups`, `pages/activities`, `pages/forum`).
+ - Paginas agora consomem dados reais via services (cursos, turmas, atividades, forum) com estado de carregamento e tratamento de erros.
  - Estilos globais e do shell com tokens de cor, gradientes e responsividade definidos em `app.component.css` e `styles.css`.
 
 4. Build e Execução
