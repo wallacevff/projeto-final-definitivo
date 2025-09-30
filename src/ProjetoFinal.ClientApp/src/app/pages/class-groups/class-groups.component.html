@@ -1,0 +1,43 @@
+﻿<section class="class-groups">
+  <header>
+    <h2>Turmas e inscricoes</h2>
+    <button type="button">Criar turma</button>
+  </header>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Turma</th>
+          <th>Curso</th>
+          <th>Vagas</th>
+          <th>Requer aprovacao?</th>
+          <th>Status</th>
+          <th>Proximo evento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let group of classGroups" [attr.data-status]="group.status">
+          <td>
+            <span class="title">{{ group.name }}</span>
+          </td>
+          <td>
+            <span class="course">{{ group.course }}</span>
+          </td>
+          <td>
+            <span>{{ group.seats.occupied }} / {{ group.seats.total }}</span>
+          </td>
+          <td>
+            <span class="badge" [class.badge--accent]="group.requiresApproval">{{ group.requiresApproval ? 'Sim' : 'Nao' }}</span>
+          </td>
+          <td>
+            <span class="status">{{ group.status }}</span>
+          </td>
+          <td>
+            <span class="meta">{{ group.nextEvent }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

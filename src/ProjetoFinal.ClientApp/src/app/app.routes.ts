@@ -13,50 +13,22 @@ export const routes: Routes = [
   },
   {
     path: 'courses',
-    loadComponent: () => import('./pages/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent),
-    data: {
-      comingSoon: {
-        title: 'Gestão de cursos',
-        description: 'Cadastre cursos, organize trilhas e acompanhe métricas de engajamento do catálogo.',
-        meta: 'Planejado para Módulo 1'
-      }
-    },
+    loadComponent: () => import('./pages/courses/courses.component').then(m => m.CoursesComponent),
     title: 'Cursos · SES EAD'
   },
   {
     path: 'class-groups',
-    loadComponent: () => import('./pages/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent),
-    data: {
-      comingSoon: {
-        title: 'Turmas em desenvolvimento',
-        description: 'Gerencie inscrições, vagas e comunicação com os participantes de cada turma.',
-        meta: 'Design de interface em andamento'
-      }
-    },
+    loadComponent: () => import('./pages/class-groups/class-groups.component').then(m => m.ClassGroupsComponent),
     title: 'Turmas · SES EAD'
   },
   {
     path: 'activities',
-    loadComponent: () => import('./pages/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent),
-    data: {
-      comingSoon: {
-        title: 'Atividades avaliativas',
-        description: 'Crie e acompanhe atividades síncronas e assíncronas, inclusive com vídeo e fóruns.',
-        meta: 'Integração com backend pendente'
-      }
-    },
+    loadComponent: () => import('./pages/activities/activities.component').then(m => m.ActivitiesComponent),
     title: 'Atividades · SES EAD'
   },
   {
     path: 'forum',
-    loadComponent: () => import('./pages/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent),
-    data: {
-      comingSoon: {
-        title: 'Fórum colaborativo',
-        description: 'Promova discussões entre alunos e instrutores, com moderação e anexos multimídia.',
-        meta: 'Entrega prevista no próximo ciclo'
-      }
-    },
+    loadComponent: () => import('./pages/forum/forum.component').then(m => m.ForumComponent),
     title: 'Fórum · SES EAD'
   },
   {

@@ -1,0 +1,127 @@
+﻿.forum {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.forum header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.forum h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--surface-900);
+}
+
+.forum header button {
+  padding: 0.65rem 1.4rem;
+  border-radius: 11px;
+  border: none;
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--surface-700);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forum__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.thread {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
+  display: grid;
+  gap: 1rem;
+}
+
+.thread--locked {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.thread__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tag--course {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--surface-600);
+}
+
+.tag--locked {
+  background: rgba(248, 113, 113, 0.12);
+  color: #b91c1c;
+}
+
+.author {
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.thread h3 {
+  margin: 0;
+  color: var(--surface-900);
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.thread footer {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.thread footer button {
+  margin-left: auto;
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--accent-600);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .thread footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .thread footer button {
+    margin: 0;
+  }
+}
