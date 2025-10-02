@@ -1,30 +1,71 @@
-ï»¿=== Estado Atual do Projeto EAD ===
+=== Estado Atual do Projeto EAD ===
 
 Data: 2025-09-29 22:02:37
 
 1. API e Contratos
- - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuÃ¡rios, cursos, turmas, conteÃºdos, atividades, submissÃµes, fÃ³rum, chat, mÃ­dia e inscriÃ§Ãµes (`src/ProjetoFinal.Api/Controllers`).
- - Contratos e serviÃ§os jÃ¡ expÃµem funcionalidades como busca por slug, gerenciamento de inscriÃ§Ãµes e submissÃµes de atividades.
+ - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuários, cursos, turmas, conteúdos, atividades, submissões, fórum, chat, mídia e inscrições (`src/ProjetoFinal.Api/Controllers`).
+ - Contratos e serviços já expõem funcionalidades como busca por slug, gerenciamento de inscrições e submissões de atividades.
 
 2. Infraestrutura de Dados
- - `AppDbContextFactory` garante execuÃ§Ã£o dos comandos `dotnet ef` com base no `appsettings` (ambientes Development/Default usando `(localdb)\\mssqllocaldb` â†’ `ProjetoFinalDb`).
- - Mapeamentos usam `DeleteBehavior.Restrict` onde necessÃ¡rio para evitar mÃºltiplos cascades; migraÃ§Ã£o `20250930002230_InitialCreate` aplicada ao SQL Server local.
+ - `AppDbContextFactory` garante execução dos comandos `dotnet ef` com base no `appsettings` (ambientes Development/Default usando `(localdb)\\mssqllocaldb` ? `ProjetoFinalDb`).
+ - Mapeamentos usam `DeleteBehavior.Restrict` onde necessário para evitar múltiplos cascades; migração `20250930002230_InitialCreate` aplicada ao SQL Server local.
 
 3. Frontend Angular (novo)
- - Shell reformulado com sidebar, topbar e avatar, preparado para navegaÃ§Ã£o entre mÃ³dulos (`app.component.*`).
+ - Shell reformulado com sidebar, topbar e avatar, preparado para navegação entre módulos (`app.component.*`).
  - Shell reformulado com sidebar, topbar e avatar, preparado para navegacao entre modulos (`app.component.*`).
  - Paginas reais para cursos, turmas, atividades e forum com dados mockados e layout responsivo (`pages/courses`, `pages/class-groups`, `pages/activities`, `pages/forum`).
  - Paginas agora consomem dados reais via services (cursos, turmas, atividades, forum) com estado de carregamento e tratamento de erros.
  - Estilos globais e do shell com tokens de cor, gradientes e responsividade definidos em `app.component.css` e `styles.css`.
 
-4. Build e ExecuÃ§Ã£o
+4. Build e Execução
  - `dotnet build` e `npm run build` finalizam com sucesso; permaneceram os warnings conhecidos do Angular (budget >500 kB e regras de CSS herdadas).
  - Registro de `IUnityOfWork` garantido via `services.AddScoped<IUnityOfWork, UnityOfWork>()` no IoC.
 
-ObservaÃ§Ã£o prÃ³ximo encontro: retomar os itens abaixo na abertura da prÃ³xima sessÃ£o.
+Observação próximo encontro: retomar os itens abaixo na abertura da próxima sessão.
 
-5. PrÃ³ximos Passos Guardados
- - Integrar o dashboard a dados reais da API, substituindo os nÃºmeros mockados.
- - Implementar telas completas para cursos, turmas, atividades e fÃ³rum baseadas no novo layout.
- - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produÃ§Ã£o.
+5. Próximos Passos Guardados
+ - Integrar o dashboard a dados reais da API, substituindo os números mockados.
+ - Implementar telas completas para cursos, turmas, atividades e fórum baseadas no novo layout.
+ - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produção.
 
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-01 22:33:01
+
+1. API e Contratos
+ - Sem novas alteracoes nesta sessao.
+
+2. Infraestrutura de Dados
+ - Sem novas alteracoes nesta sessao.
+
+3. Frontend Angular (novo)
+ - Sidebar agora utiliza os icones do Bootstrap Icons aplicados com ngClass nos itens de navegacao (app.component.html / app.component.ts).
+ - O arquivo styles.css importa bootstrap-icons/font/bootstrap-icons.css para garantir o carregamento global dos icones.
+
+4. Build e Execucao
+ - Nao foram executados testes automatizados nesta sessao; recomenda-se validacao visual com npm start.
+
+5. Observacao proximo encontro
+ - Reforcar a consulta periodica aos documentos docs/propont.txt e docs/especificacao.txt como base de requisitos.
+ - Manter as pendencias registradas nas entradas anteriores.
+ - Commits devem ser criados por categoria, respeitando a organizacao definida pelo usuario.
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-01 22:50:46
+
+1. API e Contratos
+ - Sem novas alteracoes nesta sessao.
+
+2. Infraestrutura de Dados
+ - Sem novas alteracoes nesta sessao.
+
+3. Frontend Angular (novo)
+ - Criada pagina de criacao de curso com formulario reativo incluindo configuracao de modalidade e turmas dinamicas (src/ProjetoFinal.ClientApp/src/app/pages/course-create).
+ - CoursesService agora possui contrato CreateCoursePayload e metodo createCourse para integrar com o endpoint de cadastro.
+
+4. Build e Execucao
+ - Nao executei build ou testes automatizados; sugiro validar com npm start e testes de API ao conectar no backend.
+
+5. Observacao proximo encontro
+ - Validar o envio do formulario contra a API real e ajustar mensagens conforme resposta.
+ - Manter as pendencias anteriores, consulta aos arquivos docs/propont.txt e docs/especificacao.txt e a regra de commits por categoria.

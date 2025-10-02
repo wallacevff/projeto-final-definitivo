@@ -1,0 +1,92 @@
+1. Introdução
+Propósito:  
+Este projeto acadêmico propõe o desenvolvimento de um sistema de Ensino a Distância (EAD) flexível e abrangente, destinado a atender às necessidades tanto do meio acadêmico quanto fora dele. A plataforma EAD resultante oferecerá uma variedade de recursos e funcionalidades para o ensino e a aprendizagem, incluindo a capacidade de enviar vídeos, fotos e áudios. Além disso, os professores e instrutores terão a flexibilidade de escolher entre dois modelos principais de curso: baseado em turmas interativas ou focado apenas na disponibilização de conteúdo didático.
+
+
+2. Visão Geral
+
+Resumo dos Objetivos:.
+1.	Flexibilidade no Modelo de Ensino: Desenvolver um sistema EAD que permita aos professores/instrutores escolher entre dois modelos de curso: turmas interativas e distribuição de material didático.
+2.	Turmas Interativas:
+a.	Contato Direto com o Professor: Permitir que os alunos tenham contato direto com o professor ou instrutor.
+b.	Limitação de Alunos e Turmas: Capacitar os professores a limitar o número de alunos e turmas em seus cursos.
+c.	Comunicação por Chat: Facilitar a comunicação entre alunos e professores por meio de um sistema de chat integrado.
+d.	Acesso ao Fórum: Garantir que todos os participantes tenham acesso ao fórum para discussões e interações adicionais.
+3.	Distribuição de Material Didático:
+a.	Acesso ao Fórum: Permitir o acesso ao fórum para discussões relacionadas ao material didático.
+b.	Acesso aos Materiais: Garantir que todos os alunos tenham acesso aos materiais de ensino, independentemente do número de turmas ou alunos.
+4.	Interface Intuitiva: Desenvolver uma interface de usuário simples e intuitiva para facilitar a navegação e o uso da plataforma por professores e alunos.
+
+4. Regras de Negócios
+1.	Cadastro de Cursos
+a.	Professores poderão criar cursos
+b.	Professores poderão escolher entre duas categorias: "Turmas Interativas" e "Distribuição de Material Didático" ao criar um curso.
+2.	Cursos na Categoria "Turmas Interativas"
+a.	Deverão conter turmas e a quantidade de alunos definida por turma.
+b.	Na categoria "Turmas Interativas", o sistema permitirá o uso de chat em tempo real.
+c.	Os professores poderão cadastrar alunos previamente.
+d.	Os professores poderão limitar quem poderá se inscrever em suas disciplinas marcando a opção de aprovar alunos na criação das turmas.
+e.	Se não houver vagas disponíveis, novos alunos não poderão se inscrever.
+3.	Cursos na Categoria "Distribuição de Material Didático"
+a.	Apenas acessos aos materiais e fórum estarão disponíveis.
+b.	O professor poderá incluir vídeos, imagens e áudios nos cursos.
+4.	Comentários em Vídeos
+a.	Na categoria de turmas interativa, caso a mídia enviada seja um vídeo, alunos e professores poderão adicionar comentários em intervalos de tempo no vídeo.
+5.	Inscrição de Alunos
+a.	Alunos poderão se inscrever em qualquer curso disponível, independente da categoria.
+6.	Cadastro de Usuários
+a.	Todos os usuários, sejam professores ou alunos, deverão se cadastrar na plataforma.
+7.	Pesquisa de Cursos
+a.	Alunos poderão pesquisar cursos por nome ou categoria.
+8.	Categorias de Cursos
+a.	Cursos cadastrados poderão pertencer a alguma área, como computação, música, matemática, língua portuguesa, etc
+
+
+5. Requisitos de Negócio (Funcionais e Não Funcionais)
+
+Requisitos funcionais:
+1.	Cadastro de Professores
+1.1.	O sistema deve permitir que professores se cadastrem na plataforma.
+2.	Criação de Cursos
+2.1.	Professores cadastrados podem criar cursos.
+2.2.	Ao criar um curso, o professor deve escolher entre as categorias "Turmas Interativas" e "Distribuição de Material Didático".
+2.3.	O curso não pode ser editado, apenas excluído.
+3.	Cursos na Categoria "Turmas Interativas"
+3.1.	Os cursos na categoria "Turmas Interativas" devem permitir a criação de turmas com quantidades de alunos definidas.
+3.2.	O sistema deve oferecer uma funcionalidade de chat em tempo real para cursos nesta categoria.
+3.3.	Professores podem cadastrar alunos previamente.
+3.4.	Professores podem optar por aprovar alunos antes de permitir a inscrição em suas turmas.
+3.5.	Se não houver vagas disponíveis em uma turma, novos alunos não poderão se inscrever nessa turma.
+4.	Cursos na Categoria "Distribuição de Material Didático"
+4.1.	Na categoria "Distribuição de Material Didático", o sistema deve disponibilizar apenas acessos a materiais e um fórum de discussão.
+5.	Envio de Conteúdo Multimídia
+5.1.	Em ambas as categorias, o sistema deve permitir o envio de vídeos, imagens e áudios.
+6.	Comentários em Vídeos
+6.1.	Caso um vídeo seja enviado como parte do conteúdo do curso, alunos e professores devem ser capazes de adicionar comentários em intervalos de tempo específicos no vídeo.
+7.	Inscrição de Alunos
+7.1.	Alunos podem se inscrever em qualquer curso disponível na plataforma, independente da categoria.
+8.	Pesquisa de Cursos
+8.1.	Alunos devem poder pesquisar cursos por nome ou categoria.
+9.	Categorias de Cursos
+9.1.	Cursos cadastrados devem ser associados a uma categoria, como computação, música, matemática, língua portuguesa, etc.
+
+Requisitos não funcionais:
+1.	Segurança
+1.1.	O sistema deve garantir a segurança dos dados do usuário, incluindo informações de cadastro e dados de pagamento, se aplicável.
+1.2.	Deve haver um sistema de autenticação robusto para proteger o acesso não autorizado às contas dos usuários.
+2.	Desempenho
+2.1.	O sistema deve ser capaz de lidar com um grande número de usuários simultaneamente, garantindo que o desempenho não seja afetado negativamente.
+2.2.	A resposta do sistema às ações do usuário, como a reprodução de vídeos ou a interação em tempo real, deve ser rápida e eficiente.
+3.	Disponibilidade
+3.1.	O sistema deve estar disponível 24 horas por dia, 7 dias por semana, com um tempo de inatividade planejado mínimo para manutenção.
+3.2.	Deve haver um plano de recuperação de desastres para lidar com possíveis interrupções não planejadas.
+4.	Usabilidade
+4.1.	A interface do usuário deve ser intuitiva e de fácil utilização, visando acomodar usuários com diferentes níveis de habilidade tecnológica.
+4.2.	Deve haver suporte para dispositivos móveis, garantindo que os alunos possam acessar os cursos em smartphones e tablets.
+5.	Escalabilidade
+5.1.	O sistema deve ser escalável para acomodar o crescimento futuro, tanto em termos de usuários quanto de cursos.
+5.2.	Deve ser possível adicionar recursos de hardware e escalonar o sistema conforme necessário.
+6.	Conformidade Legal e de Privacidade
+6.1.	O sistema deve estar em conformidade com as regulamentações de proteção de dados e privacidade, como o Regulamento Geral de Proteção de Dados (RGPD) se aplicável.
+
+
