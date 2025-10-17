@@ -1,0 +1,25 @@
+﻿=== Estado Atual do Projeto EAD ===
+
+Data: 2025-09-29 22:02:37
+
+1. API e Contratos
+ - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuários, cursos, turmas, conteúdos, atividades, submissões, fórum, chat, mídia e inscrições (`src/ProjetoFinal.Api/Controllers`).
+ - Contratos e serviços já expõem funcionalidades como busca por slug, gerenciamento de inscrições e submissões de atividades.
+
+2. Infraestrutura de Dados
+ - `AppDbContextFactory` garante execução dos comandos `dotnet ef` com base no `appsettings` (ambientes Development/Default usando `(localdb)\\mssqllocaldb` → `ProjetoFinalDb`).
+ - Mapeamentos usam `DeleteBehavior.Restrict` onde necessário para evitar múltiplos cascades; migração `20250930002230_InitialCreate` aplicada ao SQL Server local.
+
+3. Frontend Angular (novo)
+ - Shell reformulado com sidebar, topbar e avatar, preparado para navegação entre módulos (`app.component.*`).
+ - Página "Dashboard" inicial com cartões de indicadores e timeline, além de placeholders reutilizáveis para seções ainda em construção (`pages/dashboard`, `pages/coming-soon`).
+ - Estilos globais e do shell com tokens de cor, gradientes e responsividade definidos em `app.component.css` e `styles.css`.
+
+4. Build e Execução
+ - `dotnet build` e `npm run build` finalizam com sucesso; permaneceram os warnings conhecidos do Angular (budget >500 kB e regras de CSS herdadas).
+ - Registro de `IUnityOfWork` garantido via `services.AddScoped<IUnityOfWork, UnityOfWork>()` no IoC.
+
+5. Próximos Passos Guardados
+ - Integrar o dashboard a dados reais da API, substituindo os números mockados.
+ - Implementar telas completas para cursos, turmas, atividades e fórum baseadas no novo layout.
+ - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produção.
