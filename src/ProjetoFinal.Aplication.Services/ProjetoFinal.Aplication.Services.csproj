@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="13.0.1"/>
+        <PackageReference Include="BCrypt.Net-Core" Version="1.6.0"/>
+        <PackageReference Include="RhbkSdk" Version="8.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net8.0\Microsoft.AspNetCore.dll"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
+    </ItemGroup>
+</Project>
