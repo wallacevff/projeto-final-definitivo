@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -10,6 +10,11 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
     title: 'Painel - SES EAD'
+  },
+  {
+    path: 'courses/create',
+    loadComponent: () => import('./pages/course-create/course-create.component').then(m => m.CourseCreateComponent),
+    title: 'Criar Curso - SES EAD'
   },
   {
     path: 'courses',
@@ -36,3 +41,6 @@ export const routes: Routes = [
     redirectTo: 'dashboard'
   }
 ];
+
+
+

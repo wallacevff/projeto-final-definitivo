@@ -1,4 +1,4 @@
-﻿.courses {
+.courses {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
@@ -18,7 +18,9 @@
   color: var(--surface-900);
 }
 
-.courses__header button {
+.courses__new {
+  display: inline-block;
+  text-decoration: none;
   padding: 0.75rem 1.5rem;
   border-radius: 999px;
   border: none;
@@ -166,5 +168,3 @@
   background: rgba(248, 113, 113, 0.18);
   color: #b91c1c;
 }
-
-

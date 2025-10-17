@@ -1,0 +1,180 @@
+<section class="create-course">
+  <header class="create-course__header">
+    <div>
+      <h2>Criar novo curso</h2>
+      <p>Defina as informacoes gerais, modalidade e regras de inscricao antes de publicar.</p>
+    </div>
+    <a routerLink="/courses" class="back-link">Voltar para cursos</a>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="create-course__form">
+    <section class="card">
+      <h3>Modalidade do curso</h3>
+      <div class="mode-options">
+        <label
+          *ngFor="let option of modeOptions"
+          class="mode-option"
+          [class.mode-option--active]="modeControl.value === option.value"
+        >
+          <input type="radio" formControlName="mode" [value]="option.value" />
+          <div>
+            <span class="mode-option__title">{{ option.label }}</span>
+            <span class="mode-option__description">{{ option.description }}</span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <div class="form-grid">
+      <section class="card form-card">
+        <h3>Informacoes gerais</h3>
+        <div class="field">
+          <label for="title">Titulo do curso</label>
+          <input id="title" type="text" formControlName="title" placeholder="Ex.: Fundamentos de aprendizagem digital" />
+          <span class="field__error" *ngIf="isInvalid('title')">Informe um titulo com ate 120 caracteres.</span>
+        </div>
+
+        <div class="field">
+          <label for="shortDescription">Resumo</label>
+          <textarea
+            id="shortDescription"
+            formControlName="shortDescription"
+            rows="3"
+            placeholder="Explique em poucas linhas o objetivo do curso"
+          ></textarea>
+          <span class="field__error" *ngIf="isInvalid('shortDescription')">Informe um resumo com ate 280 caracteres.</span>
+        </div>
+
+        <div class="field">
+          <label for="detailedDescription">Descricao detalhada</label>
+          <textarea
+            id="detailedDescription"
+            formControlName="detailedDescription"
+            rows="6"
+            placeholder="Descreva o conteudo, metodos e publico ideal"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="categoryId">Categoria</label>
+          <select id="categoryId" formControlName="categoryId">
+            <option value="" disabled>Selecione uma categoria</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.label }}</option>
+          </select>
+          <span class="field__error" *ngIf="isInvalid('categoryId')">Escolha a categoria que melhor representa o curso.</span>
+        </div>
+
+        <div class="field">
+          <label for="enrollmentInstructions">Instrucao de inscricao</label>
+          <textarea
+            id="enrollmentInstructions"
+            formControlName="enrollmentInstructions"
+            rows="3"
+            placeholder="Ex.: Informe seus dados profissionais antes de enviar a inscricao"
+          ></textarea>
+        </div>
+      </section>
+
+      <aside class="card card--aside">
+        <h3>Visibilidade e comunicacao</h3>
+        <label class="toggle">
+          <input type="checkbox" formControlName="isPublished" />
+          <span>Publicar curso apos salvar</span>
+        </label>
+
+        <label class="toggle">
+          <input type="checkbox" formControlName="enableForum" />
+          <span>Habilitar forum de discussoes</span>
+        </label>
+
+        <label class="toggle" [class.toggle--disabled]="!interactiveMode">
+          <input type="checkbox" formControlName="enableChat" [disabled]="!interactiveMode" />
+          <span>Habilitar chat em tempo real</span>
+        </label>
+        <p class="hint" *ngIf="!interactiveMode">Chat disponivel apenas para turmas interativas.</p>
+      </aside>
+    </div>
+
+    <section class="card">
+      <div class="card__title-row">
+        <div>
+          <h3>Turmas e inscricoes</h3>
+          <p class="hint" *ngIf="!interactiveMode">Defina as turmas quando a modalidade for Turmas interativas.</p>
+        </div>
+        <button type="button" class="ghost-button" (click)="addClassGroup()" [disabled]="!interactiveMode">
+          Adicionar turma
+        </button>
+      </div>
+
+      <div class="class-groups" formArrayName="classGroups" *ngIf="interactiveMode">
+        <article class="class-group" *ngFor="let group of classGroups.controls; let i = index" [formGroupName]="i">
+          <header class="class-group__header">
+            <h4>Turma {{ i + 1 }}</h4>
+            <button
+              type="button"
+              class="icon-button"
+              (click)="removeClassGroup(i)"
+              *ngIf="classGroups.length > 1"
+              aria-label="Remover turma"
+            >
+              Remover
+            </button>
+          </header>
+
+          <div class="field">
+            <label>Nome da turma</label>
+            <input type="text" formControlName="name" placeholder="Ex.: Turma noite" />
+            <span class="field__error" *ngIf="isGroupInvalid(group, 'name')">Informe um nome para a turma.</span>
+          </div>
+
+          <div class="field field--inline">
+            <div>
+              <label>Capacidade</label>
+              <input type="number" min="1" formControlName="capacity" />
+              <span class="field__error" *ngIf="isGroupInvalid(group, 'capacity')">Defina ao menos 1 vaga.</span>
+            </div>
+            <div class="switchers">
+              <label class="toggle">
+                <input type="checkbox" formControlName="requiresApproval" />
+                <span>Exigir aprovacao manual</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" formControlName="requiresEnrollmentCode" />
+                <span>Solicitar codigo de inscricao</span>
+              </label>
+            </div>
+          </div>
+
+          <label class="toggle">
+            <input type="checkbox" formControlName="enableChat" />
+            <span>Chat dedicado para a turma</span>
+          </label>
+
+          <div class="dates-grid">
+            <div class="field">
+              <label>Inicio das inscricoes</label>
+              <input type="datetime-local" formControlName="enrollmentOpensAt" />
+            </div>
+            <div class="field">
+              <label>Fim das inscricoes</label>
+              <input type="datetime-local" formControlName="enrollmentClosesAt" />
+            </div>
+            <div class="field">
+              <label>Inicio das aulas</label>
+              <input type="datetime-local" formControlName="startsAt" />
+            </div>
+            <div class="field">
+              <label>Termino previsto</label>
+              <input type="datetime-local" formControlName="endsAt" />
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="form-actions">
+      <a routerLink="/courses" class="ghost-button">Cancelar</a>
+      <button type="submit" class="primary-button" [disabled]="isSubmitting()">Salvar curso</button>
+    </footer>
+  </form>
+</section>

@@ -1,4 +1,5 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -8,7 +9,7 @@ import { CourseListItem } from '../../core/api/courses.api';
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './courses.component.html',
   styleUrl: './courses.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -50,3 +51,4 @@ export class CoursesComponent {
     return Math.min(100, Math.round((course.enrolledStudents / course.capacity) * 100));
   }
 }
+

@@ -1,10 +1,10 @@
-﻿<section class="courses">
+<section class="courses">
   <header class="courses__header">
     <div>
       <h2>Cursos publicados</h2>
       <p class="description">Visualize a disponibilidade das trilhas e acompanhe o envolvimento dos alunos.</p>
     </div>
-    <button type="button">Novo curso</button>
+    <a routerLink="/courses/create" class="courses__new">Novo curso</a>
   </header>
 
   <ng-container *ngIf="!loading(); else loadingState">
@@ -34,7 +34,7 @@
               <div class="progress__bar">
                 <span [style.width.%]="percentOccupied(course)"></span>
               </div>
-              <small>{{ course.enrolledStudents }} inscritos · {{ course.classGroups }} turmas · {{ percentOccupied(course) }}%</small>
+              <small>{{ course.enrolledStudents }} inscritos - {{ course.classGroups }} turmas - {{ percentOccupied(course) }}%</small>
             </div>
             <div class="stats">
               <button type="button">Gerenciar</button>
@@ -53,4 +53,3 @@
 <ng-template #errorState>
   <div class="state state--error">{{ error() }}</div>
 </ng-template>
-
