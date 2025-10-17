@@ -1,0 +1,35 @@
+﻿<section class="activities">
+  <header>
+    <h2>Atividades avaliativas</h2>
+    <button type="button">Criar atividade</button>
+  </header>
+
+  <div class="activities__list">
+    <article *ngFor="let activity of activities" class="activity">
+      <div class="activity__meta">
+        <h3>{{ activity.title }}</h3>
+        <span class="tag">{{ activity.allowLate ? 'Aceita atrasos' : 'Sem prorrogacao' }}</span>
+      </div>
+
+      <dl>
+        <div>
+          <dt>Prazo</dt>
+          <dd>{{ activity.dueDate }}</dd>
+        </div>
+        <div>
+          <dt>Curso / Turma</dt>
+          <dd>{{ activity.course }} · {{ activity.classGroup }}</dd>
+        </div>
+        <div>
+          <dt>Submissoes</dt>
+          <dd>{{ activity.submissions.received }} / {{ activity.submissions.total }}</dd>
+        </div>
+      </dl>
+
+      <footer>
+        <button type="button">Ver detalhes</button>
+        <button type="button" class="secondary">Gerenciar correcoes</button>
+      </footer>
+    </article>
+  </div>
+</section>

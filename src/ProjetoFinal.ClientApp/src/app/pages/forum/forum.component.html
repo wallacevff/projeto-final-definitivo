@@ -1,0 +1,27 @@
+﻿<section class="forum">
+  <header>
+    <h2>Forum colaborativo</h2>
+    <button type="button">Novo topico</button>
+  </header>
+
+  <div class="forum__list">
+    <article *ngFor="let thread of threads" class="thread" [class.thread--locked]="thread.isLocked">
+      <div class="thread__meta">
+        <span class="tags">
+          <span *ngIf="thread.isPinned" class="tag">Destacado</span>
+          <span class="tag tag--course">{{ thread.course }}</span>
+          <span *ngIf="thread.isLocked" class="tag tag--locked">Bloqueado</span>
+        </span>
+        <span class="author">Iniciado por {{ thread.author }}</span>
+      </div>
+
+      <h3>{{ thread.title }}</h3>
+
+      <footer>
+        <span>{{ thread.replies }} respostas</span>
+        <span>{{ thread.lastMessage }}</span>
+        <button type="button">Abrir discussao</button>
+      </footer>
+    </article>
+  </div>
+</section>

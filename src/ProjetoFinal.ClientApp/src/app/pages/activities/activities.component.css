@@ -1,0 +1,132 @@
+﻿.activities {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.activities header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.activities h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--surface-900);
+}
+
+.activities header button {
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  border: 0;
+  background: var(--accent-500);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activities__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.activity {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 48px -40px rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  display: grid;
+  gap: 1.25rem;
+}
+
+.activity__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.activity__meta h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--surface-900);
+}
+
+.tag {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(38, 192, 171, 0.15);
+  color: #0f766e;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+dl div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--surface-700);
+}
+
+footer {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+footer button {
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+footer button:first-of-type {
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--accent-600);
+}
+
+footer button.secondary {
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--surface-600);
+}
+
+@media (max-width: 580px) {
+  .activities header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  footer {
+    width: 100%;
+  }
+
+  footer button {
+    flex: 1 1 100%;
+  }
+}

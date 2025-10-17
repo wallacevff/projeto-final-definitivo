@@ -1,0 +1,35 @@
+﻿<section class="courses">
+  <header class="courses__header">
+    <h2>Cursos publicados</h2>
+    <button type="button">Novo curso</button>
+  </header>
+
+  <div class="courses__grid">
+    <article *ngFor="let course of courses" class="course-card" [attr.data-status]="course.status">
+      <div class="course-card__header">
+        <span class="course-card__category">{{ course.category }}</span>
+        <span class="course-card__status">{{ course.status }}</span>
+      </div>
+
+      <h3>{{ course.title }}</h3>
+
+      <div class="course-card__meta">
+        <span>Instrutor: <strong>{{ course.instructor }}</strong></span>
+        <span>Modalidade: {{ course.mode }}</span>
+      </div>
+
+      <div class="course-card__footer">
+        <div class="progress">
+          <label>Conteudo publicado</label>
+          <div class="progress__bar">
+            <span [style.width.%]="course.progress"></span>
+          </div>
+        </div>
+        <div class="stats">
+          <span>{{ course.students }} alunos</span>
+          <button type="button">Gerenciar</button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
