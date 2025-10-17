@@ -36,7 +36,7 @@ public static class CustomConfigurationProvider
             return new ConfigurationBuilder().AddJsonFile(path).Build();
         }
 
-        path = Path.Combine(PathToJson, $"{StandardJson}.{Environments.Development}.json");
+        path = Path.Combine(PathToJson, $"{StandardJson}.{environment}.json");
         return new ConfigurationBuilder().AddJsonFile(path).Build();
     }
 }
