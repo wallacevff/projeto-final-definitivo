@@ -69,3 +69,22 @@ Data: 2025-10-01 22:50:46
 5. Observacao proximo encontro
  - Validar o envio do formulario contra a API real e ajustar mensagens conforme resposta.
  - Manter as pendencias anteriores, consulta aos arquivos docs/propont.txt e docs/especificacao.txt e a regra de commits por categoria.
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-12 08:45:42
+
+1. API e Contratos
+ - Sem novas alteracoes nesta sessao.
+
+2. Infraestrutura de Dados
+ - Sem novas alteracoes nesta sessao.
+
+3. Frontend Angular (novo)
+ - Tela de criacao de cursos agora carrega categorias e instrutores reais via API, exibe estados de carregamento/erro e impede envio sem dados obrigatorios.
+ - Fluxo de gravacao envia as turmas criadas para a API apos o curso ser salvo e publica automaticamente quando solicitado.
+
+4. Build e Execucao
+ - npm run build executado com sucesso (mantidos os avisos conhecidos de budget e seletores do Bootstrap).
+
+5. Observacao proximo encontro
+ - Validar a disponibilidade de categorias/instrutores no backend antes de novas demos e revisar o feedback visual apos a gravacao das turmas/publicacao.

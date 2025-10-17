@@ -3,12 +3,36 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs/operators';
+import { forkJoin, Observable, of } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 
-import { CoursesService, CreateCoursePayload } from '../../core/services/courses.service';
+import { CoursesService, CreateCoursePayload, UpdateCoursePayload } from '../../core/services/courses.service';
+import { ClassGroupsService } from '../../core/services/class-groups.service';
+import { UsersService } from '../../core/services/users.service';
+import { ClassGroupCreatePayload } from '../../core/api/courses.api';
 
 type CourseMode = 'interactive' | 'distribution';
+
+interface ClassGroupFormPayload {
+  Name: string;
+  Description?: string;
+  Capacity: number;
+  RequiresApproval: boolean;
+  RequiresEnrollmentCode: boolean;
+  EnrollmentCode?: string;
+  EnableChat: boolean;
+  EnrollmentOpensAt?: string;
+  EnrollmentClosesAt?: string;
+  StartsAt?: string;
+  EndsAt?: string;
+}
+
+interface CourseSubmissionPayload {
+  course: CreateCoursePayload;
+  classGroups: ClassGroupFormPayload[];
+  publish: boolean;
+}
 
 @Component({
   selector: 'app-course-create',
@@ -21,19 +45,21 @@ type CourseMode = 'interactive' | 'distribution';
 export class CourseCreateComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(CoursesService);
+  private readonly classGroupsService = inject(ClassGroupsService);
+  private readonly usersService = inject(UsersService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isSubmitting = signal(false);
 
-  readonly categories = [
-    { id: 'computacao', label: 'Computacao' },
-    { id: 'musica', label: 'Musica' },
-    { id: 'matematica', label: 'Matematica' },
-    { id: 'portugues', label: 'Lingua Portuguesa' },
-    { id: 'gestao', label: 'Gestao e Negocios' }
-  ];
+  readonly categories = signal<Array<{ id: string; label: string }>>([]);
+  readonly categoriesLoading = signal(true);
+  readonly categoriesError = signal<string | null>(null);
+
+  readonly instructors = signal<Array<{ id: string; label: string }>>([]);
+  readonly instructorsLoading = signal(true);
+  readonly instructorsError = signal<string | null>(null);
 
   readonly modeOptions: ReadonlyArray<{ value: CourseMode; label: string; description: string }> = [
     {
@@ -53,6 +79,7 @@ export class CourseCreateComponent {
     shortDescription: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(280)]),
     detailedDescription: this.fb.control('', [Validators.maxLength(4000)]),
     categoryId: this.fb.nonNullable.control('', [Validators.required]),
+    instructorId: this.fb.nonNullable.control('', [Validators.required]),
     mode: this.fb.nonNullable.control<CourseMode>('interactive', [Validators.required]),
     enableForum: this.fb.nonNullable.control(true),
     enableChat: this.fb.nonNullable.control(true),
@@ -64,6 +91,9 @@ export class CourseCreateComponent {
   readonly isInteractive = signal(this.modeControl.value === 'interactive');
 
   constructor() {
+    this.loadCategories();
+    this.loadInstructors();
+
     this.modeControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(mode => {
       this.handleModeChange(mode);
     });
@@ -77,6 +107,14 @@ export class CourseCreateComponent {
 
   get modeControl(): FormControl<CourseMode> {
     return this.form.get('mode') as FormControl<CourseMode>;
+  }
+
+  get categoryControl(): FormControl<string> {
+    return this.form.get('categoryId') as FormControl<string>;
+  }
+
+  get instructorControl(): FormControl<string> {
+    return this.form.get('instructorId') as FormControl<string>;
   }
 
   get enableChatControl(): FormControl<boolean> {
@@ -107,6 +145,60 @@ export class CourseCreateComponent {
     }
   }
 
+  private loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.categoriesError.set(null);
+
+    this.service
+      .getCourseCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: categories => {
+          const options = categories.map(category => ({ id: category.Id, label: category.Name }));
+          this.categories.set(options);
+          if (!this.categoryControl.value && options.length) {
+            this.categoryControl.setValue(options[0].id);
+          }
+          this.categoriesLoading.set(false);
+          this.categoriesError.set(null);
+        },
+        error: error => {
+          console.error('Falha ao carregar categorias', error);
+          this.categories.set([]);
+          this.categoriesLoading.set(false);
+          this.categoriesError.set('Nao foi possivel carregar as categorias.');
+        }
+      });
+  }
+
+  private loadInstructors(): void {
+    this.instructorsLoading.set(true);
+    this.instructorsError.set(null);
+
+    this.usersService
+      .getInstructors()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: instructors => {
+          const options = instructors
+            .filter(instructor => instructor.IsActive)
+            .map(instructor => ({ id: instructor.Id, label: instructor.FullName }));
+          this.instructors.set(options);
+          if (!this.instructorControl.value && options.length) {
+            this.instructorControl.setValue(options[0].id);
+          }
+          this.instructorsLoading.set(false);
+          this.instructorsError.set(null);
+        },
+        error: error => {
+          console.error('Falha ao carregar instrutores', error);
+          this.instructors.set([]);
+          this.instructorsLoading.set(false);
+          this.instructorsError.set('Nao foi possivel carregar os instrutores.');
+        }
+      });
+  }
+
   addClassGroup(): void {
     this.classGroups.push(this.createClassGroupGroup());
   }
@@ -131,15 +223,28 @@ export class CourseCreateComponent {
       return;
     }
 
-    const payload = this.buildPayload();
+    const submission = this.buildSubmissionPayload();
     this.isSubmitting.set(true);
 
+    this.handleCourseCreation(submission);
+  }
+
+  private handleCourseCreation(submission: CourseSubmissionPayload): void {
+    const { course, classGroups, publish } = submission;
+
     this.service
-      .createCourse(payload)
-      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isSubmitting.set(false)))
+      .createCourse(course)
+      .pipe(
+        switchMap(createdCourse =>
+          this.runPostCreationOperations(createdCourse.Id, course, classGroups, publish)
+        ),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isSubmitting.set(false))
+      )
       .subscribe({
         next: () => {
-          this.toastr.success('Curso criado com sucesso.');
+          const message = publish ? 'Curso criado e publicado com sucesso.' : 'Curso criado com sucesso.';
+          this.toastr.success(message);
           this.router.navigate(['/courses']);
         },
         error: error => {
@@ -147,6 +252,45 @@ export class CourseCreateComponent {
           this.toastr.error('Nao foi possivel criar o curso. Tente novamente.');
         }
       });
+  }
+
+  private runPostCreationOperations(
+    courseId: string,
+    coursePayload: CreateCoursePayload,
+    classGroups: ClassGroupFormPayload[],
+    publish: boolean
+  ) {
+    const operations: Observable<unknown>[] = [];
+
+    if (classGroups.length) {
+      const payloads: ClassGroupCreatePayload[] = classGroups.map(group => ({
+        ...group,
+        CourseId: courseId
+      }));
+      operations.push(this.classGroupsService.createMany(payloads));
+    }
+
+    if (publish) {
+      const updatePayload: UpdateCoursePayload = {
+        Title: coursePayload.Title,
+        ShortDescription: coursePayload.ShortDescription,
+        DetailedDescription: coursePayload.DetailedDescription,
+        Mode: coursePayload.Mode,
+        CategoryId: coursePayload.CategoryId,
+        EnableForum: coursePayload.EnableForum,
+        EnableChat: coursePayload.EnableChat,
+        IsPublished: true,
+        EnrollmentInstructions: coursePayload.EnrollmentInstructions,
+        ThumbnailMediaId: coursePayload.ThumbnailMediaId
+      };
+      operations.push(this.service.updateCourse(courseId, updatePayload));
+    }
+
+    if (!operations.length) {
+      return of(null);
+    }
+
+    return forkJoin(operations);
   }
 
   private createClassGroupGroup(): FormGroup {
@@ -163,37 +307,54 @@ export class CourseCreateComponent {
     });
   }
 
-  private buildPayload(): CreateCoursePayload {
+  private buildSubmissionPayload(): CourseSubmissionPayload {
     const raw = this.form.getRawValue();
     const modeNumber = raw.mode === 'interactive' ? 1 : 2;
+    const instructorId = String(raw.instructorId ?? '').trim();
+
+    const course: CreateCoursePayload = {
+      Title: raw.title.trim(),
+      ShortDescription: raw.shortDescription.trim(),
+      DetailedDescription: raw.detailedDescription?.trim() || undefined,
+      Mode: modeNumber,
+      CategoryId: String(raw.categoryId ?? '').trim(),
+      InstructorId: instructorId,
+      EnableForum: raw.enableForum,
+      EnableChat: modeNumber === 1 ? raw.enableChat : false,
+      EnrollmentInstructions: raw.enrollmentInstructions?.trim() || undefined
+    };
 
     const classGroups =
-      raw.mode === 'interactive'
-        ? (raw.classGroups as Array<Record<string, unknown>>).map(group => ({
-            Name: String(group['name'] ?? ''),
-            Capacity: Number(group['capacity'] ?? 0),
-            RequiresApproval: Boolean(group['requiresApproval']),
-            RequiresEnrollmentCode: Boolean(group['requiresEnrollmentCode']),
-            EnableChat: Boolean(group['enableChat']),
-            EnrollmentOpensAt: this.toIsoString(group['enrollmentOpensAt']),
-            EnrollmentClosesAt: this.toIsoString(group['enrollmentClosesAt']),
-            StartsAt: this.toIsoString(group['startsAt']),
-            EndsAt: this.toIsoString(group['endsAt'])
-          }))
+      modeNumber === 1
+        ? this.buildClassGroupPayloads(raw.classGroups as Array<Record<string, unknown>>)
         : [];
 
     return {
-      Title: raw.title,
-      ShortDescription: raw.shortDescription,
-      DetailedDescription: raw.detailedDescription ?? undefined,
-      Mode: modeNumber,
-      CategoryId: raw.categoryId,
-      EnableForum: raw.enableForum,
-      EnableChat: modeNumber === 1 ? raw.enableChat : false,
-      EnrollmentInstructions: raw.enrollmentInstructions ?? undefined,
-      IsPublished: raw.isPublished,
-      ClassGroups: classGroups
-    } satisfies CreateCoursePayload;
+      course,
+      classGroups,
+      publish: raw.isPublished
+    };
+  }
+
+  private buildClassGroupPayloads(groups: Array<Record<string, unknown>>): ClassGroupFormPayload[] {
+    return groups.map(group => {
+      const rawCapacity = Number(group['capacity'] ?? 0);
+      const capacity = Number.isFinite(rawCapacity) ? Math.max(1, Math.trunc(rawCapacity)) : 1;
+
+      return {
+        Name: String(group['name'] ?? '').trim(),
+        Description: undefined,
+        Capacity: capacity,
+        RequiresApproval: Boolean(group['requiresApproval']),
+        RequiresEnrollmentCode: Boolean(group['requiresEnrollmentCode']),
+        EnrollmentCode: undefined,
+        EnableChat: Boolean(group['enableChat']),
+        EnrollmentOpensAt: this.toIsoString(group['enrollmentOpensAt']),
+        EnrollmentClosesAt: this.toIsoString(group['enrollmentClosesAt']),
+        StartsAt: this.toIsoString(group['startsAt']),
+        EndsAt: this.toIsoString(group['endsAt'])
+      };
+    });
   }
 
   private toIsoString(value: unknown): string | undefined {
@@ -205,6 +366,9 @@ export class CourseCreateComponent {
     return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
   }
 }
+
+
+
 
 
 

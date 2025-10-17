@@ -59,9 +59,26 @@
           <label for="categoryId">Categoria</label>
           <select id="categoryId" formControlName="categoryId">
             <option value="" disabled>Selecione uma categoria</option>
-            <option *ngFor="let category of categories" [value]="category.id">{{ category.label }}</option>
+            <option *ngFor="let category of categories()" [value]="category.id">{{ category.label }}</option>
           </select>
           <span class="field__error" *ngIf="isInvalid('categoryId')">Escolha a categoria que melhor representa o curso.</span>
+          <p class="hint" *ngIf="categoriesLoading()">Carregando categorias...</p>
+          <p class="state state--error" *ngIf="!categoriesLoading() && categoriesError()">{{ categoriesError() }}</p>
+          <p class="hint" *ngIf="!categoriesLoading() && !categoriesError() && !categories().length">Cadastre uma categoria antes de criar o curso.</p>
+        </div>
+
+        <div class="field">
+          <label for="instructorId">Instrutor responsavel</label>
+          <select id="instructorId" formControlName="instructorId">
+            <option value="" disabled>Selecione um instrutor</option>
+            <option *ngFor="let instructor of instructors()" [value]="instructor.id">
+              {{ instructor.label }}
+            </option>
+          </select>
+          <span class="field__error" *ngIf="isInvalid('instructorId')">Selecione o instrutor responsavel pelo curso.</span>
+          <p class="hint" *ngIf="instructorsLoading()">Carregando instrutores...</p>
+          <p class="state state--error" *ngIf="!instructorsLoading() && instructorsError()">{{ instructorsError() }}</p>
+          <p class="hint" *ngIf="!instructorsLoading() && !instructorsError() && !instructors().length">Cadastre um instrutor ou aguarde o carregamento.</p>
         </div>
 
         <div class="field">
@@ -174,7 +191,14 @@
 
     <footer class="form-actions">
       <a routerLink="/courses" class="ghost-button">Cancelar</a>
-      <button type="submit" class="primary-button" [disabled]="isSubmitting()">Salvar curso</button>
+      <button
+        type="submit"
+        class="primary-button"
+        [disabled]="isSubmitting() || categoriesLoading() || instructorsLoading() || !categories().length || !instructors().length"
+      >
+        Salvar curso
+      </button>
     </footer>
   </form>
 </section>
+

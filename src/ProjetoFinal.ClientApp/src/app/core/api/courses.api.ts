@@ -21,6 +21,21 @@ export interface CourseDto {
   ClassGroups: ClassGroupDto[];
 }
 
+export interface ClassGroupCreatePayload {
+  CourseId: string;
+  Name: string;
+  Description?: string;
+  Capacity: number;
+  RequiresApproval: boolean;
+  RequiresEnrollmentCode: boolean;
+  EnrollmentCode?: string;
+  EnableChat: boolean;
+  EnrollmentOpensAt?: string;
+  EnrollmentClosesAt?: string;
+  StartsAt?: string;
+  EndsAt?: string;
+}
+
 export interface ClassGroupDto {
   Id: string;
   CourseId: string;
