@@ -1,0 +1,24 @@
+Estou precisando concluir o meu projeto final da faculdade. O tema consiste em desenvolver um sistema EAD com foco em usabilidade.
+▌
+▌ Nesse sistema teremos algo parecido com os sistemas existentes como: Moodle, Google Classroom e Udemy. Me foi exigido que eu fizesse algo que eu
+▌ julgasse ser novidade no mercado. Então tive a ideia de criar um sistema com elementos de cada um misturado.
+▌
+▌ O sistema terá duas modalidades:
+▌ 1 - Categoria com turmas:
+▌        - Aqui poderemos ter turmas com quantidade limitadas de alunos. As regras serão as seguintes:
+▌            - O professor pode lançar conteúdo didático textual ou com anexo de arquivos: PDF, Word, Excel, Png, Jpeg e vídeo.
+▌            - Um curso possuirá uma ou mais turmas com o tamanho definido pelo Professor  Instrutor.
+▌            - Fórum com inserção de arquivos: PDF, Word, Excel, Png, Jpeg e vídeo.
+▌            - Chat ao vivo com o professor. O professor poderá combinar horário com os alunos no fórum.
+▌            - Atividades, o professor lança atividade a turma inteira ou ao curso inteiro (todas as turmas) alunos.
+▌            - Os alunos poderão anexar arquivos nas soluções das atividades: PDF, Word, Excel, Png, Jpeg e vídeo.
+▌            - Caso seja vídeo, o professor pode marcar um comentário no vídeo enviado pelo aluno com as observações. Semelhante ao recurso que a
+▌ udemy oferece.
+▌            - O professor pode colocar senha para o aluno se inscrever na turma, se assim desejar.
+▌            - Atividades poderão ter pontuação.
+▌
+▌ 2 - Distribuições de material:
+▌            - Ilimitado o acesso.
+▌            - Não possui chat
+▌            - Fórum com inserção de arquivos: PDF, Word, Excel, Png, Jpeg e vídeo.
+Leia o arquivo "docs/Especificacao.txt
