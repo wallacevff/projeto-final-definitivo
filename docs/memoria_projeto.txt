@@ -3,30 +3,30 @@
 Data: 2025-09-29 22:02:37
 
 1. API e Contratos
- - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuários, cursos, turmas, conteúdos, atividades, submissões, fórum, chat, mídia e inscrições (`src/ProjetoFinal.Api/Controllers`).
- - Contratos e serviços já expõem funcionalidades como busca por slug, gerenciamento de inscrições e submissões de atividades.
+ - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuÃ¡rios, cursos, turmas, conteÃºdos, atividades, submissÃµes, fÃ³rum, chat, mÃ­dia e inscriÃ§Ãµes (`src/ProjetoFinal.Api/Controllers`).
+ - Contratos e serviÃ§os jÃ¡ expÃµem funcionalidades como busca por slug, gerenciamento de inscriÃ§Ãµes e submissÃµes de atividades.
 
 2. Infraestrutura de Dados
- - `AppDbContextFactory` garante execução dos comandos `dotnet ef` com base no `appsettings` (ambientes Development/Default usando `(localdb)\\mssqllocaldb` ? `ProjetoFinalDb`).
- - Mapeamentos usam `DeleteBehavior.Restrict` onde necessário para evitar múltiplos cascades; migração `20250930002230_InitialCreate` aplicada ao SQL Server local.
+ - `AppDbContextFactory` garante execuÃ§Ã£o dos comandos `dotnet ef` com base no `appsettings` (ambientes Development/Default usando `(localdb)\\mssqllocaldb` ? `ProjetoFinalDb`).
+ - Mapeamentos usam `DeleteBehavior.Restrict` onde necessÃ¡rio para evitar mÃºltiplos cascades; migraÃ§Ã£o `20250930002230_InitialCreate` aplicada ao SQL Server local.
 
 3. Frontend Angular (novo)
- - Shell reformulado com sidebar, topbar e avatar, preparado para navegação entre módulos (`app.component.*`).
+ - Shell reformulado com sidebar, topbar e avatar, preparado para navegaÃ§Ã£o entre mÃ³dulos (`app.component.*`).
  - Shell reformulado com sidebar, topbar e avatar, preparado para navegacao entre modulos (`app.component.*`).
  - Paginas reais para cursos, turmas, atividades e forum com dados mockados e layout responsivo (`pages/courses`, `pages/class-groups`, `pages/activities`, `pages/forum`).
  - Paginas agora consomem dados reais via services (cursos, turmas, atividades, forum) com estado de carregamento e tratamento de erros.
  - Estilos globais e do shell com tokens de cor, gradientes e responsividade definidos em `app.component.css` e `styles.css`.
 
-4. Build e Execução
+4. Build e ExecuÃ§Ã£o
  - `dotnet build` e `npm run build` finalizam com sucesso; permaneceram os warnings conhecidos do Angular (budget >500 kB e regras de CSS herdadas).
  - Registro de `IUnityOfWork` garantido via `services.AddScoped<IUnityOfWork, UnityOfWork>()` no IoC.
 
-Observação próximo encontro: retomar os itens abaixo na abertura da próxima sessão.
+ObservaÃ§Ã£o prÃ³ximo encontro: retomar os itens abaixo na abertura da prÃ³xima sessÃ£o.
 
-5. Próximos Passos Guardados
- - Integrar o dashboard a dados reais da API, substituindo os números mockados.
- - Implementar telas completas para cursos, turmas, atividades e fórum baseadas no novo layout.
- - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produção.
+5. PrÃ³ximos Passos Guardados
+ - Integrar o dashboard a dados reais da API, substituindo os nÃºmeros mockados.
+ - Implementar telas completas para cursos, turmas, atividades e fÃ³rum baseadas no novo layout.
+ - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produÃ§Ã£o.
 
 === Estado Atual do Projeto EAD ===
 
@@ -113,3 +113,28 @@ Data: 2025-10-16 21:57:54
  - Revisar protecoes por perfil (professor/aluno) nas rotas e tratar avisos de build Angular.
 
 
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-17 15:40:00
+
+1. API e Contratos
+ - ClassGroupsController agora responde tambem em /api/v1/class-groups, alinhando com os endpoints usados pelo frontend.
+ - Semente fixa GUIDs dos usuarios padrao, evitando conflitos ao recriar banco.
+ - DTOs e servicos ajustados para que atividades e foruns dependam de turmas, com flag de distribuicao de materiais nas turmas.
+
+2. Infraestrutura de Dados
+ - Migration unica 20251017143934_InitialCreate cobre os novos relacionamentos (activities -> classGroups, forum threads por turma e flag de distribuicao).
+ - Repositorios de cursos incluem Instructor e turmas com matriculas para consultas completas.
+
+3. Frontend Angular
+ - Tela de criacao de cursos envia turmas e trata publicacao; painel e listagem direcionam para o fluxo correto.
+ - Pagina de gerenciamento de curso exibe cards de resumo e turmas; cards de cursos mostram instrutor.
+ - Forum e atividades exibem turmas associadas; servicos atualizados para os novos campos.
+
+4. Build e Execucao
+ - dotnet build ProjetoFinal.sln -c Release concluido (mantidos avisos de budget/seletores do Angular).
+
+5. Pendencias
+ - Avaliar ajuste no warning de disabled nos formularios.
+ - Popular dashboard e forum com dados reais quando API estiver pronta.
