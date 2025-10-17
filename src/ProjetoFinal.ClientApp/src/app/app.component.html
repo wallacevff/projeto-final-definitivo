@@ -1,4 +1,4 @@
-﻿<div class="app-shell" [class.sidebar-collapsed]="isSidebarCollapsed">
+<div class="app-shell" [class.sidebar-collapsed]="isSidebarCollapsed">
   <aside class="sidebar">
     <div class="brand">
       <span class="logo">SES</span>
@@ -16,7 +16,7 @@
         [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
         [title]="item.description"
       >
-        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="icon" aria-hidden="true"><i [ngClass]="item.icon"></i></span>
         <div class="labels">
           <span class="label">{{ item.label }}</span>
           <span class="description">{{ item.description }}</span>
@@ -50,3 +50,4 @@
     </main>
   </div>
 </div>
+
