@@ -11,7 +11,7 @@ public class Course : AuditableEntity
     public string ShortDescription { get; set; } = string.Empty;
     public string? DetailedDescription { get; set; }
     public CourseMode Mode { get; set; }
-    public Guid CategoryId { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
     public Guid InstructorId { get; set; }
     public Guid? ThumbnailMediaId { get; set; }
     public bool EnableForum { get; set; } = true;
@@ -20,7 +20,6 @@ public class Course : AuditableEntity
     public DateTime? PublishedAt { get; set; }
     public string? EnrollmentInstructions { get; set; }
 
-    public CourseCategory? Category { get; set; }
     public User? Instructor { get; set; }
     public MediaResource? ThumbnailMedia { get; set; }
 

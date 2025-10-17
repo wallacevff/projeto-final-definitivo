@@ -35,10 +35,12 @@ public class CourseAppService : DefaultService<Course, CourseDto, CourseCreateDt
     {
         var entity = _mapper.MapFrom<Course>(dto);
         entity.Title = dto.Title.Trim();
+        entity.CategoryName = dto.CategoryName?.Trim() ?? string.Empty;
         entity.Slug = await GenerateUniqueSlugAsync(entity.Title, cancellationToken);
         entity.EnableChat = entity.Mode == CourseMode.InteractiveClasses ? true : dto.EnableChat;
         entity.EnableForum = dto.EnableForum;
         entity.IsPublished = false;
+        entity.InstructorId = dto.InstructorId;
 
         var createdEntity = await _courseRepository.AddAsync(entity, cancellationToken);
         await _unityOfWork.SaveChangesAsync(cancellationToken);
@@ -57,6 +59,7 @@ public class CourseAppService : DefaultService<Course, CourseDto, CourseCreateDt
         var previousTitle = entity.Title;
         _mapper.MapTo(dto, entity);
 
+        entity.CategoryName = dto.CategoryName?.Trim() ?? string.Empty;
         if (!string.Equals(previousTitle, entity.Title, StringComparison.OrdinalIgnoreCase))
         {
             entity.Slug = await GenerateUniqueSlugAsync(entity.Title, cancellationToken);

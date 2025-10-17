@@ -6,7 +6,6 @@ namespace ProjetoFinal.Infra.Data.Contexts;
 public partial class AppDbContext
 {
     public DbSet<User> Users => Set<User>();
-    public DbSet<CourseCategory> CourseCategories => Set<CourseCategory>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<ClassGroup> ClassGroups => Set<ClassGroup>();
     public DbSet<ClassEnrollment> ClassEnrollments => Set<ClassEnrollment>();

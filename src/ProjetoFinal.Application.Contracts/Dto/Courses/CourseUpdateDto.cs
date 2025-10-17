@@ -9,7 +9,7 @@ public class CourseUpdateDto
     public string ShortDescription { get; set; } = string.Empty;
     public string? DetailedDescription { get; set; }
     public CourseMode Mode { get; set; }
-    public Guid CategoryId { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
     public Guid? ThumbnailMediaId { get; set; }
     public bool EnableForum { get; set; }
     public bool EnableChat { get; set; }

@@ -6,6 +6,7 @@ using ProjetoFinal.Api.Factories;
 var app = WebApplicationBuilderFactory.CreateWebApplication(args);
 app.UseCors();
 app.AddSwagger();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddlewares();
 app.Use(async (context, next) =>

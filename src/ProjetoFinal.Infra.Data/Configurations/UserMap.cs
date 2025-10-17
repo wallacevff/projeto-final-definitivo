@@ -25,6 +25,12 @@ public class UserMap : IContextEntityMap<User>
             .IsRequired()
             .HasMaxLength(180);
 
+        builder.Property(p => p.Username)
+            .HasMaxLength(80);
+
+        builder.Property(p => p.PasswordHash)
+            .HasMaxLength(180);
+
         builder.Property(p => p.Biography)
             .HasMaxLength(2000);
 
@@ -43,6 +49,9 @@ public class UserMap : IContextEntityMap<User>
 
         builder.HasIndex(p => p.Email).IsUnique();
         builder.HasIndex(p => p.ExternalId).IsUnique();
+        builder.HasIndex(p => p.Username)
+            .IsUnique()
+            .HasFilter("[Username] IS NOT NULL");
 
     }
 }

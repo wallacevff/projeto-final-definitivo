@@ -24,6 +24,7 @@ public static class IoCManager
     {
         return services
                 .AddApplicationDbContext(configuration)
+                .AddJwtConfiguration(configuration)
                 .AddDomainRepositories()
                 .AddAutoMapper()
                 .AddApplicationServices()
@@ -49,6 +50,12 @@ public static class IoCManager
     {
         services.AddAllServicesByTypes(typeof(IDomain), typeof(IInfraData));
         services.AddScoped<IUnityOfWork, UnityOfWork>();
+        return services;
+    }
+
+    public static IServiceCollection AddJwtConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<JwtConfiguration>(configuration.GetSection(JwtConfiguration.SectionName));
         return services;
     }
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)

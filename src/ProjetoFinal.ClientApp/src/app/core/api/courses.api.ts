@@ -7,7 +7,6 @@ export interface CourseDto {
   ShortDescription: string;
   DetailedDescription?: string;
   Mode: number;
-  CategoryId: string;
   CategoryName: string;
   InstructorId: string;
   InstructorName: string;
@@ -57,7 +56,7 @@ export interface CoursesFilter {
   PageSize?: number;
   PageNumber?: number;
   Title?: string;
-  CategoryId?: string;
+  CategoryName?: string;
   InstructorId?: string;
   IsPublished?: boolean;
 }

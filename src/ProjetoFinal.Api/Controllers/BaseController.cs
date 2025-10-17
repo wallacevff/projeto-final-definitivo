@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjetoFinal.Application.Contracts.Dto;
 using ProjetoFinal.Application.Contracts.Services;
 using ProjetoFinal.Domain.Shared.Filters;
@@ -6,6 +7,7 @@ using ProjetoFinal.Domain.Shared.Filters;
 namespace ProjetoFinal.Api.Controllers;
 
 [ApiController]
+[Authorize]
 public abstract class BaseController<
     TDto,
     TCreateDto,

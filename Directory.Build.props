@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <RestoreAdditionalProjectFallbackFolders />
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+  </PropertyGroup>
+</Project>

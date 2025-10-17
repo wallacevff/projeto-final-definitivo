@@ -1,53 +1,65 @@
-<div class="app-shell" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <aside class="sidebar">
-    <div class="brand">
-      <span class="logo">SES</span>
-      <div class="brand-text">
-        <strong>Plataforma EAD</strong>
-        <span>Secretaria de Educacao e Saber</span>
+<ng-container *ngIf="isAuthenticated(); else authRoutes">
+  <div class="app-shell" [class.sidebar-collapsed]="isSidebarCollapsed">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="logo">SES</span>
+        <div class="brand-text">
+          <strong>Plataforma EAD</strong>
+          <span>Secretaria de Educacao e Saber</span>
+        </div>
       </div>
+
+      <nav class="nav">
+        <a
+          *ngFor="let item of navItems"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+          [title]="item.description"
+        >
+          <span class="icon" aria-hidden="true"><i [ngClass]="item.icon"></i></span>
+          <div class="labels">
+            <span class="label">{{ item.label }}</span>
+            <span class="description">{{ item.description }}</span>
+          </div>
+        </a>
+      </nav>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="sidebar-toggle" type="button" (click)="toggleSidebar()" aria-label="Alternar menu">
+          <span class="icon" aria-hidden="true">::</span>
+        </button>
+
+        <div class="topbar-info">
+          <h1>{{ title }}</h1>
+          <p class="subtitle">Ambiente unificado para cursos, turmas e experiencias de aprendizagem.</p>
+        </div>
+
+        <div class="user-badge" role="group" aria-label="Usuario autenticado">
+          <span class="avatar" aria-hidden="true">{{ userInitials() }}</span>
+          <div class="details">
+            <span class="name">{{ currentUser()?.fullName || currentUser()?.username }}</span>
+            <span class="role">{{ roleLabel() }}</span>
+          </div>
+          <button type="button" class="logout-button" (click)="logout()" aria-label="Sair">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="content" role="main">
+        <section class="student-notice" *ngIf="isStudent()">
+          <strong>Aviso:</strong> você entrou como aluno. Em breve, disponibilizaremos o painel dedicado para estudantes.
+        </section>
+        <router-outlet></router-outlet>
+      </main>
     </div>
-
-    <nav class="nav">
-      <a
-        *ngFor="let item of navItems"
-        [routerLink]="item.route"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-        [title]="item.description"
-      >
-        <span class="icon" aria-hidden="true"><i [ngClass]="item.icon"></i></span>
-        <div class="labels">
-          <span class="label">{{ item.label }}</span>
-          <span class="description">{{ item.description }}</span>
-        </div>
-      </a>
-    </nav>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <button class="sidebar-toggle" type="button" (click)="toggleSidebar()" aria-label="Alternar menu">
-        <span class="icon" aria-hidden="true">::</span>
-      </button>
-
-      <div class="topbar-info">
-        <h1>{{ title }}</h1>
-        <p class="subtitle">Ambiente unificado para cursos, turmas e experiencias de aprendizagem.</p>
-      </div>
-
-      <div class="user-badge" role="button" tabindex="0">
-        <span class="avatar" aria-hidden="true">WV</span>
-        <div class="details">
-          <span class="name">Wallace Vidal</span>
-          <span class="role">Administrador</span>
-        </div>
-      </div>
-    </header>
-
-    <main class="content" role="main">
-      <router-outlet></router-outlet>
-    </main>
   </div>
-</div>
+</ng-container>
+
+<ng-template #authRoutes>
+  <router-outlet></router-outlet>
+</ng-template>
 

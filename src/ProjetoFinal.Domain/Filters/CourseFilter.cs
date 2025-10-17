@@ -8,7 +8,7 @@ public class CourseFilter : Filter
 {
     public string? Title { get; set; }
     public Guid? InstructorId { get; set; }
-    public Guid? CategoryId { get; set; }
+    public string? CategoryName { get; set; }
     public CourseMode? Mode { get; set; }
     public bool? IsPublished { get; set; }
 }

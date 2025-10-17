@@ -90,5 +90,26 @@ Data: 2025-10-12 08:45:42
  - Validar a disponibilidade de categorias/instrutores no backend antes de novas demos e revisar o feedback visual apos a gravacao das turmas/publicacao.
 
 
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-16 21:57:54
+
+1. API e Contratos
+ - Autenticacao JWT implementada com emissao via `AuthController`/`AuthAppService` e claims para identificacao do instrutor logado.
+ - `CoursesController` passa a criar cursos vinculando automaticamente o `InstructorId` a partir do token e aceita rotas `/api` e `/api/v1`.
+
+2. Infraestrutura de Dados
+ - Migration `20251017001034_AddUserCredentials` adiciona `Username`/`PasswordHash` em `Users` e migra dados existentes.
+ - Seeder cria usuarios padrao `wallace.vidal` (professor) e `robert.leite` (aluno) com hash BCrypt.
+
+3. Frontend Angular (novo)
+ - Fluxo de login JWT com guarda, interceptor e pagina dedicada; formularios do shell adaptados para exibir usuario logado.
+ - Formulario de criacao de cursos agora usa categoria texto livre e dispensa a escolha manual de instrutor.
+
+4. Build e Execucao
+ - `dotnet build ProjetoFinal.sln` e `dotnet ef database update` executados; permanecem avisos de tamanho de bundle Angular e regras CSS.
+
+5. Observacao proximo encontro
+ - Revisar protecoes por perfil (professor/aluno) nas rotas e tratar avisos de build Angular.
 
 

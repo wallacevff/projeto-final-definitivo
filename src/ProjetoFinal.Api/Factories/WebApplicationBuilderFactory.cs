@@ -17,6 +17,7 @@ public static class WebApplicationBuilderFactory
         builder.Services.ConfigureByIoC(builder.Configuration, builder.Environment);
         builder.AddSwaggerBuilder();
         builder.AddCorsBuilder();
+        builder.AddJwtAuthentication();
         builder.ConfigureRequestBodySize();
 
         return builder.Build();

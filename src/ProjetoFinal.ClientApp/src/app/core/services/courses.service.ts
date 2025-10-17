@@ -4,7 +4,6 @@ import { catchError, map, of, shareReplay, Observable, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { CourseDto, CoursesFilter, mapClassGroupsFromCourses, mapCoursesResponse } from '../api/courses.api';
-import { CourseCategoryDto, extractCourseCategories } from '../api/course-categories.api';
 import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
 import { toHttpParams } from '../utils/http-params.util';
 
@@ -13,8 +12,7 @@ export interface CreateCoursePayload {
   ShortDescription: string;
   DetailedDescription?: string;
   Mode: number;
-  CategoryId: string;
-  InstructorId: string;
+  CategoryName: string;
   EnableForum: boolean;
   EnableChat: boolean;
   EnrollmentInstructions?: string;
@@ -26,7 +24,7 @@ export interface UpdateCoursePayload {
   ShortDescription: string;
   DetailedDescription?: string;
   Mode: number;
-  CategoryId: string;
+  CategoryName: string;
   EnableForum: boolean;
   EnableChat: boolean;
   IsPublished: boolean;
@@ -39,24 +37,6 @@ export class CoursesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.baseUrl;
   private cache$?: Observable<ApiPagedResponse<CourseDto>>;
-  private categoriesCache$?: Observable<CourseCategoryDto[]>;
-
-  getCourseCategories() {
-    if (!this.categoriesCache$) {
-      const params = toHttpParams({ PageSize: 100 });
-      const request = this.http
-        .get<ApiPagedResponse<CourseCategoryDto>>(`${this.baseUrl}/course-categories`, { params })
-        .pipe(
-          map(response => extractCourseCategories(response)),
-          catchError(() => of<CourseCategoryDto[]>([])),
-          shareReplay({ bufferSize: 1, refCount: true })
-        );
-
-      this.categoriesCache$ = request;
-    }
-
-    return this.categoriesCache$;
-  }
 
   getCourseCards(filter: CoursesFilter = {}) {
     return this.fetchCoursesDto(filter).pipe(map(mapCoursesResponse));

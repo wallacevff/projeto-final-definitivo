@@ -18,9 +18,6 @@ public class AutoMapperProfileCadastroDto : Profile
         CreateMap<UserCreateDto, User>();
         CreateMap<UserUpdateDto, User>();
 
-        CreateMap<CourseCategoryCreateDto, CourseCategory>();
-        CreateMap<CourseCategoryUpdateDto, CourseCategory>();
-
         CreateMap<CourseCreateDto, Course>();
         CreateMap<CourseUpdateDto, Course>();
         CreateMap<CourseSubscriptionCreateDto, CourseSubscription>();

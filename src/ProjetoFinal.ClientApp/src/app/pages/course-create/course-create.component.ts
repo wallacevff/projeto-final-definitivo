@@ -9,7 +9,6 @@ import { ToastrService } from 'ngx-toastr';
 
 import { CoursesService, CreateCoursePayload, UpdateCoursePayload } from '../../core/services/courses.service';
 import { ClassGroupsService } from '../../core/services/class-groups.service';
-import { UsersService } from '../../core/services/users.service';
 import { ClassGroupCreatePayload } from '../../core/api/courses.api';
 
 type CourseMode = 'interactive' | 'distribution';
@@ -46,20 +45,11 @@ export class CourseCreateComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(CoursesService);
   private readonly classGroupsService = inject(ClassGroupsService);
-  private readonly usersService = inject(UsersService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isSubmitting = signal(false);
-
-  readonly categories = signal<Array<{ id: string; label: string }>>([]);
-  readonly categoriesLoading = signal(true);
-  readonly categoriesError = signal<string | null>(null);
-
-  readonly instructors = signal<Array<{ id: string; label: string }>>([]);
-  readonly instructorsLoading = signal(true);
-  readonly instructorsError = signal<string | null>(null);
 
   readonly modeOptions: ReadonlyArray<{ value: CourseMode; label: string; description: string }> = [
     {
@@ -78,8 +68,7 @@ export class CourseCreateComponent {
     title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(120)]),
     shortDescription: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(280)]),
     detailedDescription: this.fb.control('', [Validators.maxLength(4000)]),
-    categoryId: this.fb.nonNullable.control('', [Validators.required]),
-    instructorId: this.fb.nonNullable.control('', [Validators.required]),
+    categoryName: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(150)]),
     mode: this.fb.nonNullable.control<CourseMode>('interactive', [Validators.required]),
     enableForum: this.fb.nonNullable.control(true),
     enableChat: this.fb.nonNullable.control(true),
@@ -91,9 +80,6 @@ export class CourseCreateComponent {
   readonly isInteractive = signal(this.modeControl.value === 'interactive');
 
   constructor() {
-    this.loadCategories();
-    this.loadInstructors();
-
     this.modeControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(mode => {
       this.handleModeChange(mode);
     });
@@ -109,12 +95,8 @@ export class CourseCreateComponent {
     return this.form.get('mode') as FormControl<CourseMode>;
   }
 
-  get categoryControl(): FormControl<string> {
-    return this.form.get('categoryId') as FormControl<string>;
-  }
-
-  get instructorControl(): FormControl<string> {
-    return this.form.get('instructorId') as FormControl<string>;
+  get categoryNameControl(): FormControl<string> {
+    return this.form.get('categoryName') as FormControl<string>;
   }
 
   get enableChatControl(): FormControl<boolean> {
@@ -143,60 +125,6 @@ export class CourseCreateComponent {
         this.classGroups.removeAt(0, { emitEvent: false });
       }
     }
-  }
-
-  private loadCategories(): void {
-    this.categoriesLoading.set(true);
-    this.categoriesError.set(null);
-
-    this.service
-      .getCourseCategories()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: categories => {
-          const options = categories.map(category => ({ id: category.Id, label: category.Name }));
-          this.categories.set(options);
-          if (!this.categoryControl.value && options.length) {
-            this.categoryControl.setValue(options[0].id);
-          }
-          this.categoriesLoading.set(false);
-          this.categoriesError.set(null);
-        },
-        error: error => {
-          console.error('Falha ao carregar categorias', error);
-          this.categories.set([]);
-          this.categoriesLoading.set(false);
-          this.categoriesError.set('Nao foi possivel carregar as categorias.');
-        }
-      });
-  }
-
-  private loadInstructors(): void {
-    this.instructorsLoading.set(true);
-    this.instructorsError.set(null);
-
-    this.usersService
-      .getInstructors()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: instructors => {
-          const options = instructors
-            .filter(instructor => instructor.IsActive)
-            .map(instructor => ({ id: instructor.Id, label: instructor.FullName }));
-          this.instructors.set(options);
-          if (!this.instructorControl.value && options.length) {
-            this.instructorControl.setValue(options[0].id);
-          }
-          this.instructorsLoading.set(false);
-          this.instructorsError.set(null);
-        },
-        error: error => {
-          console.error('Falha ao carregar instrutores', error);
-          this.instructors.set([]);
-          this.instructorsLoading.set(false);
-          this.instructorsError.set('Nao foi possivel carregar os instrutores.');
-        }
-      });
   }
 
   addClassGroup(): void {
@@ -276,7 +204,7 @@ export class CourseCreateComponent {
         ShortDescription: coursePayload.ShortDescription,
         DetailedDescription: coursePayload.DetailedDescription,
         Mode: coursePayload.Mode,
-        CategoryId: coursePayload.CategoryId,
+        CategoryName: coursePayload.CategoryName,
         EnableForum: coursePayload.EnableForum,
         EnableChat: coursePayload.EnableChat,
         IsPublished: true,
@@ -310,15 +238,13 @@ export class CourseCreateComponent {
   private buildSubmissionPayload(): CourseSubmissionPayload {
     const raw = this.form.getRawValue();
     const modeNumber = raw.mode === 'interactive' ? 1 : 2;
-    const instructorId = String(raw.instructorId ?? '').trim();
 
     const course: CreateCoursePayload = {
       Title: raw.title.trim(),
       ShortDescription: raw.shortDescription.trim(),
       DetailedDescription: raw.detailedDescription?.trim() || undefined,
       Mode: modeNumber,
-      CategoryId: String(raw.categoryId ?? '').trim(),
-      InstructorId: instructorId,
+      CategoryName: String(raw.categoryName ?? '').trim(),
       EnableForum: raw.enableForum,
       EnableChat: modeNumber === 1 ? raw.enableChat : false,
       EnrollmentInstructions: raw.enrollmentInstructions?.trim() || undefined

@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
 
 namespace ProjetoFinal.Api.Extensions;
 
@@ -54,6 +58,42 @@ public static class WebApplicationBuilderExtensions
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowAnyOrigin()));
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddJwtAuthentication(this WebApplicationBuilder builder)
+    {
+        var jwtConfiguration = builder.Configuration
+            .GetSection(JwtConfiguration.SectionName)
+            .Get<JwtConfiguration>() ?? throw new InvalidOperationException("Jwt configuration is missing.");
+
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Secret));
+
+        builder.Services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtConfiguration.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtConfiguration.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
+            });
+
+        builder.Services.AddAuthorization();
+
         return builder;
     }
 

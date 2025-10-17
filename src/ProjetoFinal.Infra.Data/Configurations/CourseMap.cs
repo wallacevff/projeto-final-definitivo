@@ -31,6 +31,10 @@ public class CourseMap : IContextEntityMap<Course>
         builder.Property(p => p.EnrollmentInstructions)
             .HasMaxLength(1000);
 
+        builder.Property(p => p.CategoryName)
+            .IsRequired()
+            .HasMaxLength(150);
+
         builder.Property(p => p.Mode)
             .HasConversion<int>()
             .IsRequired();
@@ -49,11 +53,6 @@ public class CourseMap : IContextEntityMap<Course>
         builder.HasOne(p => p.Instructor)
             .WithMany(p => p.CoursesAsInstructor)
             .HasForeignKey(p => p.InstructorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(p => p.Category)
-            .WithMany(p => p.Courses)
-            .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.ThumbnailMedia)

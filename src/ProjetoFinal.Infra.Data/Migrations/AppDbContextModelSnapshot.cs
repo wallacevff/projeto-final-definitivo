@@ -529,8 +529,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -605,8 +607,6 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("InstructorId");
 
                     b.HasIndex("Slug")
@@ -615,53 +615,6 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.HasIndex("ThumbnailMediaId");
 
                     b.ToTable("Courses", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseCategory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublished")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourseCategories", (string)null);
                 });
 
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
@@ -1127,6 +1080,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
@@ -1136,6 +1093,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<Guid?>("UpdatedById")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Username")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -1143,6 +1104,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
                     b.HasIndex("ExternalId")
                         .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasFilter("[Username] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -1388,12 +1353,6 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
                 {
-                    b.HasOne("ProjetoFinal.Domain.Entities.CourseCategory", "Category")
-                        .WithMany("Courses")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ProjetoFinal.Domain.Entities.User", "Instructor")
                         .WithMany("CoursesAsInstructor")
                         .HasForeignKey("InstructorId")
@@ -1404,8 +1363,6 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ThumbnailMediaId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Category");
 
                     b.Navigation("Instructor");
 
@@ -1615,11 +1572,6 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Navigation("ForumThreads");
 
                     b.Navigation("Subscriptions");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseCategory", b =>
-                {
-                    b.Navigation("Courses");
                 });
 
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>

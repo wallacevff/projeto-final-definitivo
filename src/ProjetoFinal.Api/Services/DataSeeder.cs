@@ -1,19 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjetoFinal.Domain.Entities;
 using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Shared.Security;
 using ProjetoFinal.Infra.Data.Contexts;
 
 namespace ProjetoFinal.Api.Services;
 
 public static class DataSeeder
 {
-    private static readonly IReadOnlyList<(string Name, string Description)> DefaultCategories =
+    private record SeedUser(string Username, string FullName, string Email, UserRole Role, string Password);
+
+    private static readonly SeedUser[] DefaultUsers =
     [
-        ("Computacao", "Tecnologia, programacao e inovacao."),
-        ("Matematica", "Cursos de matematica e raciocinio logico."),
-        ("Lingua Portuguesa", "Comunicacao, escrita e leitura."),
-        ("Gestao e Negocios", "Administracao, financas e soft skills."),
-        ("Artes e Musica", "Expressao artistica, musica e criatividade.")
+        new SeedUser("wallace.vidal", "Wallace Vidal", "wallace.vidal@ead.dev", UserRole.Instructor, "123456"),
+        new SeedUser("robert.leite", "Robert Leite", "robert.leite@ead.dev", UserRole.Student, "123456")
     ];
 
     public static async Task SeedAsync(WebApplication app, CancellationToken cancellationToken = default)
@@ -23,8 +23,7 @@ public static class DataSeeder
 
         await context.Database.MigrateAsync(cancellationToken);
 
-        await EnsureCategoriesAsync(context, cancellationToken);
-        await EnsureInstructorAsync(context, cancellationToken);
+        await EnsureDefaultUsersAsync(context, cancellationToken);
 
         if (context.ChangeTracker.HasChanges())
         {
@@ -32,49 +31,74 @@ public static class DataSeeder
         }
     }
 
-    private static async Task EnsureCategoriesAsync(AppDbContext context, CancellationToken cancellationToken)
+    private static async Task EnsureDefaultUsersAsync(AppDbContext context, CancellationToken cancellationToken)
     {
-        foreach (var (name, description) in DefaultCategories)
+        foreach (var seed in DefaultUsers)
         {
-            var exists = await context.CourseCategories
-                .AsNoTracking()
-                .AnyAsync(category => category.Name == name, cancellationToken);
-            if (exists)
+            var user = await context.Users.FirstOrDefaultAsync(
+                entity => entity.Username == seed.Username,
+                cancellationToken);
+
+            if (user is null)
             {
+                var now = DateTime.UtcNow;
+                context.Users.Add(new User
+                {
+                    Id = Guid.NewGuid(),
+                    ExternalId = Guid.NewGuid(),
+                    FullName = seed.FullName,
+                    Email = seed.Email,
+                    Username = seed.Username,
+                    PasswordHash = PasswordHasher.Hash(seed.Password),
+                    Role = seed.Role,
+                    IsActive = true,
+                    CreatedAt = now
+                });
                 continue;
             }
 
-            context.CourseCategories.Add(new CourseCategory
+            var updated = false;
+
+            if (!string.Equals(user.FullName, seed.FullName, StringComparison.Ordinal))
             {
-                Id = Guid.NewGuid(),
-                Name = name,
-                Description = description,
-                IsPublished = true
-            });
-        }
-    }
+                user.FullName = seed.FullName;
+                updated = true;
+            }
 
-    private static async Task EnsureInstructorAsync(AppDbContext context, CancellationToken cancellationToken)
-    {
-        var hasInstructor = await context.Users
-            .AsNoTracking()
-            .AnyAsync(user => user.Role == UserRole.Instructor, cancellationToken);
-        if (hasInstructor)
-        {
-            return;
-        }
+            if (!string.Equals(user.Email, seed.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Email = seed.Email;
+                updated = true;
+            }
 
-        var instructorId = Guid.NewGuid();
-        context.Users.Add(new User
-        {
-            Id = instructorId,
-            ExternalId = instructorId,
-            FullName = "Instrutor Padrao",
-            Email = "instrutor@ead.dev",
-            Role = UserRole.Instructor,
-            Biography = "Instrutor criado automaticamente para demonstracoes.",
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        });
+            if (!string.Equals(user.Username, seed.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Username = seed.Username;
+                updated = true;
+            }
+
+            if (user.Role != seed.Role)
+            {
+                user.Role = seed.Role;
+                updated = true;
+            }
+
+            if (!PasswordHasher.Verify(seed.Password, user.PasswordHash ?? string.Empty))
+            {
+                user.PasswordHash = PasswordHasher.Hash(seed.Password);
+                updated = true;
+            }
+
+            if (!user.IsActive)
+            {
+                user.IsActive = true;
+                updated = true;
+            }
+
+            if (updated)
+            {
+                user.UpdatedAt = DateTime.UtcNow;
+            }
+        }
     }
 }

@@ -27,16 +27,14 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<User, UserDto>().ReverseMap();
 
-        CreateMap<CourseCategory, CourseCategoryDto>().ReverseMap();
-
         CreateMap<Course, CourseDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
             .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty))
             .ForMember(dest => dest.ClassGroups, opt => opt.MapFrom(src => src.ClassGroups))
             .ReverseMap();
 
         CreateMap<Course, CourseSummaryDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
             .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty));
 
         CreateMap<CourseSubscription, CourseSubscriptionDto>().ReverseMap();
