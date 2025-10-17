@@ -1,0 +1,30 @@
+﻿<section class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <h2>Bem-vindo de volta!</h2>
+      <p class="lead">Aqui estão alguns indicadores rápidos para acompanhar o aprendizado dos seus alunos.</p>
+    </div>
+    <button type="button" class="action">Criar novo curso</button>
+  </header>
+
+  <div class="dashboard__highlights">
+    <article *ngFor="let card of highlightCards" class="highlight" [attr.data-trend]="card.trend">
+      <span class="highlight__label">{{ card.label }}</span>
+      <strong class="highlight__value">{{ card.value }}</strong>
+      <span class="highlight__context">{{ card.context }}</span>
+    </article>
+  </div>
+
+  <section class="dashboard__timeline">
+    <h3>Próximos marcos</h3>
+    <ol>
+      <li *ngFor="let item of timeline">
+        <div class="timeline__date">{{ item.date }}</div>
+        <div class="timeline__details">
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.description }}</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+</section>
