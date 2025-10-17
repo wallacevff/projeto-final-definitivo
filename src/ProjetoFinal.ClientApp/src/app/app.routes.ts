@@ -26,6 +26,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'courses/:courseId/manage',
+    loadComponent: () => import('./pages/course-manage/course-manage.component').then(m => m.CourseManageComponent),
+    title: 'Gerenciar Curso - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
     path: 'courses',
     loadComponent: () => import('./pages/courses/courses.component').then(m => m.CoursesComponent),
     title: 'Cursos - SES EAD',

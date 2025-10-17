@@ -1,0 +1,151 @@
+<section class="course-manage">
+  <header class="course-manage__header">
+    <a routerLink="/courses" class="back-link">← Voltar para cursos</a>
+
+    <ng-container *ngIf="course() as current">
+      <div class="course-manage__title">
+        <span class="status-badge" [attr.data-status]="statusLabel(current)">{{ statusLabel(current) }}</span>
+        <h2>{{ current.Title }}</h2>
+        <p class="subtitle">{{ current.ShortDescription }}</p>
+      </div>
+
+      <div class="course-manage__meta">
+        <span>Instrutor: <strong>{{ current.InstructorName }}</strong></span>
+        <span>Modalidade: {{ modeLabel(current) }}</span>
+        <span>Criado em {{ createdLabel(current) }}</span>
+        <span>Publicação: {{ publishedLabel(current) }}</span>
+      </div>
+    </ng-container>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="course() as current">
+        <section class="course-summary">
+          <article class="summary-card">
+            <h3>Capacidade total</h3>
+            <strong>{{ totalCapacity() }}</strong>
+            <span>Somatório de vagas das turmas</span>
+          </article>
+
+          <article class="summary-card">
+            <h3>Inscrições aprovadas</h3>
+            <strong>{{ totalApproved() }}</strong>
+            <span>Alunos confirmados nas turmas</span>
+          </article>
+
+          <article class="summary-card">
+            <h3>Solicitações pendentes</h3>
+            <strong>{{ totalPending() }}</strong>
+            <span>Aguardando liberação do instrutor</span>
+          </article>
+        </section>
+
+        <section class="course-details">
+          <div>
+            <h3>Detalhes do curso</h3>
+            <dl>
+              <div>
+                <dt>Categoria</dt>
+                <dd>{{ current.CategoryName }}</dd>
+              </div>
+              <div>
+                <dt>Forum</dt>
+                <dd>{{ featureLabel(current.EnableForum) }}</dd>
+              </div>
+              <div>
+                <dt>Chat</dt>
+                <dd>{{ featureLabel(current.EnableChat) }}</dd>
+              </div>
+              <div *ngIf="current.EnrollmentInstructions">
+                <dt>Instruções para inscrição</dt>
+                <dd>{{ current.EnrollmentInstructions }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <article class="materials-info" *ngIf="materialsClassGroup() as materialsGroup">
+            <h4>Distribuição de materiais</h4>
+            <p>
+              O curso possui a turma <strong>{{ materialsGroup.Name }}</strong> marcada como distribuição de materiais.
+              Utilize essa turma para disponibilizar recursos assíncronos.
+            </p>
+          </article>
+        </section>
+
+        <section class="course-groups">
+          <header>
+            <h3>Turmas do curso</h3>
+            <span>{{ current.ClassGroups.length }} turma(s)</span>
+          </header>
+
+          <ng-container *ngIf="current.ClassGroups.length; else emptyGroups">
+            <div class="groups-grid">
+              <article class="group-card" *ngFor="let group of current.ClassGroups">
+                <div class="group-card__header">
+                  <div>
+                    <h4>{{ group.Name }}</h4>
+                    <p *ngIf="group.Description">{{ group.Description }}</p>
+                  </div>
+                  <span class="badge" [class.badge--materials]="group.IsMaterialsDistribution">
+                    {{ group.IsMaterialsDistribution ? 'Materiais' : 'Turma interativa' }}
+                  </span>
+                </div>
+
+                <dl class="group-card__stats">
+                  <div>
+                    <dt>Capacidade</dt>
+                    <dd>{{ group.Capacity }}</dd>
+                  </div>
+                  <div>
+                    <dt>Aprovados</dt>
+                    <dd>{{ group.ApprovedEnrollments }}</dd>
+                  </div>
+                  <div>
+                    <dt>Pendentes</dt>
+                    <dd>{{ group.PendingEnrollments }}</dd>
+                  </div>
+                  <div>
+                    <dt>Requer aprovação</dt>
+                    <dd>{{ group.RequiresApproval ? 'Sim' : 'Não' }}</dd>
+                  </div>
+                  <div *ngIf="group.EnrollmentOpensAt">
+                    <dt>Inscrições</dt>
+                    <dd>{{ group.EnrollmentOpensAt | date:'dd/MM/yyyy HH:mm' }} - {{ group.EnrollmentClosesAt | date:'dd/MM/yyyy HH:mm' }}</dd>
+                  </div>
+                  <div *ngIf="group.StartsAt || group.EndsAt">
+                    <dt>Agenda</dt>
+                    <dd>
+                      <span *ngIf="group.StartsAt">De {{ group.StartsAt | date:'dd/MM/yyyy' }}</span>
+                      <span *ngIf="group.EndsAt"> até {{ group.EndsAt | date:'dd/MM/yyyy' }}</span>
+                    </dd>
+                  </div>
+                </dl>
+
+                <div class="group-card__occupancy">
+                  <label>Ocupação</label>
+                  <div class="progress">
+                    <span [style.width.%]="classGroupOccupancy(group)"></span>
+                  </div>
+                  <small>{{ group.ApprovedEnrollments }} de {{ group.Capacity }} alunos ({{ classGroupOccupancy(group) }}%)</small>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+        </section>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando informacoes do curso...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyGroups>
+  <div class="state state--info">Nenhuma turma cadastrada para este curso ainda.</div>
+</ng-template>

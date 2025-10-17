@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -17,6 +17,7 @@ import { CourseListItem } from '../../core/api/courses.api';
 export class CoursesComponent {
   private readonly service = inject(CoursesService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -49,6 +50,10 @@ export class CoursesComponent {
     }
 
     return Math.min(100, Math.round((course.enrolledStudents / course.capacity) * 100));
+  }
+
+  goToManagement(courseId: string): void {
+    this.router.navigate(['/courses', courseId, 'manage']);
   }
 }
 

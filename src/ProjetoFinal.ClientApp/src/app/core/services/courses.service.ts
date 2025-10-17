@@ -53,6 +53,12 @@ export class CoursesService {
     );
   }
 
+  getCourseById(courseId: string) {
+    return this.http.get<CourseDto>(`${this.baseUrl}/courses/${courseId}`).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
   createCourse(payload: CreateCoursePayload) {
     return this.http.post<CourseDto>(`${this.baseUrl}/courses`, payload).pipe(
       catchError(error => throwError(() => error))

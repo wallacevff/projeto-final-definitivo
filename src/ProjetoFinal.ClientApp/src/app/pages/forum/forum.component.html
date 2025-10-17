@@ -15,6 +15,7 @@
             <span class="tags">
               <span *ngIf="thread.isPinned" class="tag">Destacado</span>
               <span class="tag tag--course">{{ thread.courseTitle }}</span>
+              <span class="tag tag--class">{{ thread.classGroupName }}</span>
               <span *ngIf="thread.isLocked" class="tag tag--locked">Bloqueado</span>
             </span>
             <span class="author">Criado por {{ thread.authorId }}</span>

@@ -4,7 +4,8 @@ import { formatRelativeHours } from '../utils/date.util';
 export interface ForumThreadDto {
   Id: string;
   CourseId: string;
-  ClassGroupId?: string;
+  ClassGroupId: string;
+  ClassGroupName: string;
   CreatedById: string;
   Title: string;
   Description?: string;
@@ -29,6 +30,7 @@ export interface ForumThreadListItem {
   id: string;
   title: string;
   courseTitle: string;
+  classGroupName: string;
   replies: number;
   lastActivityLabel: string;
   authorId: string;
@@ -43,6 +45,7 @@ export function mapForumThreadsResponse(response: ApiPagedResponse<ForumThreadDt
     id: thread.Id,
     title: thread.Title,
     courseTitle: courseLookup.get(thread.CourseId) ?? 'Curso desconhecido',
+    classGroupName: thread.ClassGroupName || 'Turma nao informada',
     replies: countReplies(thread.Posts ?? []),
     lastActivityLabel: formatRelativeHours(thread.LastActivityAt),
     authorId: thread.CreatedById,

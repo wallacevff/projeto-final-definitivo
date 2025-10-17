@@ -23,7 +23,7 @@
           <h3>{{ course.title }}</h3>
 
           <div class="course-card__meta">
-            <span>Instrutor: <strong>{{ course.instructor }}</strong></span>
+            <span>Instrutor: <strong>{{ course.instructor || 'Instrutor nao informado' }}</strong></span>
             <span>Modalidade: {{ course.modeLabel }}</span>
             <span *ngIf="course.published && course.publishedAt">Publicado em {{ course.publishedAt | date:'dd/MM/yyyy' }}</span>
           </div>
@@ -37,7 +37,7 @@
               <small>{{ course.enrolledStudents }} inscritos - {{ course.classGroups }} turmas - {{ percentOccupied(course) }}%</small>
             </div>
             <div class="stats">
-              <button type="button">Gerenciar</button>
+              <button type="button" (click)="goToManagement(course.id)">Gerenciar</button>
             </div>
           </div>
         </article>

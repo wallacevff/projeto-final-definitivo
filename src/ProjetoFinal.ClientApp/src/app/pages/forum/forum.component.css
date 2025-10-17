@@ -77,6 +77,11 @@
   color: var(--surface-600);
 }
 
+.tag--class {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
 .tag--locked {
   background: rgba(248, 113, 113, 0.12);
   color: #b91c1c;

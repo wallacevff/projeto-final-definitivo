@@ -29,6 +29,7 @@ export interface ClassGroupCreatePayload {
   RequiresEnrollmentCode: boolean;
   EnrollmentCode?: string;
   EnableChat: boolean;
+  IsMaterialsDistribution?: boolean;
   EnrollmentOpensAt?: string;
   EnrollmentClosesAt?: string;
   StartsAt?: string;
@@ -44,6 +45,7 @@ export interface ClassGroupDto {
   RequiresApproval: boolean;
   RequiresEnrollmentCode: boolean;
   EnableChat: boolean;
+  IsMaterialsDistribution: boolean;
   EnrollmentOpensAt?: string;
   EnrollmentClosesAt?: string;
   StartsAt?: string;

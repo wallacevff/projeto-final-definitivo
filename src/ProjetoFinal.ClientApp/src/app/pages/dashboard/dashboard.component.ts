@@ -1,5 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 
 interface HighlightCard {
   label: string;
@@ -22,6 +23,8 @@ interface TimelineItem {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
+  private readonly router = inject(Router);
+
   readonly highlightCards: HighlightCard[] = [
     { label: 'Alunos ativos', value: '1.287', trend: 'up', context: '+6,4% vs. semana anterior' },
     { label: 'Taxa de conclusão', value: '78%', trend: 'steady', context: 'Meta trimestral: 80%' },
@@ -45,4 +48,8 @@ export class DashboardComponent {
       description: 'Concluir correção das submissões pendentes de Design Thinking.'
     },
   ];
+
+  goToCreateCourse(): void {
+    this.router.navigate(['/courses/create']);
+  }
 }
