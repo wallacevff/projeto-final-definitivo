@@ -1,3 +1,4 @@
+using ProjetoFinal.Api.Services;
 using ProjetoFinal.Api.Extensions;
 using ProjetoFinal.Api.Factories;
 
@@ -8,4 +9,5 @@ app.UseAuthorization();
 app.UseMiddlewares();
 app.MapControllers();
 app.UseAngularFrontend();
+await DataSeeder.SeedAsync(app);
 app.Run();

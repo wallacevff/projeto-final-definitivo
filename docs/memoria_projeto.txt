@@ -74,7 +74,7 @@ Data: 2025-10-01 22:50:46
 Data: 2025-10-12 08:45:42
 
 1. API e Contratos
- - Sem novas alteracoes nesta sessao.
+ - Seed automatico garante categorias padrao e instrutor demonstrativo ao subir o backend.
 
 2. Infraestrutura de Dados
  - Sem novas alteracoes nesta sessao.
@@ -88,3 +88,7 @@ Data: 2025-10-12 08:45:42
 
 5. Observacao proximo encontro
  - Validar a disponibilidade de categorias/instrutores no backend antes de novas demos e revisar o feedback visual apos a gravacao das turmas/publicacao.
+
+
+
+
