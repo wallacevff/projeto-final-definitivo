@@ -17,10 +17,13 @@ public class ClassGroup : AuditableEntity
     public DateTime? StartsAt { get; set; }
     public DateTime? EndsAt { get; set; }
     public bool EnableChat { get; set; } = true;
+    public bool IsMaterialsDistribution { get; set; }
 
     public Course? Course { get; set; }
     public ICollection<ClassEnrollment> Enrollments { get; set; } = new List<ClassEnrollment>();
     public ICollection<CourseContent> ScopedContents { get; set; } = new List<CourseContent>();
     public ICollection<ActivityAudience> ActivityAudiences { get; set; } = new List<ActivityAudience>();
     public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+    public ICollection<Activity> Activities { get; set; } = new List<Activity>();
+    public ICollection<ForumThread> ForumThreads { get; set; } = new List<ForumThread>();
 }

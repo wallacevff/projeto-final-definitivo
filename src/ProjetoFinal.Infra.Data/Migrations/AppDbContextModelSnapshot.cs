@@ -35,6 +35,9 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<DateTime?>("AvailableAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CourseId")
                         .HasColumnType("uniqueidentifier");
 
@@ -93,6 +96,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasDefaultValue(true);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
 
                     b.HasIndex("CourseId");
 
@@ -442,6 +447,11 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsMaterialsDistribution")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -845,7 +855,7 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ClassGroupId")
+                    b.Property<Guid>("ClassGroupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CourseId")
@@ -1168,6 +1178,12 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
                 {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("Activities")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
                         .WithMany("Activities")
                         .HasForeignKey("CourseId")
@@ -1183,6 +1199,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ReferenceContentId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ClassGroup");
 
                     b.Navigation("Course");
 
@@ -1462,9 +1480,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
                 {
                     b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany()
+                        .WithMany("ForumThreads")
                         .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
                         .WithMany("ForumThreads")
@@ -1552,11 +1571,15 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
             modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
                 {
+                    b.Navigation("Activities");
+
                     b.Navigation("ActivityAudiences");
 
                     b.Navigation("ChatMessages");
 
                     b.Navigation("Enrollments");
+
+                    b.Navigation("ForumThreads");
 
                     b.Navigation("ScopedContents");
                 });

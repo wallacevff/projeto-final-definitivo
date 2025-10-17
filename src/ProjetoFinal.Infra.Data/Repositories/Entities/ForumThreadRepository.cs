@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ProjetoFinal.Domain.Entities;
 using ProjetoFinal.Domain.Filters;
 using ProjetoFinal.Domain.Repositories;
@@ -9,4 +11,13 @@ namespace ProjetoFinal.Infra.Data.Repositories.Entities;
 public class ForumThreadRepository(AppDbContext context)
     : DefaultRepository<ForumThread, ForumThreadFilter, Guid>(context), IForumThreadRepository
 {
+    protected override IQueryable<ForumThread> ApplyIncludes(IQueryable<ForumThread> query)
+    {
+        return query.Include(thread => thread.ClassGroup);
+    }
+
+    protected override IQueryable<ForumThread> ApplyIncludesList(IQueryable<ForumThread> query)
+    {
+        return ApplyIncludes(query);
+    }
 }

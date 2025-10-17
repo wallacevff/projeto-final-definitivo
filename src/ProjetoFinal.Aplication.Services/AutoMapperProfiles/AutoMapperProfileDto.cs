@@ -54,6 +54,7 @@ public class AutoMapperProfileDto : Profile
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
 
         CreateMap<Activity, ActivityDto>()
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
             .ForMember(dest => dest.Audiences, opt => opt.MapFrom(src => src.Audiences))
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments));
 
@@ -73,7 +74,8 @@ public class AutoMapperProfileDto : Profile
         CreateMap<VideoAnnotation, VideoAnnotationDto>().ReverseMap();
 
         CreateMap<ForumThread, ForumThreadDto>()
-            .ForMember(dest => dest.Posts, opt => opt.MapFrom(src => src.Posts));
+            .ForMember(dest => dest.Posts, opt => opt.MapFrom(src => src.Posts))
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty));
 
         CreateMap<ForumPost, ForumPostDto>()
             .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))

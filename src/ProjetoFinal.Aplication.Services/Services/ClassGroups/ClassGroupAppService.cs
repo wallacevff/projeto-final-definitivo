@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
@@ -18,18 +19,21 @@ public class ClassGroupAppService : DefaultService<ClassGroup, ClassGroupDto, Cl
 {
     private readonly IClassGroupRepository _classGroupRepository;
     private readonly IClassEnrollmentRepository _classEnrollmentRepository;
+    private readonly ICourseRepository _courseRepository;
     private readonly IAutomapApi _mapper;
     private readonly IUnityOfWork _unityOfWork;
 
     public ClassGroupAppService(
         IClassGroupRepository classGroupRepository,
         IClassEnrollmentRepository classEnrollmentRepository,
+        ICourseRepository courseRepository,
         IUnityOfWork unityOfWork,
         IAutomapApi mapper)
         : base(classGroupRepository, unityOfWork, mapper)
     {
         _classGroupRepository = classGroupRepository;
         _classEnrollmentRepository = classEnrollmentRepository;
+        _courseRepository = courseRepository;
         _unityOfWork = unityOfWork;
         _mapper = mapper;
     }
@@ -46,6 +50,39 @@ public class ClassGroupAppService : DefaultService<ClassGroup, ClassGroupDto, Cl
         entity.RequiresApproval = dto.RequiresApproval;
         entity.RequiresEnrollmentCode = dto.RequiresEnrollmentCode;
         entity.EnrollmentCodeHash = dto.RequiresEnrollmentCode ? HashEnrollmentCode(dto.EnrollmentCode!) : null;
+
+        var course = await _courseRepository.FindAsync(dto.CourseId, cancellationToken);
+        if (course is null)
+        {
+            throw new BusinessException("Curso associado a turma nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        if (course.Mode == CourseMode.MaterialsDistribution)
+        {
+            var existingGroup = await _classGroupRepository.FirstOrDefaultByPredicateAsync(
+                group => group.CourseId == dto.CourseId,
+                cancellationToken);
+            if (existingGroup is not null)
+            {
+                throw new BusinessException("Cursos de distribuicao de material suportam apenas uma turma.", ECodigo.Conflito);
+            }
+
+            entity.IsMaterialsDistribution = true;
+        }
+        else
+        {
+            entity.IsMaterialsDistribution = dto.IsMaterialsDistribution;
+            if (entity.IsMaterialsDistribution)
+            {
+                var flaggedGroup = await _classGroupRepository.FirstOrDefaultByPredicateAsync(
+                    group => group.CourseId == dto.CourseId && group.IsMaterialsDistribution,
+                    cancellationToken);
+                if (flaggedGroup is not null)
+                {
+                    throw new BusinessException("Este curso ja possui uma turma marcada como distribuicao de material.", ECodigo.Conflito);
+                }
+            }
+        }
 
         var created = await _classGroupRepository.AddAsync(entity, cancellationToken);
         await _unityOfWork.SaveChangesAsync(cancellationToken);
@@ -74,6 +111,32 @@ public class ClassGroupAppService : DefaultService<ClassGroup, ClassGroupDto, Cl
         else
         {
             entity.EnrollmentCodeHash = null;
+        }
+
+        var course = await _courseRepository.FindAsync(entity.CourseId, cancellationToken);
+        if (course is null)
+        {
+            throw new BusinessException("Curso associado a turma nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        if (course.Mode == CourseMode.MaterialsDistribution)
+        {
+            entity.IsMaterialsDistribution = true;
+        }
+        else
+        {
+            if (dto.IsMaterialsDistribution)
+            {
+                var flaggedGroup = await _classGroupRepository.FirstOrDefaultByPredicateAsync(
+                    group => group.CourseId == entity.CourseId && group.IsMaterialsDistribution && group.Id != entity.Id,
+                    cancellationToken);
+                if (flaggedGroup is not null)
+                {
+                    throw new BusinessException("Este curso ja possui outra turma marcada como distribuicao de material.", ECodigo.Conflito);
+                }
+            }
+
+            entity.IsMaterialsDistribution = dto.IsMaterialsDistribution;
         }
 
         entity.UpdatedAt = DateTime.UtcNow;

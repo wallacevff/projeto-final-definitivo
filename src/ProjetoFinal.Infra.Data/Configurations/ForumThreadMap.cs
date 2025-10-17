@@ -32,13 +32,16 @@ public class ForumThreadMap : IContextEntityMap<ForumThread>
 
         builder.HasIndex(p => new { p.CourseId, p.ClassGroupId });
 
+        builder.Property(p => p.ClassGroupId)
+            .IsRequired();
+
         builder.HasOne(p => p.Course)
             .WithMany(p => p.ForumThreads)
             .HasForeignKey(p => p.CourseId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(p => p.ClassGroup)
-            .WithMany()
+            .WithMany(p => p.ForumThreads)
             .HasForeignKey(p => p.ClassGroupId)
             .OnDelete(DeleteBehavior.Cascade);
 

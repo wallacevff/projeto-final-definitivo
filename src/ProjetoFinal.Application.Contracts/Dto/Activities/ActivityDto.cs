@@ -10,6 +10,8 @@ public class ActivityDto
 {
     public Guid Id { get; set; }
     public Guid CourseId { get; set; }
+    public Guid ClassGroupId { get; set; }
+    public string ClassGroupName { get; set; } = string.Empty;
     public Guid? ReferenceContentId { get; set; }
     public ActivityScope Scope { get; set; }
     public string Title { get; set; } = string.Empty;

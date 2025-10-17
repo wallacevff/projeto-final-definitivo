@@ -36,6 +36,9 @@ public class ClassGroupMap : IContextEntityMap<ClassGroup>
         builder.Property(p => p.EnableChat)
             .HasDefaultValue(true);
 
+        builder.Property(p => p.IsMaterialsDistribution)
+            .HasDefaultValue(false);
+
         builder.Property(p => p.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
@@ -57,6 +60,14 @@ public class ClassGroupMap : IContextEntityMap<ClassGroup>
             .HasForeignKey(p => p.ClassGroupId);
 
         builder.HasMany(p => p.ChatMessages)
+            .WithOne(p => p.ClassGroup)
+            .HasForeignKey(p => p.ClassGroupId);
+
+        builder.HasMany(p => p.Activities)
+            .WithOne(p => p.ClassGroup)
+            .HasForeignKey(p => p.ClassGroupId);
+
+        builder.HasMany(p => p.ForumThreads)
             .WithOne(p => p.ClassGroup)
             .HasForeignKey(p => p.ClassGroupId);
     }

@@ -37,10 +37,18 @@ public class ActivityMap : IContextEntityMap<Activity>
         builder.Property(p => p.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(p => p.ClassGroupId)
+            .IsRequired();
+
         builder.HasOne(p => p.Course)
             .WithMany(p => p.Activities)
             .HasForeignKey(p => p.CourseId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.ClassGroup)
+            .WithMany(p => p.Activities)
+            .HasForeignKey(p => p.ClassGroupId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.CreatedBy)
             .WithMany()

@@ -12,6 +12,7 @@ public class ClassGroupCreateDto
     public bool RequiresEnrollmentCode { get; set; }
     public string? EnrollmentCode { get; set; }
     public bool EnableChat { get; set; } = true;
+    public bool IsMaterialsDistribution { get; set; }
     public DateTime? EnrollmentOpensAt { get; set; }
     public DateTime? EnrollmentClosesAt { get; set; }
     public DateTime? StartsAt { get; set; }

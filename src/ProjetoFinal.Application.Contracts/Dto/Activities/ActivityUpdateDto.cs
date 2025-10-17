@@ -6,6 +6,7 @@ namespace ProjetoFinal.Application.Contracts.Dto.Activities;
 
 public class ActivityUpdateDto
 {
+    public Guid ClassGroupId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Guid? ReferenceContentId { get; set; }
@@ -16,6 +17,5 @@ public class ActivityUpdateDto
     public bool AllowLateSubmissions { get; set; }
     public int? LatePenaltyPercentage { get; set; }
     public bool VisibleToStudents { get; set; }
-    public IList<Guid> ClassGroupIds { get; set; } = new List<Guid>();
     public IList<ActivityAttachmentCreateDto> Attachments { get; set; } = new List<ActivityAttachmentCreateDto>();
 }

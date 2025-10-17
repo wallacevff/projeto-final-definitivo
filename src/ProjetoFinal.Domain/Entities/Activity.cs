@@ -7,8 +7,9 @@ namespace ProjetoFinal.Domain.Entities;
 public class Activity : AuditableEntity
 {
     public Guid CourseId { get; set; }
+    public Guid ClassGroupId { get; set; }
     public Guid? ReferenceContentId { get; set; }
-    public ActivityScope Scope { get; set; } = ActivityScope.Course;
+    public ActivityScope Scope { get; set; } = ActivityScope.ClassGroup;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime? AvailableAt { get; set; }
@@ -19,6 +20,7 @@ public class Activity : AuditableEntity
     public bool VisibleToStudents { get; set; } = true;
 
     public Course? Course { get; set; }
+    public ClassGroup? ClassGroup { get; set; }
     public User? CreatedBy { get; set; }
     public CourseContent? ReferenceContent { get; set; }
     public ICollection<ActivityAudience> Audiences { get; set; } = new List<ActivityAudience>();

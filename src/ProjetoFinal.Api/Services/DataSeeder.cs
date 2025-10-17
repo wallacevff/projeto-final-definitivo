@@ -8,12 +8,26 @@ namespace ProjetoFinal.Api.Services;
 
 public static class DataSeeder
 {
-    private record SeedUser(string Username, string FullName, string Email, UserRole Role, string Password);
+    private record SeedUser(Guid Id, Guid ExternalId, string Username, string FullName, string Email, UserRole Role, string Password);
 
     private static readonly SeedUser[] DefaultUsers =
     [
-        new SeedUser("wallace.vidal", "Wallace Vidal", "wallace.vidal@ead.dev", UserRole.Instructor, "123456"),
-        new SeedUser("robert.leite", "Robert Leite", "robert.leite@ead.dev", UserRole.Student, "123456")
+        new SeedUser(
+            Id: Guid.Parse("7f2b0cd9-6e3c-4f58-9f3e-08dba86fbde1"),
+            ExternalId: Guid.Parse("068df3c8-9b36-4e44-9ba1-3c5a2e41a9bd"),
+            Username: "wallace.vidal",
+            FullName: "Wallace Vidal",
+            Email: "wallace.vidal@ead.dev",
+            Role: UserRole.Instructor,
+            Password: "123456"),
+        new SeedUser(
+            Id: Guid.Parse("f407e6da-4b6a-4c81-92d3-000fcdab3047"),
+            ExternalId: Guid.Parse("b18431db-e4fb-4a1d-a2a9-d9e6f85ba521"),
+            Username: "robert.leite",
+            FullName: "Robert Leite",
+            Email: "robert.leite@ead.dev",
+            Role: UserRole.Student,
+            Password: "123456")
     ];
 
     public static async Task SeedAsync(WebApplication app, CancellationToken cancellationToken = default)
@@ -44,8 +58,8 @@ public static class DataSeeder
                 var now = DateTime.UtcNow;
                 context.Users.Add(new User
                 {
-                    Id = Guid.NewGuid(),
-                    ExternalId = Guid.NewGuid(),
+                    Id = seed.Id,
+                    ExternalId = seed.ExternalId == Guid.Empty ? Guid.NewGuid() : seed.ExternalId,
                     FullName = seed.FullName,
                     Email = seed.Email,
                     Username = seed.Username,
@@ -92,6 +106,12 @@ public static class DataSeeder
             if (!user.IsActive)
             {
                 user.IsActive = true;
+                updated = true;
+            }
+
+            if (seed.ExternalId != Guid.Empty && user.ExternalId != seed.ExternalId)
+            {
+                user.ExternalId = seed.ExternalId;
                 updated = true;
             }
 

@@ -7,9 +7,10 @@ namespace ProjetoFinal.Application.Contracts.Dto.Activities;
 public class ActivityCreateDto
 {
     public Guid CourseId { get; set; }
+    public Guid ClassGroupId { get; set; }
     public Guid CreatedById { get; set; }
     public Guid? ReferenceContentId { get; set; }
-    public ActivityScope Scope { get; set; } = ActivityScope.Course;
+    public ActivityScope Scope { get; set; } = ActivityScope.ClassGroup;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime? AvailableAt { get; set; }
@@ -18,7 +19,6 @@ public class ActivityCreateDto
     public bool AllowLateSubmissions { get; set; }
     public int? LatePenaltyPercentage { get; set; }
     public bool VisibleToStudents { get; set; } = true;
-    public IList<Guid> ClassGroupIds { get; set; } = new List<Guid>();
     public IList<ActivityAttachmentCreateDto> Attachments { get; set; } = new List<ActivityAttachmentCreateDto>();
 }
 

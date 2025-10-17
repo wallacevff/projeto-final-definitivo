@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ProjetoFinal.Domain.Entities;
 using ProjetoFinal.Domain.Filters;
@@ -19,5 +20,18 @@ public class CourseRepository : DefaultRepository<Course, CourseFilter, Guid>, I
     public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default)
     {
         return _context.Courses.AnyAsync(p => p.Slug == slug, cancellationToken);
+    }
+
+    protected override IQueryable<Course> ApplyIncludes(IQueryable<Course> query)
+    {
+        return query
+            .Include(course => course.Instructor)
+            .Include(course => course.ClassGroups)
+                .ThenInclude(group => group.Enrollments);
+    }
+
+    protected override IQueryable<Course> ApplyIncludesList(IQueryable<Course> query)
+    {
+        return ApplyIncludes(query);
     }
 }

@@ -14,6 +14,7 @@ public class ClassGroupDto
     public bool RequiresApproval { get; set; }
     public bool RequiresEnrollmentCode { get; set; }
     public bool EnableChat { get; set; }
+    public bool IsMaterialsDistribution { get; set; }
     public DateTime? EnrollmentOpensAt { get; set; }
     public DateTime? EnrollmentClosesAt { get; set; }
     public DateTime? StartsAt { get; set; }

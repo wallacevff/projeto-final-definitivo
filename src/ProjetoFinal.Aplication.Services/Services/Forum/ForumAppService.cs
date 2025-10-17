@@ -17,24 +17,35 @@ public class ForumAppService : IForumAppService
 {
     private readonly IForumThreadRepository _threadRepository;
     private readonly IForumPostRepository _postRepository;
+    private readonly IClassGroupRepository _classGroupRepository;
     private readonly IAutomapApi _mapper;
     private readonly IUnityOfWork _unityOfWork;
 
     public ForumAppService(
         IForumThreadRepository threadRepository,
         IForumPostRepository postRepository,
+        IClassGroupRepository classGroupRepository,
         IUnityOfWork unityOfWork,
         IAutomapApi mapper)
     {
         _threadRepository = threadRepository;
         _postRepository = postRepository;
+        _classGroupRepository = classGroupRepository;
         _unityOfWork = unityOfWork;
         _mapper = mapper;
     }
 
     public async Task<ForumThreadDto> CreateThreadAsync(ForumThreadCreateDto dto, CancellationToken cancellationToken = default)
     {
+        var classGroup = await _classGroupRepository.FindAsync(dto.ClassGroupId, cancellationToken);
+        if (classGroup is null)
+        {
+            throw new BusinessException("Turma nao encontrada para criar o topico.", ECodigo.NaoEncontrado);
+        }
+
         var entity = _mapper.MapFrom<ForumThread>(dto);
+        entity.ClassGroupId = classGroup.Id;
+        entity.CourseId = classGroup.CourseId;
         entity.LastActivityAt = DateTime.UtcNow;
         var created = await _threadRepository.AddAsync(entity, cancellationToken);
         await _unityOfWork.SaveChangesAsync(cancellationToken);

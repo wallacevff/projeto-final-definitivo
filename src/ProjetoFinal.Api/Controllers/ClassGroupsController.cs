@@ -6,6 +6,7 @@ using ProjetoFinal.Domain.Filters;
 namespace ProjetoFinal.Api.Controllers;
 
 [Route("api/class-groups")]
+[Route("api/v1/class-groups")]
 public class ClassGroupsController : BaseController<
     ClassGroupDto,
     ClassGroupCreateDto,
