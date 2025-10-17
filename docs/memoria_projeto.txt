@@ -19,7 +19,10 @@ Data: 2025-09-29 22:02:37
  - `dotnet build` e `npm run build` finalizam com sucesso; permaneceram os warnings conhecidos do Angular (budget >500 kB e regras de CSS herdadas).
  - Registro de `IUnityOfWork` garantido via `services.AddScoped<IUnityOfWork, UnityOfWork>()` no IoC.
 
+Observação próximo encontro: retomar os itens abaixo na abertura da próxima sessão.
+
 5. Próximos Passos Guardados
  - Integrar o dashboard a dados reais da API, substituindo os números mockados.
  - Implementar telas completas para cursos, turmas, atividades e fórum baseadas no novo layout.
  - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produção.
+
