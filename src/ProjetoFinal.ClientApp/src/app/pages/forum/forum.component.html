@@ -1,27 +1,46 @@
 ﻿<section class="forum">
   <header>
-    <h2>Forum colaborativo</h2>
+    <div>
+      <h2>Forum colaborativo</h2>
+      <p class="description">Centralize as discussoes das trilhas e mantenha os alunos engajados.</p>
+    </div>
     <button type="button">Novo topico</button>
   </header>
 
-  <div class="forum__list">
-    <article *ngFor="let thread of threads" class="thread" [class.thread--locked]="thread.isLocked">
-      <div class="thread__meta">
-        <span class="tags">
-          <span *ngIf="thread.isPinned" class="tag">Destacado</span>
-          <span class="tag tag--course">{{ thread.course }}</span>
-          <span *ngIf="thread.isLocked" class="tag tag--locked">Bloqueado</span>
-        </span>
-        <span class="author">Iniciado por {{ thread.author }}</span>
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <div class="forum__list" *ngIf="threads().length; else emptyState">
+        <article *ngFor="let thread of threads(); trackBy: trackByThread" class="thread" [class.thread--locked]="thread.isLocked">
+          <div class="thread__meta">
+            <span class="tags">
+              <span *ngIf="thread.isPinned" class="tag">Destacado</span>
+              <span class="tag tag--course">{{ thread.courseTitle }}</span>
+              <span *ngIf="thread.isLocked" class="tag tag--locked">Bloqueado</span>
+            </span>
+            <span class="author">Criado por {{ thread.authorId }}</span>
+          </div>
+
+          <h3>{{ thread.title }}</h3>
+
+          <footer>
+            <span>{{ thread.replies }} respostas</span>
+            <span>{{ thread.lastActivityLabel }}</span>
+            <button type="button">Abrir discussao</button>
+          </footer>
+        </article>
       </div>
-
-      <h3>{{ thread.title }}</h3>
-
-      <footer>
-        <span>{{ thread.replies }} respostas</span>
-        <span>{{ thread.lastMessage }}</span>
-        <button type="button">Abrir discussao</button>
-      </footer>
-    </article>
-  </div>
+    </ng-container>
+  </ng-container>
 </section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando forum...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state state--info">Nenhum topico cadastrado por enquanto.</div>
+</ng-template>

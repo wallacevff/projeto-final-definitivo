@@ -1,51 +1,54 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-interface ForumThreadCard {
-  title: string;
-  course: string;
-  replies: number;
-  lastMessage: string;
-  author: string;
-  isPinned: boolean;
-  isLocked: boolean;
-}
+import { ForumService } from '../../core/services/forum.service';
+import { CoursesService } from '../../core/services/courses.service';
+import { ForumThreadListItem } from '../../core/api/forum.api';
+import { CourseDto } from '../../core/api/courses.api';
 
 @Component({
   selector: 'app-forum',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './forum.component.html',
-  styleUrl: './forum.component.css'
+  styleUrl: './forum.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForumComponent {
-  readonly threads: ForumThreadCard[] = [
-    {
-      title: 'Ideias para acelerar a transformacao digital nas escolas',
-      course: 'Transformacao Digital',
-      replies: 42,
-      lastMessage: 'ha 2 horas · Camila Santos',
-      author: 'Ana Bezerra',
-      isPinned: true,
-      isLocked: false
-    },
-    {
-      title: 'Compartilhe exemplos de metodologias ativas bem-sucedidas',
-      course: 'Metodologias Ativas',
-      replies: 18,
-      lastMessage: 'ha 35 minutos · Joao Lima',
-      author: 'Joao Rattes',
-      isPinned: false,
-      isLocked: false
-    },
-    {
-      title: 'Checklist de acessibilidade para materiais didaticos',
-      course: 'Comunicacao Inclusiva',
-      replies: 12,
-      lastMessage: 'ha 1 hora · Wallace Vidal',
-      author: 'Wallace Vidal',
-      isPinned: false,
-      isLocked: true
-    }
-  ];
+  private readonly forumService = inject(ForumService);
+  private readonly coursesService = inject(CoursesService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly threads = signal<ForumThreadListItem[]>([]);
+
+  constructor() {
+    this.coursesService
+      .getCoursesDto()
+      .pipe(
+        switchMap(courses => {
+          const mapEntries = courses.map((course: CourseDto) => [course.Id, course.Title] as const);
+          return this.forumService.getThreads(new Map(mapEntries));
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (threads: ForumThreadListItem[]) => {
+          this.threads.set(threads);
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar os topicos do forum.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  trackByThread(_: number, item: ForumThreadListItem): string {
+    return item.id;
+  }
 }

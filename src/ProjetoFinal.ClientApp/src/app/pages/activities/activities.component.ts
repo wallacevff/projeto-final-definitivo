@@ -1,47 +1,45 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-interface ActivityItem {
-  title: string;
-  dueDate: string;
-  course: string;
-  classGroup: string;
-  submissions: { received: number; total: number };
-  allowLate: boolean;
-}
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityListItem } from '../../core/api/activities.api';
 
 @Component({
   selector: 'app-activities',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './activities.component.html',
-  styleUrl: './activities.component.css'
+  styleUrl: './activities.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivitiesComponent {
-  readonly activities: ActivityItem[] = [
-    {
-      title: 'Projeto de diagnostico digital',
-      dueDate: 'Entrega: 04/out · 18h',
-      course: 'Transformacao Digital',
-      classGroup: 'Turma A',
-      submissions: { received: 18, total: 36 },
-      allowLate: true
-    },
-    {
-      title: 'Plano de aula com metodologias ativas',
-      dueDate: 'Entrega: 06/out · 23h59',
-      course: 'Metodologias Ativas',
-      classGroup: 'Turma B',
-      submissions: { received: 12, total: 28 },
-      allowLate: false
-    },
-    {
-      title: 'Feedback em video',
-      dueDate: 'Entrega: 09/out · 20h',
-      course: 'Comunicacao Inclusiva',
-      classGroup: 'Turma piloto',
-      submissions: { received: 4, total: 25 },
-      allowLate: true
-    }
-  ];
+  private readonly service = inject(ActivitiesService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly activities = signal<ActivityListItem[]>([]);
+
+  constructor() {
+    this.service
+      .getActivities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (activities: ActivityListItem[]) => {
+          this.activities.set(activities);
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar as atividades.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  trackByActivity(_: number, item: ActivityListItem): string {
+    return item.id;
+  }
 }
+
