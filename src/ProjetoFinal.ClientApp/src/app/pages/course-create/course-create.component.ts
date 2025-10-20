@@ -222,17 +222,22 @@ export class CourseCreateComponent {
   }
 
   private createClassGroupGroup(): FormGroup {
-    return this.fb.group({
+    const group = this.fb.group({
       name: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(120)]),
       capacity: this.fb.nonNullable.control(30, [Validators.required, Validators.min(1)]),
       requiresApproval: this.fb.nonNullable.control(false),
       requiresEnrollmentCode: this.fb.nonNullable.control(false),
+      enrollmentCode: this.fb.control<string | null>({ value: '', disabled: true }),
       enableChat: this.fb.nonNullable.control(true),
       enrollmentOpensAt: this.fb.control<string | null>(null),
       enrollmentClosesAt: this.fb.control<string | null>(null),
       startsAt: this.fb.control<string | null>(null),
       endsAt: this.fb.control<string | null>(null)
     });
+
+    this.setupEnrollmentCodeControl(group);
+
+    return group;
   }
 
   private buildSubmissionPayload(): CourseSubmissionPayload {
@@ -266,14 +271,16 @@ export class CourseCreateComponent {
     return groups.map(group => {
       const rawCapacity = Number(group['capacity'] ?? 0);
       const capacity = Number.isFinite(rawCapacity) ? Math.max(1, Math.trunc(rawCapacity)) : 1;
+      const requiresCode = Boolean(group['requiresEnrollmentCode']);
+      const enrollmentCode = String(group['enrollmentCode'] ?? '').trim();
 
       return {
         Name: String(group['name'] ?? '').trim(),
         Description: undefined,
         Capacity: capacity,
         RequiresApproval: Boolean(group['requiresApproval']),
-        RequiresEnrollmentCode: Boolean(group['requiresEnrollmentCode']),
-        EnrollmentCode: undefined,
+        RequiresEnrollmentCode: requiresCode,
+        EnrollmentCode: requiresCode && enrollmentCode ? enrollmentCode : undefined,
         EnableChat: Boolean(group['enableChat']),
         EnrollmentOpensAt: this.toIsoString(group['enrollmentOpensAt']),
         EnrollmentClosesAt: this.toIsoString(group['enrollmentClosesAt']),
@@ -281,6 +288,30 @@ export class CourseCreateComponent {
         EndsAt: this.toIsoString(group['endsAt'])
       };
     });
+  }
+
+  private setupEnrollmentCodeControl(group: FormGroup): void {
+    const requiresCodeControl = group.get('requiresEnrollmentCode') as FormControl<boolean>;
+    const enrollmentCodeControl = group.get('enrollmentCode') as FormControl<string | null>;
+
+    const syncState = (requiresCode: boolean | null) => {
+      const isRequired = Boolean(requiresCode);
+
+      if (isRequired) {
+        enrollmentCodeControl.enable({ emitEvent: false });
+        enrollmentCodeControl.setValidators([Validators.required, Validators.maxLength(120)]);
+      } else {
+        enrollmentCodeControl.disable({ emitEvent: false });
+        enrollmentCodeControl.reset('', { emitEvent: false });
+        enrollmentCodeControl.clearValidators();
+      }
+
+      enrollmentCodeControl.updateValueAndValidity({ emitEvent: false });
+    };
+
+    syncState(requiresCodeControl.value);
+
+    requiresCodeControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(syncState);
   }
 
   private toIsoString(value: unknown): string | undefined {

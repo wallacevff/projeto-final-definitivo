@@ -36,6 +36,17 @@ export interface ClassGroupCreatePayload {
   EndsAt?: string;
 }
 
+export interface ClassEnrollmentDto {
+  Id: string;
+  ClassGroupId: string;
+  StudentId: string;
+  StudentName: string;
+  Status: number;
+  RequestedAt: string;
+  DecisionAt?: string;
+  DecidedById?: string;
+}
+
 export interface ClassGroupDto {
   Id: string;
   CourseId: string;
@@ -52,6 +63,7 @@ export interface ClassGroupDto {
   EndsAt?: string;
   ApprovedEnrollments: number;
   PendingEnrollments: number;
+  Enrollments?: ClassEnrollmentDto[];
 }
 
 export interface CoursesFilter {

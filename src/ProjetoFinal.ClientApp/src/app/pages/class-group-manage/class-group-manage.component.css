@@ -1,0 +1,50 @@
+.class-group-manage{display:flex;flex-direction:column;gap:24px;padding:24px}
+.class-group-manage__header{display:flex;flex-direction:column;gap:12px}
+.breadcrumbs{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.back-link{border:none;background:none;padding:0;cursor:pointer;font-weight:600;color:var(--color-primary)}
+.back-link--muted{color:var(--color-text-muted);text-decoration:none}
+.header-content h2{margin:0;font-size:28px;color:var(--color-text-primary)}
+.subtitle{margin:4px 0 0;color:var(--color-text-muted)}
+.header-badges,.thread-labels{display:flex;flex-wrap:wrap;gap:8px}
+.badge,.status-badge,.enrollment-count,.thread-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font-size:.78rem;background:rgba(148,163,184,.18);color:var(--color-text-primary)}
+.badge--accent,.enrollment-count{background:rgba(13,110,253,.12);color:var(--color-primary)}
+.overview-cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.overview-card,.card-block,.thread-card,.thread-form{background:var(--color-surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.overview-card h3,.card-block h3{margin:0;font-size:.95rem;color:var(--color-text-muted)}
+.overview-card strong{font-size:1.7rem;color:var(--color-text-primary)}
+.details-card{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.details-card dl,.schedule dl{margin:0;display:grid;gap:10px}
+dt{font-weight:600;color:var(--color-text-primary)}
+dd{margin:4px 0 0;color:var(--color-text-muted)}
+.progress{height:10px;border-radius:999px;background:rgba(148,163,184,.2);overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--color-primary)0%,#8b5cf6 100%)}
+.enrollments-card header,.forum-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.student-name{font-weight:600;color:var(--color-text-primary)}
+.enrollments-card table{width:100%;border-collapse:collapse;font-size:.9rem}
+.enrollments-card th,.enrollments-card td{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.16);text-align:left}
+.enrollments-card th{font-size:.78rem;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.05em}
+.forum-actions{display:flex;gap:10px}
+.forum-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
+.forum-actions .primary-button:disabled{opacity:.6;cursor:not-allowed}
+.ghost-button,.primary-button{border-radius:999px;padding:10px 22px;font-weight:600;cursor:pointer;border:1px solid transparent}
+.ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
+.ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
+.primary-button{background:var(--color-primary);color:#fff}
+.primary-button:disabled{opacity:.6;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input,.field textarea{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
+.field__error{font-size:.75rem;color:#b91c1c}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--color-text-primary)}
+.form-actions{display:flex;justify-content:flex-end;gap:10px}
+.form-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
+.form-actions .ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
+.form-actions .ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
+.threads-list{display:grid;gap:12px}
+.thread-title{display:flex;justify-content:space-between;gap:8px}
+.thread-title h4{margin:0;font-size:1rem;color:var(--color-text-primary)}
+.thread-meta,.thread-card footer{color:var(--color-text-muted);font-size:.85rem}
+.thread-card footer{display:flex;flex-wrap:wrap;gap:10px}
+.state{padding:16px;border-radius:14px;text-align:center;font-weight:500;background:rgba(148,163,184,.16);color:var(--color-text-muted)}
+.state--info{background:rgba(59,130,246,.12);color:var(--color-primary)}
+.state--error{background:rgba(248,113,113,.16);color:#b91c1c}
+@media(max-width:768px){.class-group-manage{padding:16px}.enrollments-card header,.forum-card header{flex-direction:column;align-items:flex-start}.forum-actions,.ghost-button,.primary-button{width:100%}}

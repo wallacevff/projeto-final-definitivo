@@ -13,7 +13,9 @@ public class ForumThreadRepository(AppDbContext context)
 {
     protected override IQueryable<ForumThread> ApplyIncludes(IQueryable<ForumThread> query)
     {
-        return query.Include(thread => thread.ClassGroup);
+        return query
+            .Include(thread => thread.ClassGroup)
+            .Include(thread => thread.CreatedBy);
     }
 
     protected override IQueryable<ForumThread> ApplyIncludesList(IQueryable<ForumThread> query)

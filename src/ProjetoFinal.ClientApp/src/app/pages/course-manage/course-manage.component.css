@@ -243,6 +243,11 @@
   color: var(--surface-500);
 }
 
+.group-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

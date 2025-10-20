@@ -4,7 +4,7 @@
       <h2>Turmas e inscricoes</h2>
       <p class="description">Acompanhe o andamento das turmas e a taxa de ocupacao por curso.</p>
     </div>
-    <button type="button">Criar turma</button>
+    <button type="button" (click)="navigateToCreate()">Criar turma</button>
   </header>
 
   <ng-container *ngIf="!loading(); else loadingState">
@@ -19,6 +19,7 @@
               <th>Requer aprovacao?</th>
               <th>Status</th>
               <th>Proximo evento</th>
+              <th>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -40,6 +41,9 @@
               </td>
               <td>
                 <span class="meta">{{ group.nextEvent }}</span>
+              </td>
+              <td>
+                <button type="button" class="table-action" (click)="navigateToManage(group.id)">Gerenciar</button>
               </td>
             </tr>
           </tbody>

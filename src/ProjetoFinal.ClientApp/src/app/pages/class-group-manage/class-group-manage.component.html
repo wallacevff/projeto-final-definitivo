@@ -1,0 +1,294 @@
+<section class="class-group-manage">
+  <header class="class-group-manage__header">
+    <div class="breadcrumbs">
+      <button type="button" class="back-link" (click)="navigateBack()">← Voltar para turmas</button>
+      <a
+        *ngIf="course() as currentCourse"
+        class="back-link back-link--muted"
+        [routerLink]="['/courses', currentCourse.Id, 'manage']"
+      >
+        Ver curso
+      </a>
+    </div>
+
+    <ng-container *ngIf="classGroup() as group">
+      <div class="header-content">
+        <h2>{{ group.Name }}</h2>
+        <p class="subtitle">
+          Turma vinculada ao curso <strong>{{ course()?.Title || 'Curso nao encontrado' }}</strong>
+        </p>
+
+        <div class="header-badges">
+          <span class="badge" [class.badge--accent]="group.RequiresApproval">
+            {{ group.RequiresApproval ? 'Aprovacao manual' : 'Aprovacao automatica' }}
+          </span>
+          <span class="badge" [class.badge--accent]="group.RequiresEnrollmentCode">
+            {{ group.RequiresEnrollmentCode ? 'Codigo obrigatorio' : 'Codigo opcional' }}
+          </span>
+          <span class="badge" [class.badge--accent]="group.EnableChat">
+            {{ group.EnableChat ? 'Chat habilitado' : 'Chat desativado' }}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="classGroup() as group">
+        <section class="overview-cards">
+          <article class="overview-card">
+            <h3>Capacidade</h3>
+            <strong>{{ capacity() }}</strong>
+            <span>Vagas totais da turma</span>
+          </article>
+
+          <article class="overview-card">
+            <h3>Inscrições aprovadas</h3>
+            <strong>{{ approved() }}</strong>
+            <span>Alunos confirmados</span>
+          </article>
+
+          <article class="overview-card">
+            <h3>Solicitações pendentes</h3>
+            <strong>{{ pending() }}</strong>
+            <span>Aguardando análise</span>
+          </article>
+
+            <article class="overview-card">
+              <h3>Vagas disponíveis</h3>
+              <strong>{{ available() }}</strong>
+              <span>Baseadas em aprovações</span>
+            </article>
+        </section>
+
+        <section class="details-card">
+          <div>
+            <h3>Informacoes da turma</h3>
+            <dl>
+              <div>
+                <dt>Distribuição de materiais</dt>
+                <dd>{{ group.IsMaterialsDistribution ? 'Sim' : 'Nao' }}</dd>
+              </div>
+              <div>
+                <dt>Chat dedicado</dt>
+                <dd>{{ group.EnableChat ? 'Ativo' : 'Desativado' }}</dd>
+              </div>
+              <div>
+                <dt>Codigo de inscricao</dt>
+                <dd>{{ group.RequiresEnrollmentCode ? 'Obrigatorio' : 'Nao exigido' }}</dd>
+              </div>
+              <div>
+                <dt>Aprovacao manual</dt>
+                <dd>{{ group.RequiresApproval ? 'Necessaria' : 'Nao necessaria' }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="schedule">
+            <h4>Agenda e inscricoes</h4>
+            <dl>
+              <div *ngIf="group.EnrollmentOpensAt || group.EnrollmentClosesAt">
+                <dt>Periodo de inscricoes</dt>
+                <dd>
+                  <span *ngIf="group.EnrollmentOpensAt">
+                    De {{ group.EnrollmentOpensAt | date: 'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  <span *ngIf="group.EnrollmentClosesAt">
+                    ate {{ group.EnrollmentClosesAt | date: 'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </dd>
+              </div>
+
+              <div *ngIf="group.StartsAt || group.EndsAt">
+                <dt>Execucao das aulas</dt>
+                <dd>
+                  <span *ngIf="group.StartsAt">Inicio {{ group.StartsAt | date: 'dd/MM/yyyy' }}</span>
+                  <span *ngIf="group.EndsAt">Termino {{ group.EndsAt | date: 'dd/MM/yyyy' }}</span>
+                </dd>
+              </div>
+            </dl>
+
+            <div class="occupancy">
+              <label>Ocupacao da turma</label>
+              <div class="progress">
+                <span [style.width.%]="occupancyPercent()"></span>
+              </div>
+              <small>{{ approved() }} de {{ capacity() }} alunos ({{ occupancyPercent() }}%)</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="enrollments-card">
+          <header>
+            <div>
+              <h3>Inscricoes</h3>
+              <p>Acompanhe as solicitacoes e status dos alunos.</p>
+            </div>
+            <span class="enrollment-count">{{ enrollments().length }} registro(s)</span>
+          </header>
+
+          <ng-container *ngIf="enrollments().length; else emptyEnrollments">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aluno</th>
+                  <th>Status</th>
+                  <th>Solicitado em</th>
+                  <th>Decisao</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let enrollment of enrollments()">
+                  <td>
+                    <span class="student-name">{{ enrollment.StudentName }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="statusBadgeClass(enrollment.Status)">
+                      {{ statusLabel(enrollment.Status) }}
+                    </span>
+                  </td>
+                  <td>
+                    {{ enrollment.RequestedAt | date: 'dd/MM/yyyy HH:mm' }}
+                  </td>
+                  <td>
+                    <ng-container *ngIf="enrollment.DecisionAt; else awaitingDecision">
+                      {{ enrollment.DecisionAt | date: 'dd/MM/yyyy HH:mm' }}
+                    </ng-container>
+                    <ng-template #awaitingDecision>—</ng-template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+        </section>
+
+        <section class="forum-card">
+          <header>
+            <div>
+              <h3>Forum da turma</h3>
+              <p>Crie topicos para organizar discussoes entre alunos e instrutor.</p>
+            </div>
+            <div class="forum-actions">
+              <button
+                type="button"
+                class="ghost-button"
+                *ngIf="!isThreadFormVisible()"
+                (click)="openThreadForm()"
+              >
+                Novo topico
+              </button>
+
+              <button
+                *ngIf="isThreadFormVisible()"
+                type="submit"
+                class="primary-button"
+                form="threadCreateForm"
+                [disabled]="isThreadSubmitting()"
+              >
+                Salvar topico
+              </button>
+
+              <button
+                *ngIf="isThreadFormVisible()"
+                type="button"
+                class="ghost-button ghost-button--danger"
+                (click)="cancelThreadCreation()"
+              >
+                Cancelar
+              </button>
+            </div>
+          </header>
+
+          <form
+            *ngIf="isThreadFormVisible()"
+            class="thread-form"
+            id="threadCreateForm"
+            [formGroup]="threadForm"
+            (ngSubmit)="submitThread()"
+          >
+            <div class="field">
+              <label for="threadTitle">Titulo</label>
+              <input
+                id="threadTitle"
+                type="text"
+                formControlName="title"
+                placeholder="Ex.: Dúvidas sobre o projeto final"
+              />
+              <span class="field__error" *ngIf="threadForm.controls.title.invalid && (threadForm.controls.title.dirty || threadForm.controls.title.touched)">
+                Informe um titulo com ate 180 caracteres.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="threadDescription">Descricao</label>
+              <textarea
+                id="threadDescription"
+                rows="3"
+                formControlName="description"
+                placeholder="Contextualize o assunto do topico"
+              ></textarea>
+            </div>
+
+            <label class="toggle">
+              <input type="checkbox" formControlName="isPinned" />
+              <span>Fixar topico no topo do forum</span>
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="primary-button" [disabled]="isThreadSubmitting()">
+                Salvar topico
+              </button>
+              <button type="button" class="ghost-button ghost-button--danger" (click)="cancelThreadCreation()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <ng-container *ngIf="!threadsLoading(); else loadingThreads">
+            <ng-container *ngIf="threads().length; else emptyThreads">
+              <div class="threads-list">
+                <article class="thread-card" *ngFor="let thread of threads(); trackBy: trackByThread">
+                  <header>
+                    <div class="thread-title">
+                      <h4>{{ thread.title }}</h4>
+                      <div class="thread-labels">
+                        <span *ngIf="thread.isPinned" class="thread-badge thread-badge--pinned">Fixado</span>
+                        <span *ngIf="thread.isLocked" class="thread-badge thread-badge--locked">Bloqueado</span>
+                      </div>
+                    </div>
+                    <span class="thread-meta">{{ thread.replies }} resposta(s) • {{ thread.lastActivityLabel }}</span>
+                  </header>
+                  <footer>
+                    <span>Turma: {{ thread.classGroupName }}</span>
+                    <span>Curso: {{ thread.courseTitle }}</span>
+                  </footer>
+                </article>
+              </div>
+            </ng-container>
+          </ng-container>
+        </section>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando informacoes da turma...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyEnrollments>
+  <div class="state state--info">Nenhuma inscricao registrada para esta turma.</div>
+</ng-template>
+
+<ng-template #loadingThreads>
+  <div class="state state--info">Carregando forum...</div>
+</ng-template>
+
+<ng-template #emptyThreads>
+  <div class="state state--info">Ainda nao existem topicos para esta turma.</div>
+</ng-template>

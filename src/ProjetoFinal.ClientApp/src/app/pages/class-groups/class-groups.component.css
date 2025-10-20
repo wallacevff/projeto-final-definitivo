@@ -68,6 +68,16 @@ td {
   padding: 1rem 1.25rem;
 }
 
+.table-action {
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-600);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .title {
   font-weight: 600;
   color: var(--surface-900);

@@ -7,6 +7,7 @@ export interface ForumThreadDto {
   ClassGroupId: string;
   ClassGroupName: string;
   CreatedById: string;
+  CreatedByName: string;
   Title: string;
   Description?: string;
   IsLocked: boolean;
@@ -34,11 +35,32 @@ export interface ForumThreadListItem {
   replies: number;
   lastActivityLabel: string;
   authorId: string;
+  authorName: string;
   isPinned: boolean;
   isLocked: boolean;
 }
 
-export function mapForumThreadsResponse(response: ApiPagedResponse<ForumThreadDto>, courseLookup: Map<string, string>): ForumThreadListItem[] {
+export interface ForumThreadFilter {
+  CourseId?: string;
+  ClassGroupId?: string;
+  Title?: string;
+  IsPinned?: boolean;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export interface ForumThreadCreatePayload {
+  ClassGroupId: string;
+  CreatedById: string;
+  Title: string;
+  Description?: string;
+  IsPinned: boolean;
+}
+
+export function mapForumThreadsResponse(
+  response: ApiPagedResponse<ForumThreadDto>,
+  courseLookup: Map<string, string>
+): ForumThreadListItem[] {
   const { items } = normalizePagedResponse(response);
 
   return items.map(thread => ({
@@ -49,9 +71,10 @@ export function mapForumThreadsResponse(response: ApiPagedResponse<ForumThreadDt
     replies: countReplies(thread.Posts ?? []),
     lastActivityLabel: formatRelativeHours(thread.LastActivityAt),
     authorId: thread.CreatedById,
+    authorName: thread.CreatedByName || 'Usuario desconhecido',
     isPinned: thread.IsPinned,
     isLocked: thread.IsLocked
-  } satisfies ForumThreadListItem));
+  }));
 }
 
 function countReplies(posts: ForumPostDto[]): number {

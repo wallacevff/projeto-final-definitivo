@@ -75,7 +75,8 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<ForumThread, ForumThreadDto>()
             .ForMember(dest => dest.Posts, opt => opt.MapFrom(src => src.Posts))
-            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty));
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
+            .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.FullName : string.Empty));
 
         CreateMap<ForumPost, ForumPostDto>()
             .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))

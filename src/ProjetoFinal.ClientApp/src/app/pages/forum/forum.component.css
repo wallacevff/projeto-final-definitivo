@@ -18,14 +18,101 @@
   color: var(--surface-900);
 }
 
-.forum header button {
-  padding: 0.65rem 1.4rem;
-  border-radius: 11px;
-  border: none;
-  background: rgba(15, 23, 42, 0.08);
-  color: var(--surface-700);
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ghost-button,
+.primary-button {
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
   font-weight: 600;
+  border: 1px solid transparent;
   cursor: pointer;
+}
+
+.ghost-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.ghost-button--danger {
+  color: #b91c1c;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.primary-button {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.primary-button:disabled,
+.ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.create-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.field input,
+.field textarea,
+.field select {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  background: var(--color-background);
+  color: inherit;
+}
+
+.field__error {
+  font-size: 0.78rem;
+  color: #b91c1c;
+}
+
+.field__hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .forum__list {

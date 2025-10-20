@@ -4,8 +4,107 @@
       <h2>Forum colaborativo</h2>
       <p class="description">Centralize as discussoes das trilhas e mantenha os alunos engajados.</p>
     </div>
-    <button type="button">Novo topico</button>
+    <div class="actions">
+      <button
+        type="button"
+        class="ghost-button"
+        *ngIf="!isCreateVisible()"
+        (click)="openCreateForm()"
+        [disabled]="!hasClassGroups() || loading()"
+      >
+        Novo topico
+      </button>
+
+      <button
+        *ngIf="isCreateVisible()"
+        type="submit"
+        class="primary-button"
+        form="forumThreadForm"
+        [disabled]="isSubmitting()"
+      >
+        Salvar topico
+      </button>
+
+      <button
+        *ngIf="isCreateVisible()"
+        type="button"
+        class="ghost-button ghost-button--danger"
+        (click)="cancelCreate()"
+      >
+        Cancelar
+      </button>
+    </div>
   </header>
+
+  <section class="create-card" *ngIf="isCreateVisible()">
+    <form
+      id="forumThreadForm"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="create-form"
+    >
+      <div class="field">
+        <label for="courseId">Curso</label>
+        <select id="courseId" formControlName="courseId" [disabled]="isSubmitting()">
+          <option value="" disabled>Selecione um curso</option>
+          <option *ngFor="let course of courses()" [value]="course.Id">
+            {{ course.Title }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="classGroupId">Turma</label>
+        <select
+          id="classGroupId"
+          formControlName="classGroupId"
+          [disabled]="availableClassGroups().length === 0 || isSubmitting()"
+        >
+          <option value="" disabled *ngIf="availableClassGroups().length === 0">
+            Selecione um curso com turmas
+          </option>
+          <option *ngFor="let group of availableClassGroups()" [value]="group.Id">
+            {{ group.Name }}
+          </option>
+        </select>
+        <span class="field__hint" *ngIf="availableClassGroups().length === 0">
+          Nenhuma turma encontrada para o curso selecionado.
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="title">Titulo</label>
+        <input id="title" type="text" formControlName="title" placeholder="Assunto do topico" />
+        <span class="field__error" *ngIf="form.controls.title.invalid && (form.controls.title.dirty || form.controls.title.touched)">
+          Informe um titulo com ate 180 caracteres.
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="description">Descricao</label>
+        <textarea
+          id="description"
+          rows="3"
+          formControlName="description"
+          placeholder="Detalhe o contexto da discussao"
+        ></textarea>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" formControlName="isPinned" />
+        <span>Fixar topico na listagem</span>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="primary-button" [disabled]="isSubmitting()">
+          Salvar topico
+        </button>
+        <button type="button" class="ghost-button ghost-button--danger" (click)="cancelCreate()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </section>
 
   <ng-container *ngIf="!loading(); else loadingState">
     <ng-container *ngIf="!error(); else errorState">
@@ -18,7 +117,7 @@
               <span class="tag tag--class">{{ thread.classGroupName }}</span>
               <span *ngIf="thread.isLocked" class="tag tag--locked">Bloqueado</span>
             </span>
-            <span class="author">Criado por {{ thread.authorId }}</span>
+            <span class="author">Criado por {{ thread.authorName }}</span>
           </div>
 
           <h3>{{ thread.title }}</h3>

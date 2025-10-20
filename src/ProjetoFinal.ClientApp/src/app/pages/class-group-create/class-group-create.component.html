@@ -1,0 +1,111 @@
+<section class="create-class-group">
+  <header class="create-class-group__header">
+    <div>
+      <h2>Criar nova turma</h2>
+      <p>Selecione um curso interativo existente e configure as regras de inscricao.</p>
+    </div>
+    <a routerLink="/class-groups" class="back-link">Voltar para turmas</a>
+  </header>
+
+  <ng-container *ngIf="!loadingCourses(); else loadingState">
+    <ng-container *ngIf="!loadError(); else errorState">
+      <ng-container *ngIf="hasInteractiveCourses; else emptyState">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="create-class-group__form">
+          <section class="card">
+            <h3>Curso interativo</h3>
+            <div class="field">
+              <label for="courseId">Selecione o curso</label>
+              <select id="courseId" formControlName="courseId">
+                <option value="">Selecione um curso</option>
+                <option *ngFor="let course of interactiveCourses(); trackBy: trackByCourseId" [value]="course.Id">
+                  {{ course.Title }}
+                </option>
+              </select>
+              <span class="field__error" *ngIf="isInvalid('courseId')">Escolha um curso interativo.</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h3>Dados da turma</h3>
+            <div class="field">
+              <label for="name">Nome da turma</label>
+              <input id="name" type="text" formControlName="name" placeholder="Ex.: Turma noite" />
+              <span class="field__error" *ngIf="isInvalid('name')">Informe um nome valido para a turma.</span>
+            </div>
+
+            <div class="field field--inline">
+              <div>
+                <label for="capacity">Capacidade</label>
+                <input id="capacity" type="number" min="1" formControlName="capacity" />
+                <span class="field__error" *ngIf="isInvalid('capacity')">Defina ao menos 1 vaga.</span>
+              </div>
+              <div class="switchers">
+                <label class="toggle">
+                  <input type="checkbox" formControlName="requiresApproval" />
+                  <span>Exigir aprovacao manual</span>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" formControlName="requiresEnrollmentCode" />
+                  <span>Solicitar codigo de inscricao</span>
+                </label>
+              </div>
+            </div>
+
+            <label class="toggle">
+              <input type="checkbox" formControlName="enableChat" />
+              <span>Habilitar chat dedicado para a turma</span>
+            </label>
+
+            <div class="field" *ngIf="requiresEnrollmentCodeControl.value">
+              <label for="enrollmentCode">Codigo de inscricao</label>
+              <input id="enrollmentCode" type="text" formControlName="enrollmentCode" placeholder="Ex.: TURMA-2025" />
+              <span class="field__error" *ngIf="isInvalid('enrollmentCode')">
+                Informe o codigo que os alunos deverao utilizar.
+              </span>
+            </div>
+
+            <div class="dates-grid">
+              <div class="field">
+                <label for="enrollmentOpensAt">Inicio das inscricoes</label>
+                <input id="enrollmentOpensAt" type="datetime-local" formControlName="enrollmentOpensAt" />
+              </div>
+              <div class="field">
+                <label for="enrollmentClosesAt">Fim das inscricoes</label>
+                <input id="enrollmentClosesAt" type="datetime-local" formControlName="enrollmentClosesAt" />
+              </div>
+              <div class="field">
+                <label for="startsAt">Inicio das aulas</label>
+                <input id="startsAt" type="datetime-local" formControlName="startsAt" />
+              </div>
+              <div class="field">
+                <label for="endsAt">Termino previsto</label>
+                <input id="endsAt" type="datetime-local" formControlName="endsAt" />
+              </div>
+            </div>
+          </section>
+
+          <footer class="form-actions">
+            <a routerLink="/class-groups" class="ghost-button">Cancelar</a>
+            <button type="submit" class="primary-button" [disabled]="isSubmitting()">
+              Criar turma
+            </button>
+          </footer>
+        </form>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando cursos interativos...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ loadError() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state state--info">
+    Nenhum curso interativo encontrado. Crie um curso nessa modalidade antes de cadastrar turmas.
+  </div>
+</ng-template>

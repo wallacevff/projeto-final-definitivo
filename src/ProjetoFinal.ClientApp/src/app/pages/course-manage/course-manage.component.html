@@ -129,6 +129,16 @@
                   </div>
                   <small>{{ group.ApprovedEnrollments }} de {{ group.Capacity }} alunos ({{ classGroupOccupancy(group) }}%)</small>
                 </div>
+
+                <footer class="group-card__actions">
+                  <a
+                    class="back-link"
+                    role="button"
+                    (click)="navigateToClassGroup(group)"
+                  >
+                    Gerenciar turma
+                  </a>
+                </footer>
               </article>
             </div>
           </ng-container>

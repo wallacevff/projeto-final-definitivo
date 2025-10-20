@@ -1,6 +1,7 @@
 ﻿import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 
 import { CoursesService } from '../../core/services/courses.service';
 import { ClassGroupListItem } from '../../core/api/courses.api';
@@ -16,6 +17,7 @@ import { ClassGroupListItem } from '../../core/api/courses.api';
 export class ClassGroupsComponent {
   private readonly service = inject(CoursesService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -40,6 +42,14 @@ export class ClassGroupsComponent {
 
   trackByGroupId(_: number, item: ClassGroupListItem): string {
     return item.id;
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/class-groups/create']);
+  }
+
+  navigateToManage(groupId: string): void {
+    this.router.navigate(['/class-groups', groupId, 'manage']);
   }
 }
 

@@ -11,6 +11,7 @@ public class ForumThreadDto
     public Guid ClassGroupId { get; set; }
     public string ClassGroupName { get; set; } = string.Empty;
     public Guid CreatedById { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsLocked { get; set; }

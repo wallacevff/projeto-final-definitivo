@@ -38,6 +38,20 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'class-groups/:classGroupId/manage',
+    loadComponent: () =>
+      import('./pages/class-group-manage/class-group-manage.component').then(m => m.ClassGroupManageComponent),
+    title: 'Gerenciar Turma - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
+    path: 'class-groups/create',
+    loadComponent: () =>
+      import('./pages/class-group-create/class-group-create.component').then(m => m.ClassGroupCreateComponent),
+    title: 'Criar Turma - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
     path: 'class-groups',
     loadComponent: () => import('./pages/class-groups/class-groups.component').then(m => m.ClassGroupsComponent),
     title: 'Turmas - SES EAD',

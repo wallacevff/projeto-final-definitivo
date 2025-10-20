@@ -154,6 +154,14 @@
             <span>Chat dedicado para a turma</span>
           </label>
 
+          <div class="field" *ngIf="group.get('requiresEnrollmentCode')?.value">
+            <label>Codigo de inscricao</label>
+            <input type="text" formControlName="enrollmentCode" placeholder="Ex.: TURMA-2025" />
+            <span class="field__error" *ngIf="isGroupInvalid(group, 'enrollmentCode')">
+              Informe o codigo que os alunos deverao utilizar.
+            </span>
+          </div>
+
           <div class="dates-grid">
             <div class="field">
               <label>Inicio das inscricoes</label>

@@ -10,6 +10,12 @@ export class ClassGroupsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.baseUrl;
 
+  getClassGroupById(classGroupId: string): Observable<ClassGroupDto> {
+    return this.http
+      .get<ClassGroupDto>(`${this.baseUrl}/class-groups/${classGroupId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
   createClassGroup(payload: ClassGroupCreatePayload): Observable<ClassGroupDto> {
     return this.http
       .post<ClassGroupDto>(`${this.baseUrl}/class-groups`, payload)

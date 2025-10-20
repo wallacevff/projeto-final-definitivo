@@ -138,3 +138,26 @@ Data: 2025-10-17 15:40:00
 5. Pendencias
  - Avaliar ajuste no warning de disabled nos formularios.
  - Popular dashboard e forum com dados reais quando API estiver pronta.
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-10-19 23:32:27
+
+1. API e Contratos
+ - Controllers de forum (threads/posts) anotados com ApiController e rota dupla `/api`/`/api/v1`, evitando 405 nas chamadas do frontend.
+ - DTO `ForumThreadDto` passa a expor `CreatedByName`; AutoMapper e repositorio carregam o usuario associado.
+
+2. Infraestrutura de Dados
+ - `ForumThreadRepository` inclui `ClassGroup` e `CreatedBy` nos includes, garantindo dados completos para as listas.
+
+3. Frontend Angular
+ - Tela de forum recebe formulario reativo para criar topicos, com selecao de curso/turma interativa, validacoes e envio para a API.
+ - Threads exibem o nome de quem criou e a turma correspondente; botoes superiores/inferiores usam as mesmas cores (variaveis globais definidas em `styles.css`).
+ - Gerenciamento de cursos ganhou acao "Gerenciar turma" em cada card; ajustes nos botoes da pagina de turma para manter estilo/espacamento.
+
+4. Build e Execucao
+ - `npm run build` e `dotnet build ProjetoFinal.sln -c Release` rodados; permanecem os avisos conhecidos de budget do Angular.
+
+5. Pendencias
+ - Avaliar limitacao de criacao de topicos por perfil/permicao.
+ - Revisar budgets de CSS e bundle do Angular antes do deploy.

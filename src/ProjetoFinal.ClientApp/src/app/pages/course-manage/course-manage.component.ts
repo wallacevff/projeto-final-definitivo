@@ -1,6 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, map, switchMap } from 'rxjs';
 
@@ -24,6 +24,7 @@ export class CourseManageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly coursesService = inject(CoursesService);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -123,5 +124,12 @@ export class CourseManageComponent {
       return 0;
     }
     return Math.min(100, Math.round((group.ApprovedEnrollments / group.Capacity) * 100));
+  }
+
+  navigateToClassGroup(group: ClassGroupDto): void {
+    if (!group?.Id) {
+      return;
+    }
+    this.router.navigate(['/class-groups', group.Id, 'manage']);
   }
 }

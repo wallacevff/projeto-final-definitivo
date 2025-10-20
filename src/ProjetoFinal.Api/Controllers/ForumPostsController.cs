@@ -6,7 +6,9 @@ using ProjetoFinal.Domain.Filters;
 
 namespace ProjetoFinal.Api.Controllers;
 
+[ApiController]
 [Route("api/forum/posts")]
+[Route("api/v1/forum/posts")]
 public class ForumPostsController : ControllerBase
 {
     private readonly IForumAppService _service;

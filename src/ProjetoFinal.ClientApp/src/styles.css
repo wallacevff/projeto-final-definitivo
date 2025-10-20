@@ -12,6 +12,12 @@
   --surface-900: #0f172a;
   --accent-500: #6366f1;
   --accent-600: #4f46e5;
+  --color-primary: #2563eb;
+  --color-danger: #dc2626;
+  --color-text-primary: #0f172a;
+  --color-text-muted: #64748b;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
 }
 
 * {
