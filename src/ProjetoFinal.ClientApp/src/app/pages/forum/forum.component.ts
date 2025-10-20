@@ -75,11 +75,11 @@ export class ForumComponent {
 
     this.isCreateVisible.set(true);
     const firstCourse = this.findFirstCourseWithGroups();
-    const initialCourseId = firstCourse?.Id ?? '';
+    const initialCourseId = firstCourse?.Id ?? this.form.controls.courseId.value ?? '';
 
-    this.form.reset({
+    this.form.patchValue({
       courseId: initialCourseId,
-      classGroupId: firstCourse?.ClassGroups[0]?.Id ?? '',
+      classGroupId: '',
       title: '',
       description: '',
       isPinned: false
