@@ -6,7 +6,8 @@ import { switchMap } from 'rxjs/operators';
 
 import { CourseContentsService } from '../../core/services/course-contents.service';
 import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
-import { environment } from '../../../environments/environment';
+import { MediaService } from '../../core/services/media.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-course-content-viewer',
@@ -20,11 +21,14 @@ export class CourseContentViewerComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(CourseContentsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly mediaService = inject(MediaService);
+  private readonly toastr = inject(ToastrService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly content = signal<CourseContentDto | null>(null);
   readonly courseId = signal<string | null>(null);
+  readonly downloading = signal<string | null>(null);
 
   readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
   readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
@@ -58,8 +62,29 @@ export class CourseContentViewerComponent {
       });
   }
 
-  attachmentUrl(attachment: ContentAttachmentDto): string {
-    const base = environment.baseUrl.replace(/\/$/, '');
-    return `${base}/media-resources/${attachment.MediaResourceId}/download`;
+  downloadAttachment(attachment: ContentAttachmentDto): void {
+    if (!attachment?.MediaResourceId) {
+      return;
+    }
+
+    this.downloading.set(attachment.MediaResourceId);
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = attachment.Media?.OriginalFileName || attachment.Media?.FileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloading.set(null);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel baixar o arquivo.');
+          this.downloading.set(null);
+        }
+      });
   }
 }

@@ -20,6 +20,14 @@ export class MediaService {
       .post<MediaResource>(`${this.baseUrl}/media-resources/upload`, formData)
       .pipe(catchError(error => throwError(() => error)));
   }
+
+  download(mediaResourceId: string) {
+    return this.http
+      .get(`${this.baseUrl}/media-resources/${mediaResourceId}/download`, {
+        responseType: 'blob'
+      })
+      .pipe(catchError(error => throwError(() => error)));
+  }
 }
 
 export function inferMediaKind(file: File): MediaKind {

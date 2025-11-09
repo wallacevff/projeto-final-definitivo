@@ -37,15 +37,14 @@
                   <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
                   <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
                 </div>
-                <a
+                <button
                   class="button button--ghost"
-                  *ngIf="attachmentUrl(attachment) as url"
-                  [href]="url"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  (click)="downloadAttachment(attachment)"
+                  [disabled]="downloading() === attachment.MediaResourceId"
                 >
-                  Abrir
-                </a>
+                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                </button>
               </li>
             </ul>
           </ng-container>
