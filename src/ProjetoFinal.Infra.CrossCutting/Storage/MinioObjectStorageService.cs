@@ -58,6 +58,28 @@ public class MinioObjectStorageService : IObjectStorageService
         return new ObjectStorageUploadResult(_configuration.BucketName, request.ObjectName, publicUrl);
     }
 
+    public async Task<ObjectStorageDownloadResult> DownloadAsync(
+        string bucketName,
+        string objectName,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureBucketAsync(cancellationToken);
+
+        var memoryStream = new MemoryStream();
+        var getArgs = new GetObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName)
+            .WithCallbackStream(stream =>
+            {
+                stream.CopyTo(memoryStream);
+            });
+
+        await _client.GetObjectAsync(getArgs, cancellationToken);
+        memoryStream.Position = 0;
+
+        return new ObjectStorageDownloadResult(bucketName, objectName, memoryStream);
+    }
+
     private async Task EnsureBucketAsync(CancellationToken cancellationToken)
     {
         if (_bucketReady)

@@ -1,4 +1,5 @@
 ﻿import { ApiPagedResponse, normalizePagedResponse } from './api.types';
+import { MediaResource } from './media.api';
 
 export enum ContentItemType {
   Text = 1,
@@ -28,6 +29,7 @@ export interface ContentAttachmentDto {
   MediaResourceId: string;
   Caption?: string;
   IsPrimary: boolean;
+  Media?: MediaResource;
 }
 
 export interface ContentAttachmentPayload {

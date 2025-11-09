@@ -28,6 +28,12 @@ export class CourseContentsService {
       );
   }
 
+  getContentById(contentId: string) {
+    return this.http
+      .get<CourseContentDto>(`${this.baseUrl}/course-contents/${contentId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
   createContent(payload: CourseContentCreatePayload) {
     return this.http
       .post<CourseContentDto>(`${this.baseUrl}/course-contents`, payload)

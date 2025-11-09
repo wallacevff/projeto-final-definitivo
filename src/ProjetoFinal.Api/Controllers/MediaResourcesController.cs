@@ -9,6 +9,8 @@ using ProjetoFinal.Domain.Filters;
 using ProjetoFinal.Api.Models;
 using ProjetoFinal.Domain.Enums;
 using ProjetoFinal.Infra.CrossCutting.Storage;
+using Microsoft.Extensions.Options;
+using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
 
 namespace ProjetoFinal.Api.Controllers;
 
@@ -24,12 +26,15 @@ public class MediaResourcesController : BaseController<
 {
     private const long DefaultUploadLimit = 200 * 1024 * 1024; // 200 MB
     private readonly IObjectStorageService _storageService;
+    private readonly MinioConfiguration _minioConfiguration;
 
     public MediaResourcesController(
         IMediaResourceAppService service,
-        IObjectStorageService storageService) : base(service)
+        IObjectStorageService storageService,
+        IOptions<MinioConfiguration> minioConfiguration) : base(service)
     {
         _storageService = storageService;
+        _minioConfiguration = minioConfiguration.Value;
     }
 
     [HttpPost("upload")]
@@ -81,6 +86,29 @@ public class MediaResourcesController : BaseController<
         return Ok(media);
     }
 
+    [HttpGet("{mediaId:guid}/download")]
+    public async Task<IActionResult> DownloadAsync([FromRoute] Guid mediaId, CancellationToken cancellationToken = default)
+    {
+        var media = await Service.GetByIdAsync(mediaId, cancellationToken);
+        if (media is null)
+        {
+            return NotFound();
+        }
+
+        var parsed = ParseStoragePath(media.StoragePath);
+        if (parsed is null)
+        {
+            return NotFound();
+        }
+        var (bucket, objectName) = parsed.Value;
+
+        var download = await _storageService.DownloadAsync(bucket, objectName, cancellationToken);
+        var contentType = string.IsNullOrWhiteSpace(media.ContentType) ? "application/octet-stream" : media.ContentType;
+        var fileName = string.IsNullOrWhiteSpace(media.OriginalFileName) ? media.FileName : media.OriginalFileName;
+
+        return File(download.Content, contentType, fileName);
+    }
+
     private static string NormalizeContentType(IFormFile file)
     {
         return string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
@@ -125,5 +153,37 @@ public class MediaResourcesController : BaseController<
             ".mp3" or ".wav" or ".ogg" => MediaKind.Audio,
             _ => MediaKind.Document
         };
+    }
+
+    private (string bucket, string objectName)? ParseStoragePath(string? storagePath)
+    {
+        if (string.IsNullOrWhiteSpace(storagePath))
+        {
+            return null;
+        }
+
+        var normalized = storagePath.TrimStart('/');
+        var parts = normalized.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0)
+        {
+            return null;
+        }
+
+        if (parts.Length == 1)
+        {
+            var bucketName = string.IsNullOrWhiteSpace(_minioConfiguration.BucketName)
+                ? null
+                : _minioConfiguration.BucketName;
+
+            if (string.IsNullOrWhiteSpace(bucketName))
+            {
+                return null;
+            }
+
+            return (bucketName!, parts[0]);
+        }
+
+        return (parts[0], parts[1]);
     }
 }

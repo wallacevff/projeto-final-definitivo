@@ -23,6 +23,7 @@ import { CourseContentsService } from '../../core/services/course-contents.servi
 import { AuthService } from '../../core/services/auth.service';
 import { MediaResource } from '../../core/api/media.api';
 import { MediaService } from '../../core/services/media.service';
+import { Router } from '@angular/router';
 
 type AttachmentStatus = 'uploading' | 'ready' | 'error';
 
@@ -50,6 +51,7 @@ export class CourseContentsComponent {
   private readonly authService = inject(AuthService);
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   private readonly courseState = signal<CourseDto | null>(null);
   private currentCourseId: string | null = null;
@@ -149,6 +151,14 @@ export class CourseContentsComponent {
 
   itemTypeLabelFor(type: ContentItemType): string {
     return this.itemTypeLabels[type] ?? 'Conteudo';
+  }
+
+  viewContent(item: CourseContentListItem): void {
+    const courseId = this.courseState()?.Id;
+    if (!courseId) {
+      return;
+    }
+    this.router.navigate(['/courses', courseId, 'contents', item.id]);
   }
 
   submit(): void {

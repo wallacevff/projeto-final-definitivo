@@ -196,6 +196,13 @@
   color: var(--surface-900);
 }
 
+.content-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
 .meta {
   margin: 0;
   color: var(--surface-500);

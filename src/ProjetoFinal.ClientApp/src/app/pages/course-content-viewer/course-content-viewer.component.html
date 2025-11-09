@@ -1,0 +1,67 @@
+<section class="content-viewer">
+  <div class="content-viewer__header">
+    <a class="back-link" [routerLink]="['/courses', courseId() ?? '' , 'manage']">
+      ← Voltar para o curso
+    </a>
+
+    <h2>{{ pageTitle() }}</h2>
+    <span class="status-badge" [attr.data-status]="statusLabel()">{{ statusLabel() }}</span>
+
+    <p class="summary" *ngIf="content()?.Summary">{{ content()?.Summary }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <article class="content-card" *ngIf="content() as current">
+        <section class="content-body">
+          <h3>Descricao</h3>
+          <p *ngIf="current.Body; else noBody">
+            {{ current.Body }}
+          </p>
+          <ng-template #noBody>
+            <p class="muted">Nenhuma descricao detalhada informada.</p>
+          </ng-template>
+        </section>
+
+        <section class="attachments-section">
+          <header>
+            <h3>Anexos</h3>
+            <span>{{ current.Attachments.length }} arquivo(s)</span>
+          </header>
+
+          <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of current.Attachments">
+                <div>
+                  <strong>{{ attachment.Caption || 'Arquivo sem descricao' }}</strong>
+                  <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
+                  <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
+                </div>
+                <a
+                  class="button button--ghost"
+                  *ngIf="attachmentUrl(attachment) as url"
+                  [href]="url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Abrir
+                </a>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noAttachments>
+            <p class="muted">Nenhum arquivo foi anexado a este conteudo.</p>
+          </ng-template>
+        </section>
+      </article>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando conteudo...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
