@@ -1,0 +1,175 @@
+<section class="course-contents" *ngIf="selectedCourse(); else noCourseSelected">
+  <header class="course-contents__header">
+    <div>
+      <h3>Conteudos do curso</h3>
+      <p>Organize as materias, materiais e referencias que serao disponibilizados aos alunos.</p>
+    </div>
+    <button type="button" class="button button--primary" (click)="toggleForm()">
+      {{ formVisible() ? 'Fechar formulario' : 'Novo conteudo' }}
+    </button>
+  </header>
+
+  <form class="content-form" *ngIf="formVisible()" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="content-form__grid">
+      <label class="form-control">
+        <span>Turma (opcional)</span>
+        <select formControlName="classGroupId">
+          <option value="">Todos os alunos</option>
+          <option *ngFor="let group of selectedCourse()?.ClassGroups ?? []" [value]="group.Id">
+            {{ group.Name }}
+          </option>
+        </select>
+      </label>
+
+      <label class="form-control">
+        <span>Tipo de conteudo</span>
+        <select formControlName="itemType">
+          <option *ngFor="let option of itemTypeOptions" [ngValue]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </label>
+
+      <label class="form-control">
+        <span>Ordem de exibicao</span>
+        <input type="number" formControlName="displayOrder" placeholder="Ex.: 10, 20, 30" />
+      </label>
+    </div>
+
+    <label class="form-control">
+      <span>Titulo</span>
+      <input type="text" formControlName="title" placeholder="Nome do conteudo" />
+    </label>
+
+    <label class="form-control">
+      <span>Resumo</span>
+      <input type="text" formControlName="summary" placeholder="Breve descricao" />
+    </label>
+
+    <label class="form-control">
+      <span>Descricao detalhada</span>
+      <textarea rows="4" formControlName="body" placeholder="Instrucoes ou conteudo textual"></textarea>
+    </label>
+
+    <label class="checkbox-row">
+      <input type="checkbox" formControlName="publishNow" />
+      <span>Publicar imediatamente</span>
+    </label>
+
+    <div class="attachments">
+      <div class="attachments__header">
+        <h4>Anexos</h4>
+        <label class="upload-input">
+          <input type="file" multiple (change)="handleFiles($event)" [disabled]="isSubmitting()" />
+          <i class="bi bi-paperclip"></i>
+          <span>Adicionar arquivos</span>
+        </label>
+      </div>
+      <p class="helper-text">Defina um anexo principal para destacar o material.</p>
+
+      <div class="attachments__list" *ngIf="attachments().length; else noAttachments">
+        <article
+          class="attachment-card"
+          *ngFor="let attachment of attachments(); trackBy: trackByAttachment"
+          [attr.data-status]="attachment.status"
+        >
+          <div class="attachment-card__header">
+            <div class="attachment-card__details">
+              <strong>{{ attachment.fileName }}</strong>
+              <small *ngIf="attachment.status === 'uploading'">Enviando...</small>
+              <small *ngIf="attachment.status === 'error'">Falha no upload</small>
+            </div>
+            <button type="button" class="button button--ghost" (click)="removeAttachment(attachment.id)">
+              Remover
+            </button>
+          </div>
+
+          <div class="attachment-card__body">
+            <label class="checkbox-row">
+              <input
+                type="radio"
+                name="primary-attachment"
+                [checked]="attachment.isPrimary"
+                (change)="markAsPrimary(attachment.id)"
+                [disabled]="attachment.status !== 'ready'"
+              />
+              <span>Anexo principal</span>
+            </label>
+            <input
+              class="caption-input"
+              type="text"
+              placeholder="Legenda opcional"
+              [value]="attachment.caption"
+              (input)="updateCaption(attachment.id, ($any($event.target).value || ''))"
+              [disabled]="attachment.status !== 'ready'"
+            />
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <footer class="content-form__actions">
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="isSubmitting() || hasUploadingAttachments()"
+      >
+        {{ isSubmitting() ? 'Salvando...' : 'Salvar conteudo' }}
+      </button>
+      <button type="button" class="button button--ghost" (click)="toggleForm()">Cancelar</button>
+    </footer>
+
+    <ng-template #noAttachments>
+      <p class="helper-text">Nenhum anexo selecionado.</p>
+    </ng-template>
+  </form>
+
+  <section class="contents-list">
+    <header>
+      <div>
+        <h4>Itens cadastrados</h4>
+        <p>Visualize o status de cada conteudo publicado.</p>
+      </div>
+      <span>{{ contents().length }} registro(s)</span>
+    </header>
+
+    <ng-container *ngIf="!loading(); else loadingState">
+      <ng-container *ngIf="contents().length; else emptyState">
+        <div class="contents-list__grid">
+          <article class="content-card" *ngFor="let item of contents(); trackBy: trackByContent">
+            <header>
+              <h5>{{ item.title }}</h5>
+              <span class="chip" [attr.data-status]="item.status">{{ item.status }}</span>
+            </header>
+            <p class="meta">
+              Ordem {{ item.displayOrder }} · {{ item.attachments }} anexo(s)
+            </p>
+            <p class="meta">Tipo: {{ itemTypeLabelFor(item.itemType) }}</p>
+
+            <button
+              type="button"
+              class="button button--ghost"
+              *ngIf="item.status === 'Rascunho'"
+              (click)="publishContent(item.id)"
+              [disabled]="publishing() === item.id"
+            >
+              {{ publishing() === item.id ? 'Publicando...' : 'Publicar' }}
+            </button>
+          </article>
+        </div>
+      </ng-container>
+    </ng-container>
+  </section>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando conteudos...</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state state--info">Nenhum conteudo registrado para este curso.</div>
+</ng-template>
+
+<ng-template #noCourseSelected>
+  <div class="state state--info">Selecione um curso para visualizar os conteudos.</div>
+</ng-template>

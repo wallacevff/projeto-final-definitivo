@@ -6,4 +6,5 @@ namespace ProjetoFinal.Domain.Repositories;
 
 public interface IMediaResourceRepository : IDefaultRepository<MediaResource, MediaResourceFilter, Guid>
 {
+    Task<MediaResource?> GetByShaAsync(string sha256, CancellationToken cancellationToken = default);
 }

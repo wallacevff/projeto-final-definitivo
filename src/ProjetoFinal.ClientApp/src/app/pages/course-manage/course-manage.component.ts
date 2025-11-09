@@ -6,11 +6,13 @@ import { filter, map, switchMap } from 'rxjs';
 
 import { CoursesService } from '../../core/services/courses.service';
 import { CourseDto, ClassGroupDto } from '../../core/api/courses.api';
+import { CourseActivitiesComponent } from './course-activities.component';
+import { CourseContentsComponent } from './course-contents.component';
 
 @Component({
   selector: 'app-course-manage',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, CourseActivitiesComponent, CourseContentsComponent],
   templateUrl: './course-manage.component.html',
   styleUrl: './course-manage.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

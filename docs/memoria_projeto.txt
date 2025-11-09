@@ -161,3 +161,29 @@ Data: 2025-10-19 23:32:27
 5. Pendencias
  - Avaliar limitacao de criacao de topicos por perfil/permicao.
  - Revisar budgets de CSS e bundle do Angular antes do deploy.
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-11-09 20:36:00
+
+1. API e Contratos
+ - Configuracao do MinIO adicionada aos appsettings e exposta via `MinioConfiguration`, com registros no IoC e cliente dedicado.
+ - `MediaResourcesController` passou a aceitar upload multipart via MinIO, calcular hash SHA-256 para evitar duplicidades e reutilizar arquivos ja existentes.
+ - `ActivitiesController` e `CourseContentsController` agora respondem tambem por `/api/v1`, alinhando com o frontend.
+ - `CourseContentRepository` inclui `Attachments`/`MediaResource`, garantindo que os DTOs retornem a quantidade correta de anexos.
+
+2. Infraestrutura de Dados
+ - Criado `MinioObjectStorageService` e interfaces auxiliares para upload de objetos.
+ - Repositorio de midias ganhou consulta por hash (`GetByShaAsync`) para suportar deduplicacao de arquivos.
+
+3. Frontend Angular
+ - Novos modulos na pagina de gestao de curso: `CourseActivitiesComponent` e `CourseContentsComponent`, ambos com formularios reativos, upload de anexos e listagem dos itens do curso.
+ - Serviços e contratos expandidos (`CourseContentsService`, `MediaService`, ajustes em `ActivitiesService`) para integrar criacao de conteudos/atividades aos endpoints REST.
+ - Dropdowns e payloads de conteudo passaram a enviar os enums como numeros, eliminando os 400 de validacao.
+
+4. Build e Execucao
+ - `dotnet build ProjetoFinal.sln` executado com sucesso; permanecem os avisos conhecidos de budget do Angular e seletores Bootstrap.
+
+5. Pendencias
+ - Revisar budgets de bundle/estilos do Angular antes do deploy.
+ - Avaliar mecanismos de reordenacao em massa para conteudos/atividades quando o volume crescer.

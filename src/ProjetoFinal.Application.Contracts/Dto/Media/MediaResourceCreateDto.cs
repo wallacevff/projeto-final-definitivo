@@ -5,6 +5,7 @@ namespace ProjetoFinal.Application.Contracts.Dto.Media;
 
 public class MediaResourceCreateDto
 {
+    public string FileName { get; set; } = string.Empty;
     public string OriginalFileName { get; set; } = string.Empty;
     public string ContentType { get; set; } = string.Empty;
     public MediaKind Kind { get; set; }

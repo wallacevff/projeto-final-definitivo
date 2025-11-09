@@ -6,6 +6,7 @@ using ProjetoFinal.Domain.Filters;
 namespace ProjetoFinal.Api.Controllers;
 
 [Route("api/activities")]
+[Route("api/v1/activities")]
 public class ActivitiesController : BaseController<
     ActivityDto,
     ActivityCreateDto,

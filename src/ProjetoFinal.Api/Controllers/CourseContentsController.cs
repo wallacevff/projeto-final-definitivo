@@ -5,7 +5,9 @@ using ProjetoFinal.Domain.Filters;
 
 namespace ProjetoFinal.Api.Controllers;
 
+[ApiController]
 [Route("api/course-contents")]
+[Route("api/v1/course-contents")]
 public class CourseContentsController : BaseController<
     CourseContentDto,
     CourseContentCreateDto,

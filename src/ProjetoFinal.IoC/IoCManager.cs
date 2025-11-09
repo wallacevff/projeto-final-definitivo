@@ -12,6 +12,7 @@ using ProjetoFinal.Infra.Data;
 using ProjetoFinal.Infra.Data.UnityOfWorks;
 using Talonario.Domain.Repositories;
 using ProjetoFinal.Infra.Data.Contexts;
+using ProjetoFinal.Infra.CrossCutting.Storage;
 
 namespace ProjetoFinal.IoC;
 
@@ -28,6 +29,7 @@ public static class IoCManager
                 .AddDomainRepositories()
                 .AddAutoMapper()
                 .AddApplicationServices()
+                .AddObjectStorage(configuration)
                 .AddRhbkSdk(configuration)
             ;
     }

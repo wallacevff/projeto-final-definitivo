@@ -6,4 +6,5 @@ namespace ProjetoFinal.Application.Contracts.Services;
 
 public interface IMediaResourceAppService : IDefaultService<MediaResourceDto, MediaResourceCreateDto, MediaResourceCreateDto, MediaResourceFilter, Guid>
 {
+    Task<MediaResourceDto?> FindByShaAsync(string sha256, CancellationToken cancellationToken = default);
 }

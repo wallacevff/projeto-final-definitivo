@@ -1,0 +1,188 @@
+<section class="course-activities" *ngIf="selectedCourse(); else noCourseSelected">
+  <header class="course-activities__header">
+    <div>
+      <h3>Atividades do curso</h3>
+      <p>Cadastre atividades para as turmas interativas e acompanhe o status em tempo real.</p>
+    </div>
+    <button
+      type="button"
+      class="button button--primary"
+      (click)="toggleForm()"
+      [disabled]="!hasAvailableGroups()"
+    >
+      {{ formVisible() ? 'Fechar formulário' : 'Nova atividade' }}
+    </button>
+  </header>
+
+  <div class="state state--info" *ngIf="!hasAvailableGroups()">
+    Cadastre ao menos uma turma interativa para liberar o registro de atividades.
+  </div>
+
+  <form
+    class="activity-form"
+    *ngIf="formVisible()"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="activity-form__grid">
+      <label class="form-control">
+        <span>Turma</span>
+        <select formControlName="classGroupId" [disabled]="!hasAvailableGroups()">
+          <option value="" disabled>Selecione uma turma</option>
+          <option *ngFor="let group of availableGroups()" [value]="group.Id">
+            {{ group.Name }}
+          </option>
+        </select>
+      </label>
+
+      <label class="form-control">
+        <span>Título</span>
+        <input type="text" formControlName="title" placeholder="Nome da atividade" />
+      </label>
+
+      <label class="form-control">
+        <span>Nota máxima (opcional)</span>
+        <input type="number" min="0" step="0.5" formControlName="maxScore" placeholder="0,0" />
+      </label>
+    </div>
+
+    <label class="form-control">
+      <span>Descrição</span>
+      <textarea rows="4" formControlName="description" placeholder="Detalhes e orientações para os alunos"></textarea>
+    </label>
+
+    <div class="activity-form__grid">
+      <label class="form-control">
+        <span>Disponível a partir de</span>
+        <input type="datetime-local" formControlName="availableAt" />
+      </label>
+
+      <label class="form-control">
+        <span>Entrega até</span>
+        <input type="datetime-local" formControlName="dueDate" />
+      </label>
+
+      <label class="form-control">
+        <span>Penalidade por atraso (%)</span>
+        <input
+          type="number"
+          min="0"
+          max="100"
+          formControlName="latePenaltyPercentage"
+          placeholder="0 a 100"
+        />
+      </label>
+    </div>
+
+    <div class="form-switches">
+      <label class="checkbox-row">
+        <input type="checkbox" formControlName="allowLateSubmissions" />
+        <span>Aceitar entregas em atraso</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" formControlName="visibleToStudents" />
+        <span>Visível para estudantes</span>
+      </label>
+    </div>
+
+    <div class="attachments">
+      <div class="attachments__header">
+        <h4>Anexos</h4>
+        <label class="upload-input">
+          <input type="file" multiple (change)="handleFiles($event)" [disabled]="isSubmitting()" />
+          <i class="bi bi-paperclip"></i>
+          <span>Adicionar arquivos</span>
+        </label>
+      </div>
+      <p class="helper-text">Os anexos ficam disponíveis para os alunos após a publicação da atividade.</p>
+
+      <div class="attachments__list" *ngIf="attachments().length; else noAttachments">
+        <article
+          class="attachment-card"
+          *ngFor="let attachment of attachments(); trackBy: trackByAttachment"
+          [attr.data-status]="attachment.status"
+        >
+          <div class="attachment-card__header">
+            <div>
+              <strong>{{ attachment.fileName }}</strong>
+              <small *ngIf="attachment.media?.ContentType">{{ attachment.media?.ContentType }}</small>
+              <small *ngIf="attachment.status === 'uploading'">Enviando...</small>
+              <small *ngIf="attachment.status === 'error'">Falha no upload</small>
+            </div>
+            <button type="button" class="button button--ghost" (click)="removeAttachment(attachment.id)">
+              Remover
+            </button>
+          </div>
+          <input
+            type="text"
+            class="caption-input"
+            placeholder="Descrição opcional"
+            [value]="attachment.caption"
+            (input)="updateCaption(attachment.id, ($any($event.target).value || ''))"
+            [disabled]="attachment.status !== 'ready'"
+          />
+        </article>
+      </div>
+    </div>
+
+    <footer class="activity-form__actions">
+      <button
+        type="submit"
+        class="button button--primary"
+        [disabled]="isSubmitting() || !hasAvailableGroups()"
+      >
+        {{ isSubmitting() ? 'Salvando...' : 'Salvar atividade' }}
+      </button>
+      <button type="button" class="button button--ghost" (click)="toggleForm()">
+        Cancelar
+      </button>
+    </footer>
+
+    <ng-template #noAttachments>
+      <p class="helper-text">Nenhum anexo foi adicionado.</p>
+    </ng-template>
+  </form>
+
+  <section class="activities-list">
+    <header>
+      <div>
+        <h4>Atividades cadastradas</h4>
+        <p>Resumo das atividades vinculadas ao curso.</p>
+      </div>
+      <span>{{ activities().length }} registro(s)</span>
+    </header>
+
+    <ng-container *ngIf="!activitiesLoading(); else loadingActivities">
+      <ng-container *ngIf="activities().length; else emptyActivities">
+        <div class="activities-list__grid">
+          <article
+            class="activity-card"
+            *ngFor="let activity of activities(); trackBy: trackByActivity"
+          >
+            <header>
+              <h5>{{ activity.title }}</h5>
+              <span class="chip">{{ activity.classGroupName }}</span>
+            </header>
+            <p class="due-date">{{ activity.dueDateLabel }}</p>
+            <ul>
+              <li>{{ activity.allowLate ? 'Aceita atrasos' : 'Sem atrasos' }}</li>
+              <li>{{ activity.attachments }} anexo(s)</li>
+            </ul>
+          </article>
+        </div>
+      </ng-container>
+    </ng-container>
+  </section>
+</section>
+
+<ng-template #loadingActivities>
+  <div class="state state--info">Carregando atividades...</div>
+</ng-template>
+
+<ng-template #emptyActivities>
+  <div class="state state--info">Nenhuma atividade registrada para este curso.</div>
+</ng-template>
+
+<ng-template #noCourseSelected>
+  <div class="state state--info">Selecione um curso para visualizar as atividades.</div>
+</ng-template>

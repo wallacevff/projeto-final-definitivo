@@ -32,6 +32,34 @@ export interface ActivityAttachmentDto {
   Caption?: string;
 }
 
+export interface ActivityAttachmentPayload {
+  MediaResourceId: string;
+  Caption?: string;
+}
+
+export interface ActivityCreatePayload {
+  CourseId: string;
+  ClassGroupId: string;
+  CreatedById: string;
+  Title: string;
+  Description: string;
+  AvailableAt?: string;
+  DueDate?: string;
+  MaxScore?: number;
+  AllowLateSubmissions: boolean;
+  LatePenaltyPercentage?: number;
+  VisibleToStudents: boolean;
+  Attachments: ActivityAttachmentPayload[];
+}
+
+export interface ActivitiesFilter {
+  PageSize?: number;
+  PageNumber?: number;
+  CourseId?: string;
+  ClassGroupId?: string;
+  VisibleToStudents?: boolean;
+}
+
 export interface ActivityListItem {
   id: string;
   title: string;
