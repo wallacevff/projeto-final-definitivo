@@ -162,28 +162,41 @@ public class MediaResourcesController : BaseController<
             return null;
         }
 
-        var normalized = storagePath.TrimStart('/');
-        var parts = normalized.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+        var normalized = storagePath
+            .Replace('\\', '/')
+            .Trim('/');
 
-        if (parts.Length == 0)
+        if (string.IsNullOrWhiteSpace(normalized))
         {
             return null;
         }
 
+        var parts = normalized.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+        var bucket = _minioConfiguration.BucketName;
+
         if (parts.Length == 1)
         {
-            var bucketName = string.IsNullOrWhiteSpace(_minioConfiguration.BucketName)
-                ? null
-                : _minioConfiguration.BucketName;
-
-            if (string.IsNullOrWhiteSpace(bucketName))
+            var objectName = parts[0];
+            if (string.IsNullOrWhiteSpace(bucket))
             {
                 return null;
             }
 
-            return (bucketName!, parts[0]);
+            return (bucket, objectName);
         }
 
-        return (parts[0], parts[1]);
+        var objectKey = parts[1];
+        if (string.IsNullOrWhiteSpace(objectKey))
+        {
+            return null;
+        }
+
+        bucket = string.IsNullOrWhiteSpace(parts[0]) ? bucket : parts[0];
+        if (string.IsNullOrWhiteSpace(bucket))
+        {
+            return null;
+        }
+
+        return (bucket, objectKey);
     }
 }
