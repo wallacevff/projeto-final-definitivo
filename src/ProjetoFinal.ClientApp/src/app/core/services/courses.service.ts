@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, of, shareReplay, Observable, throwError } from 'rxjs';
+import { catchError, map, of, shareReplay, Observable, throwError, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { CourseDto, CoursesFilter, mapClassGroupsFromCourses, mapCoursesResponse } from '../api/courses.api';
@@ -61,12 +61,14 @@ export class CoursesService {
 
   createCourse(payload: CreateCoursePayload) {
     return this.http.post<CourseDto>(`${this.baseUrl}/courses`, payload).pipe(
+      tap(() => this.invalidateCache()),
       catchError(error => throwError(() => error))
     );
   }
 
   updateCourse(courseId: string, payload: UpdateCoursePayload) {
     return this.http.put<void>(`${this.baseUrl}/courses/${courseId}`, payload).pipe(
+      tap(() => this.invalidateCache()),
       catchError(error => throwError(() => error))
     );
   }
@@ -89,5 +91,9 @@ export class CoursesService {
     }
 
     return this.cache$;
+  }
+
+  private invalidateCache(): void {
+    this.cache$ = undefined;
   }
 }
