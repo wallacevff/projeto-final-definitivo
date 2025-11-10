@@ -37,14 +37,67 @@
                   <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
                   <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
                 </div>
-                <button
-                  class="button button--ghost"
-                  type="button"
-                  (click)="downloadAttachment(attachment)"
-                  [disabled]="downloading() === attachment.MediaResourceId"
-                >
-                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                </button>
+
+                <ng-container *ngIf="isVideoAttachment(attachment); else downloadBlock">
+                  <div class="video-container">
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      *ngIf="!isVideoLoaded(attachment.MediaResourceId)"
+                      (click)="loadVideo(attachment)"
+                      [disabled]="videoIsLoading(attachment.MediaResourceId)"
+                    >
+                      {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : 'Carregar vídeo' }}
+                    </button>
+
+                    <div class="video-frame" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
+                      <video #videoPlayer controls [src]="videoUrl"></video>
+
+                      <div class="annotation-panel">
+                        <h4>Anotações</h4>
+                        <div class="annotation-form">
+                          <input
+                            type="text"
+                            placeholder="Mensagem"
+                            [value]="annotationDraft(attachment.MediaResourceId)"
+                            (input)="updateAnnotationDraft(attachment.MediaResourceId, ($any($event.target).value || ''))"
+                          />
+                          <button
+                            type="button"
+                            class="button button--ghost"
+                            (click)="addAnnotation(attachment.MediaResourceId, videoPlayer.currentTime)"
+                          >
+                            Adicionar ({{ formatTime(videoPlayer.currentTime) }})
+                          </button>
+                        </div>
+
+                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.MediaResourceId).length; else noAnnotations">
+                          <li
+                            *ngFor="let annotation of annotationsFor(attachment.MediaResourceId)"
+                            (click)="seekTo(videoPlayer, annotation.time)"
+                          >
+                            <span>{{ formatTime(annotation.time) }}</span>
+                            <p>{{ annotation.text }}</p>
+                          </li>
+                        </ul>
+                        <ng-template #noAnnotations>
+                          <p class="muted">Nenhuma anotação criada ainda.</p>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-template #downloadBlock>
+                  <button
+                    class="button button--ghost"
+                    type="button"
+                    (click)="downloadAttachment(attachment)"
+                    [disabled]="downloading() === attachment.MediaResourceId"
+                  >
+                    {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                  </button>
+                </ng-template>
               </li>
             </ul>
           </ng-container>
