@@ -46,8 +46,8 @@ export class CoursesService {
     return this.fetchCoursesDto().pipe(map(response => normalizePagedResponse(response).items));
   }
 
-  getClassGroupRows() {
-    return this.fetchCoursesDto().pipe(
+  getClassGroupRows(forceRefresh = false) {
+    return this.fetchCoursesDto({}, forceRefresh).pipe(
       map(response => normalizePagedResponse(response).items),
       map(courses => mapClassGroupsFromCourses(courses))
     );
@@ -73,8 +73,8 @@ export class CoursesService {
     );
   }
 
-  private fetchCoursesDto(filter: CoursesFilter = {}): Observable<ApiPagedResponse<CourseDto>> {
-    if (!this.cache$ || Object.keys(filter).length) {
+  private fetchCoursesDto(filter: CoursesFilter = {}, forceRefresh = false): Observable<ApiPagedResponse<CourseDto>> {
+    if (forceRefresh || !this.cache$ || Object.keys(filter).length) {
       const params = toHttpParams({ PageSize: 50, ...filter });
       const request = this.http
         .get<ApiPagedResponse<CourseDto>>(`${this.baseUrl}/courses`, { params })
@@ -83,7 +83,7 @@ export class CoursesService {
           shareReplay({ bufferSize: 1, refCount: true })
         );
 
-      if (Object.keys(filter).length === 0) {
+      if (!forceRefresh && Object.keys(filter).length === 0) {
         this.cache$ = request;
       }
 

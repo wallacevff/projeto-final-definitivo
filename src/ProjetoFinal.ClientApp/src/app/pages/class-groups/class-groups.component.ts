@@ -25,7 +25,7 @@ export class ClassGroupsComponent {
 
   constructor() {
     this.service
-      .getClassGroupRows()
+      .getClassGroupRows(true)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (groups: ClassGroupListItem[]) => {
