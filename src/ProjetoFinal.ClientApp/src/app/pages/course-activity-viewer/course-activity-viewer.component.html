@@ -14,7 +14,7 @@
 
   <article class="activity-card">
     <h3>Descricao</h3>
-    <p>{{ current.Description }}</p>
+    <div class="rich-content" [innerHTML]="safeHtml(current.Description)"></div>
   </article>
 
   <section class="attachments-section">

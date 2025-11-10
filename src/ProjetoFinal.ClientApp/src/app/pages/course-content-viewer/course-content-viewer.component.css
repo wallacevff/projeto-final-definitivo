@@ -56,6 +56,20 @@
   gap: 2rem;
 }
 
+.rich-content {
+  line-height: 1.6;
+  color: var(--surface-700);
+}
+
+.rich-content :where(p, ul, ol) {
+  margin: 0 0 0.75rem;
+}
+
+.rich-content ul,
+.rich-content ol {
+  padding-left: 1.25rem;
+}
+
 .content-body h3,
 .attachments-section h3 {
   margin: 0 0 0.5rem;

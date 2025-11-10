@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { CourseContentsService } from '../../core/services/course-contents.service';
 import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
@@ -29,6 +30,7 @@ export class CourseContentViewerComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly mediaService = inject(MediaService);
   private readonly toastr = inject(ToastrService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -202,5 +204,9 @@ export class CourseContentViewerComponent {
   private cleanupVideoUrls(): void {
     const urls = Object.values(this.videoUrls());
     urls.forEach(url => URL.revokeObjectURL(url));
+  }
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
   }
 }

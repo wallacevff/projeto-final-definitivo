@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { ActivitiesService } from '../../core/services/activities.service';
 import { ActivityAttachmentDto, ActivityDto } from '../../core/api/activities.api';
@@ -23,6 +24,7 @@ export class CourseActivityViewerComponent {
   private readonly mediaService = inject(MediaService);
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -103,5 +105,10 @@ export class CourseActivityViewerComponent {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
   }
 }

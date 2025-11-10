@@ -15,9 +15,11 @@
       <article class="content-card" *ngIf="content() as current">
         <section class="content-body">
           <h3>Descricao</h3>
-          <p *ngIf="current.Body; else noBody">
-            {{ current.Body }}
-          </p>
+          <div
+            class="rich-content"
+            *ngIf="current.Body; else noBody"
+            [innerHTML]="safeHtml(current.Body)"
+          ></div>
           <ng-template #noBody>
             <p class="muted">Nenhuma descricao detalhada informada.</p>
           </ng-template>
