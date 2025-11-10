@@ -28,6 +28,12 @@ export class ActivitiesService {
       );
   }
 
+  getActivityById(activityId: string) {
+    return this.http
+      .get<ActivityDto>(`${this.baseUrl}/activities/${activityId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
   createActivity(payload: ActivityCreatePayload) {
     return this.http
       .post<ActivityDto>(`${this.baseUrl}/activities`, payload)

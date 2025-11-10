@@ -9,6 +9,13 @@ export const routes: Routes = [
     title: 'Entrar - SES EAD'
   },
   {
+    path: 'courses/:courseId/activities/:activityId',
+    loadComponent: () =>
+      import('./pages/course-activity-viewer/course-activity-viewer.component').then(m => m.CourseActivityViewerComponent),
+    title: 'Atividade do Curso - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'dashboard'

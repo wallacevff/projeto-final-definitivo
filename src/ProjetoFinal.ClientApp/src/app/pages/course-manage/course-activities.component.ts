@@ -20,6 +20,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { CourseDto } from '../../core/api/courses.api';
 import { MediaResource } from '../../core/api/media.api';
 import { MediaService } from '../../core/services/media.service';
+import { Router } from '@angular/router';
 
 type AttachmentStatus = 'uploading' | 'ready' | 'error';
 
@@ -46,6 +47,7 @@ export class CourseActivitiesComponent {
   private readonly authService = inject(AuthService);
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   private readonly courseState = signal<CourseDto | null>(null);
   private currentCourseId: string | null = null;
@@ -130,6 +132,10 @@ export class CourseActivitiesComponent {
 
   trackByAttachment(_: number, item: AttachmentDraft): string {
     return item.id;
+  }
+
+  viewActivity(activity: ActivityListItem): void {
+    this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
   }
 
   submit(): void {

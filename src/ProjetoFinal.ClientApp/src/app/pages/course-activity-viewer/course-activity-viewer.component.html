@@ -1,0 +1,57 @@
+<section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
+  <header class="activity-viewer__header">
+    <a class="back-link" [routerLink]="['/courses', courseId() ?? '', 'manage']">← Voltar</a>
+    <h2>{{ pageTitle() }}</h2>
+    <span class="badge">{{ current.ClassGroupName }}</span>
+  </header>
+
+  <div class="meta">
+    <p><strong>Entrega:</strong> {{ dueDateLabel() }}</p>
+    <p><strong>Visivel aos alunos:</strong> {{ current.VisibleToStudents ? 'Sim' : 'Nao' }}</p>
+    <p><strong>Atrasos:</strong> {{ current.AllowLateSubmissions ? 'Aceita' : 'Nao aceita' }}</p>
+    <p *ngIf="current.MaxScore"><strong>Nota máxima:</strong> {{ current.MaxScore }}</p>
+  </div>
+
+  <article class="activity-card">
+    <h3>Descricao</h3>
+    <p>{{ current.Description }}</p>
+  </article>
+
+  <section class="attachments-section">
+    <header>
+      <h3>Anexos</h3>
+      <span>{{ current.Attachments.length }} arquivo(s)</span>
+    </header>
+
+    <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+      <ul class="attachments-list">
+        <li *ngFor="let attachment of current.Attachments">
+          <div>
+            <strong>{{ attachment.Caption || 'Anexo' }}</strong>
+            <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+          </div>
+          <button
+            type="button"
+            class="button button--ghost"
+            (click)="downloadAttachment(attachment)"
+            [disabled]="downloading() === attachment.MediaResourceId"
+          >
+            {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+          </button>
+        </li>
+      </ul>
+    </ng-container>
+  </section>
+</section>
+
+<ng-template #stateBlock>
+  <div class="state state--info" *ngIf="loading(); else errorState">Carregando atividade...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #noAttachments>
+  <p class="muted">Nenhum anexo publicado para esta atividade.</p>
+</ng-template>
