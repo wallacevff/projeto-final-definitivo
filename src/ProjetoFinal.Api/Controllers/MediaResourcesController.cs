@@ -162,41 +162,36 @@ public class MediaResourcesController : BaseController<
             return null;
         }
 
-        var normalized = storagePath
-            .Replace('\\', '/')
-            .Trim('/');
-
+        var normalized = storagePath.Replace('\\', '/').Trim('/');
         if (string.IsNullOrWhiteSpace(normalized))
         {
             return null;
         }
 
-        var parts = normalized.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-        var bucket = _minioConfiguration.BucketName;
+        var configuredBucket = _minioConfiguration.BucketName?.Trim();
+        var separator = '/';
 
-        if (parts.Length == 1)
+        if (!string.IsNullOrWhiteSpace(configuredBucket) &&
+            normalized.StartsWith($"{configuredBucket.TrimEnd('/')}{separator}", StringComparison.OrdinalIgnoreCase))
         {
-            var objectName = parts[0];
-            if (string.IsNullOrWhiteSpace(bucket))
+            var objectKey = normalized.Substring(configuredBucket.Length + 1);
+            return (configuredBucket, objectKey);
+        }
+
+        if (normalized.Contains('/'))
+        {
+            var parts = normalized.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 2 && string.Equals(parts[0], configuredBucket, StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                return (configuredBucket!, parts[1]);
             }
-
-            return (bucket, objectName);
         }
 
-        var objectKey = parts[1];
-        if (string.IsNullOrWhiteSpace(objectKey))
+        if (string.IsNullOrWhiteSpace(configuredBucket))
         {
             return null;
         }
 
-        bucket = string.IsNullOrWhiteSpace(parts[0]) ? bucket : parts[0];
-        if (string.IsNullOrWhiteSpace(bucket))
-        {
-            return null;
-        }
-
-        return (bucket, objectKey);
+        return (configuredBucket, normalized);
     }
 }
