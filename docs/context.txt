@@ -7,3 +7,4 @@ Resumo:
 - Backend: uploads/donwloads MinIO, deduplicação por hash, parse robusto do storagePath no download.
 - Frontend: gestão de atividades/conteúdos com opções para "todas as turmas", viewer de atividades/ conteúdos com download autenticado e vídeo+anotações; campos de descrição usam editor rich-text compartilhado.
 - Build .NET falha se arquivos em src/ProjetoFinal.Api/bin estiverem abertos; Angular ainda com avisos de budget/seletores.
+- Novo arquivo `docs/transcriptions.txt` deve ser usado para registrar transcrições sempre que solicitado.

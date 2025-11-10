@@ -230,3 +230,14 @@ Data: 2025-11-10 09:12:00
 
 4. Pendências
  - Persistência real das anotações de vídeo ainda não foi integrada; campo rich-text envia HTML, avaliar validações/limpeza futura.
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-11-10 11:05:00
+
+1. Documentação
+ - Criado `docs/transcriptions.txt` para armazenar futuras transcrições solicitadas.
+ - Contexto atualizado reforçando o uso desse arquivo.
+
+2. Instruções
+ - Lembrar de registrar transcrições no arquivo acima sempre que o usuário pedir.
