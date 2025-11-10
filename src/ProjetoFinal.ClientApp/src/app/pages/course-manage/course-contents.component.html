@@ -48,7 +48,10 @@
 
     <label class="form-control">
       <span>Descricao detalhada</span>
-      <textarea rows="4" formControlName="body" placeholder="Instrucoes ou conteudo textual"></textarea>
+      <app-rich-text-editor
+        formControlName="body"
+        placeholder="Instrucoes ou conteudo textual"
+      ></app-rich-text-editor>
     </label>
 
     <label class="checkbox-row">

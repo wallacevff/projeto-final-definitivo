@@ -21,6 +21,7 @@ import { CourseDto } from '../../core/api/courses.api';
 import { MediaResource } from '../../core/api/media.api';
 import { MediaService } from '../../core/services/media.service';
 import { Router } from '@angular/router';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
 
 type AttachmentStatus = 'uploading' | 'ready' | 'error';
 
@@ -35,7 +36,7 @@ interface AttachmentDraft {
 @Component({
   selector: 'app-course-activities',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
   templateUrl: './course-activities.component.html',
   styleUrl: './course-activities.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

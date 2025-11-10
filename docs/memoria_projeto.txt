@@ -191,3 +191,42 @@ Data: 2025-11-09 20:36:00
 Instrucoes Fixas:
  - Nunca substituir conteudo existente em docs/memoria_projeto.txt; apenas fazer append quando houver novas atualizacoes.
  - Antes de qualquer atividade relevante, ler o arquivo docs/context.txt para garantir alinhamento com o estado atual.
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-11-09 22:15:00
+
+1. API e Contratos
+ - Suporte a download autenticado de mídias via MediaResourcesController, com leitura segura do storagePath (deduplicação por hash mantida).
+ - ActivitiesService exposto para busca por Id, permitindo visualização detalhada no frontend.
+
+2. Frontend Angular
+ - Módulos de criação de atividades e conteúdos com opção "todas as turmas"; uploads e downloads via API com JWT.
+ - Novo CourseActivityViewer exibe detalhes, prazos e anexos das atividades; cards de cursos e listagem geral navegam para o viewer.
+ - Viewer de conteúdos mostra vídeos com anotações locais e anexos baixados via backend.
+ - `docs/context.txt` registra o estado corrente; instruções permanentes reforçam leitura desse contexto e proíbem sobrescrever a memória.
+
+3. Build e Execução
+ - `npm run build` concluído (avisos de budget/seletores do Angular permanecem conhecidos).
+ - `dotnet build` depende de não haver processos segurando DLLs em src/ProjetoFinal.Api/bin.
+
+4. Pendências / Observações
+ - Avaliar os avisos de bundle/estilos antes de deploy final.
+ - Manter o hábito de consultar `docs/context.txt` e apenas anexar conteúdo à memória.
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-11-10 09:12:00
+
+1. API e Contratos
+ - Sem alterações desde a última sessão; endpoints existentes foram reutilizados para leitura de atividades e anexos.
+
+2. Frontend Angular
+ - Criado componente `RichTextEditorComponent` (contenteditable + toolbar) e aplicado nas descrições do fórum, nova atividade e conteúdo.
+ - Botões “Ver detalhes/Visualizar” de atividades navegam para o novo viewer; cards da área de curso e listagem geral compartilham a mesma rota.
+
+3. Build e Execução
+ - `npm run build` concluído (mantidos avisos de budget/seletores).
+
+4. Pendências
+ - Persistência real das anotações de vídeo ainda não foi integrada; campo rich-text envia HTML, avaliar validações/limpeza futura.

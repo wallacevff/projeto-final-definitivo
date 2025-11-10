@@ -49,7 +49,10 @@
 
     <label class="form-control">
       <span>Descrição</span>
-      <textarea rows="4" formControlName="description" placeholder="Detalhes e orientações para os alunos"></textarea>
+      <app-rich-text-editor
+        formControlName="description"
+        placeholder="Detalhes e orientações para os alunos"
+      ></app-rich-text-editor>
     </label>
 
     <div class="activity-form__grid">

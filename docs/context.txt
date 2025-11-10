@@ -1,6 +1,9 @@
+Histórico Inicial:
+- Projeto EAD full-stack (.NET + Angular); instruções fixas: nunca sobrescrever docs/memoria_projeto.txt (apenas append) e sempre ler este context.txt antes de continuar.
+- Uploads/downloads de mídia devem passar exclusivamente pela API; backend conversa com MinIO, cuidando de deduplicação por hash e rotas autenticadas.
+
 Data: 2025-11-09
 Resumo:
-- Backend integra uploads ao MinIO com deduplicacao por hash, endpoint de download autenticado e parse robusto do StoragePath.
-- Frontend possui modulos de gestao de atividades e conteudos; conteudos exibem videos com anotacoes locais e usam a API para baixar anexos.
-- Build .NET depende de nao haver processos bloqueando dlls em src/ProjetoFinal.Api/bin.
-- Avisos pendentes: budgets do Angular e seletores legacy do Bootstrap; avaliar futuramente.
+- Backend: uploads/donwloads MinIO, deduplicação por hash, parse robusto do storagePath no download.
+- Frontend: gestão de atividades/conteúdos com opções para "todas as turmas", viewer de atividades/ conteúdos com download autenticado e vídeo+anotações; campos de descrição usam editor rich-text compartilhado.
+- Build .NET falha se arquivos em src/ProjetoFinal.Api/bin estiverem abertos; Angular ainda com avisos de budget/seletores.

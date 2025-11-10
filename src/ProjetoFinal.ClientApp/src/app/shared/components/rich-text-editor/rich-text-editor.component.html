@@ -1,0 +1,33 @@
+<div class="rich-editor" [class.rich-editor--disabled]="disabled">
+  <div class="rich-editor__toolbar">
+    <button type="button" (click)="applyFormat('bold')" [disabled]="disabled" title="Negrito">
+      <i class="bi bi-type-bold"></i>
+    </button>
+    <button type="button" (click)="applyFormat('italic')" [disabled]="disabled" title="Itálico">
+      <i class="bi bi-type-italic"></i>
+    </button>
+    <button type="button" (click)="applyFormat('underline')" [disabled]="disabled" title="Sublinhado">
+      <i class="bi bi-type-underline"></i>
+    </button>
+    <span class="separator"></span>
+    <button type="button" (click)="applyFormat('insertUnorderedList')" [disabled]="disabled" title="Lista">
+      <i class="bi bi-list-ul"></i>
+    </button>
+    <button type="button" (click)="applyFormat('insertOrderedList')" [disabled]="disabled" title="Lista numerada">
+      <i class="bi bi-list-ol"></i>
+    </button>
+    <span class="separator"></span>
+    <button type="button" (click)="clearFormatting()" [disabled]="disabled" title="Limpar formato">
+      <i class="bi bi-eraser"></i>
+    </button>
+  </div>
+
+  <div
+    class="rich-editor__content"
+    #editable
+    [attr.contenteditable]="!disabled"
+    [attr.data-placeholder]="placeholder"
+    (input)="handleInput()"
+    (blur)="handleBlur()"
+  ></div>
+</div>

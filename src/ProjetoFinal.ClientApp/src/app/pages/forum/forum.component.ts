@@ -9,11 +9,12 @@ import { CoursesService } from '../../core/services/courses.service';
 import { ForumThreadCreatePayload, ForumThreadListItem } from '../../core/api/forum.api';
 import { AuthService } from '../../core/services/auth.service';
 import { ClassGroupDto, CourseDto } from '../../core/api/courses.api';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
   templateUrl: './forum.component.html',
   styleUrl: './forum.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

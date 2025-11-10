@@ -24,6 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { MediaResource } from '../../core/api/media.api';
 import { MediaService } from '../../core/services/media.service';
 import { Router } from '@angular/router';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
 
 type AttachmentStatus = 'uploading' | 'ready' | 'error';
 
@@ -39,7 +40,7 @@ interface ContentAttachmentDraft {
 @Component({
   selector: 'app-course-contents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
   templateUrl: './course-contents.component.html',
   styleUrl: './course-contents.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
