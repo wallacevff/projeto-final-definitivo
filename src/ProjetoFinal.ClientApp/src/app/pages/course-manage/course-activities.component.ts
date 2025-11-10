@@ -11,6 +11,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { ActivitiesService } from '../../core/services/activities.service';
@@ -55,6 +56,7 @@ export class CourseActivitiesComponent {
   readonly formVisible = signal(false);
   readonly isSubmitting = signal(false);
   readonly attachments = signal<AttachmentDraft[]>([]);
+  readonly allGroupsOption = '__all__';
 
   readonly availableGroups = computed(() => {
     const course = this.courseState();
@@ -153,16 +155,27 @@ export class CourseActivitiesComponent {
       return;
     }
 
-    const classGroupId = this.form.controls.classGroupId.value ?? '';
-    if (!classGroupId) {
-      this.toastr.error('Selecione uma turma para vincular a atividade.');
+    const selectedGroupId = this.form.controls.classGroupId.value ?? '';
+    const targetGroups =
+      selectedGroupId === this.allGroupsOption
+        ? this.availableGroups()
+        : this.availableGroups().filter(group => group.Id === selectedGroupId);
+
+    if (!targetGroups.length) {
+      this.toastr.error('Selecione ao menos uma turma para vincular a atividade.');
       return;
     }
 
     const allowLate = Boolean(this.form.controls.allowLateSubmissions.value);
-    const payload: ActivityCreatePayload = {
+    const attachments = this.attachments()
+      .filter(item => item.status === 'ready' && item.media)
+      .map(item => ({
+        MediaResourceId: item.media!.Id,
+        Caption: item.caption?.trim() || undefined
+      }));
+
+    const basePayload = {
       CourseId: course.Id,
-      ClassGroupId: classGroupId,
       CreatedById: currentUser.id,
       Title: (this.form.controls.title.value ?? '').trim(),
       Description: (this.form.controls.description.value ?? '').trim(),
@@ -172,24 +185,29 @@ export class CourseActivitiesComponent {
       AllowLateSubmissions: allowLate,
       LatePenaltyPercentage: allowLate ? this.parseInteger(this.form.controls.latePenaltyPercentage.value) : undefined,
       VisibleToStudents: Boolean(this.form.controls.visibleToStudents.value),
-      Attachments: this.attachments()
-        .filter(item => item.status === 'ready' && item.media)
-        .map(item => ({
-          MediaResourceId: item.media!.Id,
-          Caption: item.caption?.trim() || undefined
-        }))
+      Attachments: attachments
     };
 
+    const requests = targetGroups.map(group =>
+      this.activitiesService.createActivity({
+        ...basePayload,
+        ClassGroupId: group.Id
+      } satisfies ActivityCreatePayload)
+    );
+
     this.isSubmitting.set(true);
-    this.activitiesService
-      .createActivity(payload)
+    forkJoin(requests)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isSubmitting.set(false))
       )
       .subscribe({
         next: () => {
-          this.toastr.success('Atividade registrada com sucesso.');
+          const message =
+            targetGroups.length > 1
+              ? `Atividade registrada para ${targetGroups.length} turmas.`
+              : 'Atividade registrada com sucesso.';
+          this.toastr.success(message);
           this.resetForm();
           if (this.currentCourseId) {
             this.loadActivities(this.currentCourseId);

@@ -29,6 +29,7 @@
         <span>Turma</span>
         <select formControlName="classGroupId" [disabled]="!hasAvailableGroups()">
           <option value="" disabled>Selecione uma turma</option>
+          <option [value]="allGroupsOption">Todas as turmas interativas</option>
           <option *ngFor="let group of availableGroups()" [value]="group.Id">
             {{ group.Name }}
           </option>
