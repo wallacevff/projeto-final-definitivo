@@ -187,3 +187,7 @@ Data: 2025-11-09 20:36:00
 5. Pendencias
  - Revisar budgets de bundle/estilos do Angular antes do deploy.
  - Avaliar mecanismos de reordenacao em massa para conteudos/atividades quando o volume crescer.
+
+Instrucoes Fixas:
+ - Nunca substituir conteudo existente em docs/memoria_projeto.txt; apenas fazer append quando houver novas atualizacoes.
+ - Antes de qualquer atividade relevante, ler o arquivo docs/context.txt para garantir alinhamento com o estado atual.

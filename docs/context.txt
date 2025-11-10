@@ -1,0 +1,6 @@
+Data: 2025-11-09
+Resumo:
+- Backend integra uploads ao MinIO com deduplicacao por hash, endpoint de download autenticado e parse robusto do StoragePath.
+- Frontend possui modulos de gestao de atividades e conteudos; conteudos exibem videos com anotacoes locais e usam a API para baixar anexos.
+- Build .NET depende de nao haver processos bloqueando dlls em src/ProjetoFinal.Api/bin.
+- Avisos pendentes: budgets do Angular e seletores legacy do Bootstrap; avaliar futuramente.
