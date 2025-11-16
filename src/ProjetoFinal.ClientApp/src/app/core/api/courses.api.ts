@@ -47,6 +47,12 @@ export interface ClassEnrollmentDto {
   DecidedById?: string;
 }
 
+export interface ClassEnrollmentRequestPayload {
+  ClassGroupId: string;
+  StudentId: string;
+  EnrollmentCode?: string;
+}
+
 export interface ClassGroupDto {
   Id: string;
   CourseId: string;
@@ -78,6 +84,7 @@ export interface CoursesFilter {
 export interface CourseListItem {
   id: string;
   title: string;
+  mode: number;
   modeLabel: string;
   category: string;
   instructor: string;
@@ -106,6 +113,7 @@ function mapCourseDtoToListItem(course: CourseDto): CourseListItem {
   return {
     id: course.Id,
     title: course.Title,
+    mode: course.Mode,
     modeLabel: courseModeLabel[course.Mode] ?? 'Assincrono',
     category: course.CategoryName,
     instructor: course.InstructorName,

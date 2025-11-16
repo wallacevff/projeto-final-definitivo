@@ -2,6 +2,10 @@
 using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
 using ProjetoFinal.Application.Contracts.Services;
 using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ProjetoFinal.Api.Controllers;
 
@@ -39,6 +43,14 @@ public class ClassGroupsController : BaseController<
             return BadRequest("ClassGroupId divergente do valor na rota.");
         }
 
+        var studentId = ResolveCurrentUserId();
+        if (studentId == Guid.Empty)
+        {
+            throw new BusinessException("Aluno nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        dto.StudentId = studentId;
+
         var enrollment = await Service.RequestEnrollmentAsync(dto, cancellationToken);
         return Ok(enrollment);
     }
@@ -67,6 +79,12 @@ public class ClassGroupsController : BaseController<
     {
         var hasSeats = await Service.HasAvailableSeatsAsync(classGroupId, cancellationToken);
         return Ok(new AvailabilityResponse(hasSeats));
+    }
+
+    private Guid ResolveCurrentUserId()
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
     }
 
     public record AvailabilityResponse(bool HasSeats);

@@ -42,8 +42,8 @@ export class CoursesService {
     return this.fetchCoursesDto(filter).pipe(map(mapCoursesResponse));
   }
 
-  getCoursesDto() {
-    return this.fetchCoursesDto().pipe(map(response => normalizePagedResponse(response).items));
+  getCoursesDto(filter: CoursesFilter = {}) {
+    return this.fetchCoursesDto(filter).pipe(map(response => normalizePagedResponse(response).items));
   }
 
   getClassGroupRows(forceRefresh = false) {

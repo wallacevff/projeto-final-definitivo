@@ -1,49 +1,207 @@
 <section class="courses">
   <header class="courses__header">
     <div>
-      <h2>Cursos publicados</h2>
-      <p class="description">Visualize a disponibilidade das trilhas e acompanhe o envolvimento dos alunos.</p>
+      <h2>Cursos disponiveis</h2>
+      <p class="description">Escolha sua proxima trilha de aprendizado filtrando por nome, categoria ou instrutor.</p>
     </div>
-    <a routerLink="/courses/create" class="courses__new">Novo curso</a>
+    <div class="courses__count">
+      {{ filteredCourses().length }} resultado{{ filteredCourses().length === 1 ? '' : 's' }}
+    </div>
   </header>
+
+  <section class="courses__filters" aria-label="Filtros de cursos">
+    <label class="filter-field">
+      <span>Nome do curso</span>
+      <input
+        #titleInput
+        type="search"
+        placeholder="Busque por titulo"
+        [value]="titleFilter()"
+        (input)="onTitleFilterChange(titleInput.value)"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Categoria</span>
+      <input
+        #categoryInput
+        type="search"
+        placeholder="Ex.: Computacao"
+        [value]="categoryFilter()"
+        (input)="onCategoryFilterChange(categoryInput.value)"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Instrutor</span>
+      <input
+        #instructorInput
+        type="search"
+        placeholder="Digite o nome do instrutor"
+        [value]="instructorFilter()"
+        (input)="onInstructorFilterChange(instructorInput.value)"
+      />
+    </label>
+
+    <button type="button" class="filter-reset" (click)="resetFilters()">Limpar filtros</button>
+  </section>
 
   <ng-container *ngIf="!loading(); else loadingState">
     <ng-container *ngIf="!error(); else errorState">
-      <div class="courses__grid">
-        <article
-          *ngFor="let course of courses(); trackBy: trackByCourseId"
-          class="course-card"
-          [attr.data-status]="course.published ? 'Publicado' : 'Rascunho'"
-        >
-          <div class="course-card__header">
-            <span class="course-card__category">{{ course.category }}</span>
-            <span class="course-card__status">{{ course.published ? 'Publicado' : 'Rascunho' }}</span>
-          </div>
+      <ng-container *ngIf="filteredCourses().length; else emptyState">
+        <div class="courses__grid">
+          <article *ngFor="let course of filteredCourses(); trackBy: trackByCourseId" class="course-card">
+            <div class="course-card__header">
+              <span class="course-card__category">{{ course.category || 'Sem categoria' }}</span>
+              <span class="course-card__status">Publicado</span>
+            </div>
 
-          <h3>{{ course.title }}</h3>
+            <h3>{{ course.title }}</h3>
 
-          <div class="course-card__meta">
-            <span>Instrutor: <strong>{{ course.instructor || 'Instrutor nao informado' }}</strong></span>
-            <span>Modalidade: {{ course.modeLabel }}</span>
-            <span *ngIf="course.published && course.publishedAt">Publicado em {{ course.publishedAt | date:'dd/MM/yyyy' }}</span>
-          </div>
+            <div class="course-card__meta">
+              <span>Instrutor: <strong>{{ course.instructor || 'Instrutor nao informado' }}</strong></span>
+              <span>Modalidade: {{ course.modeLabel }}</span>
+              <span *ngIf="course.publishedAt">Publicado em {{ course.publishedAt | date:'dd/MM/yyyy' }}</span>
+            </div>
 
-          <div class="course-card__footer">
-            <div class="progress">
-              <label>Ocupacao das turmas</label>
-              <div class="progress__bar">
-                <span [style.width.%]="percentOccupied(course)"></span>
+            <div class="course-card__footer">
+              <div class="progress">
+                <label>Ocupacao das turmas</label>
+                <div class="progress__bar">
+                  <span [style.width.%]="percentOccupied(course)"></span>
+                </div>
+                <small>
+                  {{ course.enrolledStudents }} inscritos · {{ course.classGroups }} turmas ·
+                  {{ percentOccupied(course) }}%
+                </small>
               </div>
-              <small>{{ course.enrolledStudents }} inscritos - {{ course.classGroups }} turmas - {{ percentOccupied(course) }}%</small>
+              <div class="stats">
+                <span class="stats__label">Disponibilidade</span>
+                <strong>{{ course.capacity || 'Ilimitado' }}</strong>
+              </div>
             </div>
-            <div class="stats">
-              <button type="button" (click)="goToManagement(course.id)">Gerenciar</button>
+
+            <div class="course-card__actions" *ngIf="isInstructorUser()">
+              <button
+                type="button"
+                class="course-card__action course-card__action--secondary"
+                (click)="manageCourse(course.id)"
+              >
+                Gerenciar curso
+              </button>
+              <small>Atualize turmas, conteudos e atividades.</small>
             </div>
-          </div>
-        </article>
-      </div>
+
+            <div class="course-card__actions" *ngIf="canSubscribe(course)">
+              <button
+                type="button"
+                class="course-card__action"
+                [disabled]="isSubscribed(course.id) || isEnrolling(course.id)"
+                (click)="enrollInCourse(course)"
+              >
+                <ng-container *ngIf="isSubscribed(course.id); else enrollLabel">
+                  Inscrito
+                </ng-container>
+                <ng-template #enrollLabel>
+                  {{ isEnrolling(course.id) ? 'Inscrevendo...' : 'Inscrever-se' }}
+                </ng-template>
+              </button>
+              <small>Distribuicao de materiais liberada apos a inscricao.</small>
+            </div>
+
+            <div class="course-card__actions" *ngIf="canRequestInteractiveEnrollment(course)">
+              <button
+                type="button"
+                class="course-card__action course-card__action--outlined"
+                [disabled]="isInteractiveEnrolled(course.id)"
+                (click)="openInteractiveEnrollment(course)"
+              >
+                {{ isInteractiveEnrolled(course.id) ? 'Solicitacao enviada' : 'Selecionar turma' }}
+              </button>
+              <small>
+                {{ isInteractiveEnrolled(course.id) ? 'Voce já solicitou vaga neste curso.' : 'Escolha uma turma interativa e envie sua solicitacao.' }}
+              </small>
+            </div>
+          </article>
+        </div>
+      </ng-container>
     </ng-container>
   </ng-container>
+</section>
+
+<section class="enrollment-panel" *ngIf="enrollmentPanelCourse() as selectedCourse">
+  <div class="enrollment-panel__overlay" (click)="closeInteractiveEnrollment()"></div>
+  <div class="enrollment-panel__content">
+    <header class="enrollment-panel__header">
+      <div>
+        <p class="eyebrow">Inscricao em turma interativa</p>
+        <h3>{{ selectedCourse.Title }}</h3>
+        <p>{{ selectedCourse.ShortDescription }}</p>
+      </div>
+      <button type="button" class="enrollment-panel__close" (click)="closeInteractiveEnrollment()">Fechar</button>
+    </header>
+
+    <ng-container *ngIf="!enrollmentPanelLoading(); else enrollmentLoadingState">
+      <ng-container *ngIf="!enrollmentPanelError(); else enrollmentErrorState">
+        <ng-container *ngIf="interactiveGroups().length; else enrollmentEmptyState">
+          <div class="group-options">
+            <article
+              *ngFor="let group of interactiveGroups(); trackBy: trackByGroup"
+              class="group-option"
+              [class.group-option--selected]="selectedClassGroupId() === group.Id"
+              (click)="selectClassGroup(group.Id)"
+            >
+              <header>
+                <div>
+                  <h4>{{ group.Name }}</h4>
+                  <p *ngIf="group.Description">{{ group.Description }}</p>
+                </div>
+                <span class="badge">
+                  {{ group.RequiresApproval ? 'Aprovação' : 'Entrada imediata' }}
+                </span>
+              </header>
+              <dl>
+                <div>
+                  <dt>Vagas</dt>
+                  <dd>{{ group.ApprovedEnrollments }}/{{ group.Capacity }}</dd>
+                </div>
+                <div>
+                  <dt>Inscrições</dt>
+                  <dd>{{ group.RequiresEnrollmentCode ? 'Código obrigatório' : 'Aberta' }}</dd>
+                </div>
+                <div>
+                  <dt>Chat</dt>
+                  <dd>{{ group.EnableChat ? 'Ativo' : 'Desativado' }}</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+
+          <div class="enrollment-code" *ngIf="requiresCodeForSelection()">
+            <label for="enrollmentCode">Codigo de inscricao da turma</label>
+            <input
+              #codeInput
+              id="enrollmentCode"
+              type="text"
+              [value]="enrollmentCode()"
+              (input)="onEnrollmentCodeChange(codeInput.value)"
+              [class.input--invalid]="enrollmentCodeError()"
+            />
+            <small class="error" *ngIf="enrollmentCodeError()">{{ enrollmentCodeError() }}</small>
+          </div>
+
+          <button
+            type="button"
+            class="enrollment-panel__submit"
+            [disabled]="enrollmentSubmitting()"
+            (click)="submitClassGroupEnrollment()"
+          >
+            {{ enrollmentSubmitting() ? 'Enviando...' : enrollmentActionLabel() }}
+          </button>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
 </section>
 
 <ng-template #loadingState>
@@ -52,4 +210,20 @@
 
 <ng-template #errorState>
   <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state">Nenhum curso encontrado com os filtros informados.</div>
+</ng-template>
+
+<ng-template #enrollmentLoadingState>
+  <div class="state state--info">Carregando turmas...</div>
+</ng-template>
+
+<ng-template #enrollmentErrorState>
+  <div class="state state--error">{{ enrollmentPanelError() }}</div>
+</ng-template>
+
+<ng-template #enrollmentEmptyState>
+  <div class="state">Este curso ainda nao possui turmas ativas.</div>
 </ng-template>

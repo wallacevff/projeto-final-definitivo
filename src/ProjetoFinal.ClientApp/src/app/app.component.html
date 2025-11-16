@@ -11,7 +11,7 @@
 
       <nav class="nav">
         <a
-          *ngFor="let item of navItems"
+          *ngFor="let item of navItems()"
           [routerLink]="item.route"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
@@ -50,9 +50,6 @@
       </header>
 
       <main class="content" role="main">
-        <section class="student-notice" *ngIf="isStudent()">
-          <strong>Aviso:</strong> você entrou como aluno. Em breve, disponibilizaremos o painel dedicado para estudantes.
-        </section>
         <router-outlet></router-outlet>
       </main>
     </div>

@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { catchError, forkJoin, Observable, of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { ClassGroupCreatePayload, ClassGroupDto } from '../api/courses.api';
+import { ClassEnrollmentDto, ClassEnrollmentRequestPayload, ClassGroupCreatePayload, ClassGroupDto } from '../api/courses.api';
 
 @Injectable({ providedIn: 'root' })
 export class ClassGroupsService {
@@ -28,5 +28,11 @@ export class ClassGroupsService {
     }
 
     return forkJoin(payloads.map(payload => this.createClassGroup(payload)));
+  }
+
+  requestEnrollment(classGroupId: string, payload: ClassEnrollmentRequestPayload) {
+    return this.http
+      .post<ClassEnrollmentDto>(`${this.baseUrl}/class-groups/${classGroupId}/enrollments`, payload)
+      .pipe(catchError(error => throwError(() => error)));
   }
 }
