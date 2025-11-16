@@ -241,3 +241,22 @@ Data: 2025-11-10 11:05:00
 
 2. Instruções
  - Lembrar de registrar transcrições no arquivo acima sempre que o usuário pedir.
+ - Commits devem ser escritos em PT-BR (títulos e descrições).
+
+=== Estado Atual do Projeto EAD ===
+
+Data: 2025-11-16 20:30:00
+
+1. API e Contratos
+ - `CourseSubscriptionsController` agora força o uso do aluno autenticado tanto em `/api` quanto em `/api/v1`.
+ - `ClassGroupsController` injeta o aluno logado ao solicitar inscrição em turmas interativas.
+ - `CourseSubscriptionAppService` valida modalidade (distribuição) e estado do curso antes de aceitar novas inscrições.
+
+2. Frontend Angular
+ - Botões da listagem de cursos ajustam rótulo/comportamento conforme perfil (aluno encontra “Inscrever-se” / “Selecionar turma”; instrutor vê “Gerenciar curso”).
+ - Fluxo de inscrição para turmas: painel lateral permite escolher turmas, informar códigos e envia o POST para `/class-groups/{id}/enrollments`, bloqueando quando já houver solicitação.
+ - Dashboard do aluno mescla cursos de distribuição e matrículas em turmas interativas, exibindo nome da turma e status (pendente/aprovado).
+ - Sidebar alterna automaticamente entre “Meus cursos” (aluno) e “Painel” (instrutor).
+
+3. Build e Execução
+ - `npm run build` continua concluindo com os avisos conhecidos de orçamento (bundle inicial, CSSs de dashboard/courses/app/class-group-manage) e seletores Bootstrap.

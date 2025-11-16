@@ -8,3 +8,10 @@ Resumo:
 - Frontend: gestão de atividades/conteúdos com opções para "todas as turmas", viewer de atividades/ conteúdos com download autenticado e vídeo+anotações; campos de descrição usam editor rich-text compartilhado.
 - Build .NET falha se arquivos em src/ProjetoFinal.Api/bin estiverem abertos; Angular ainda com avisos de budget/seletores.
 - Novo arquivo `docs/transcriptions.txt` deve ser usado para registrar transcrições sempre que solicitado.
+
+Data: 2025-11-16
+Resumo:
+- Backend agora injeta o aluno autenticado ao criar `CourseSubscription` e nas solicitações de turmas (`ClassGroupsController`), restringindo inscrições a cursos publicados e à modalidade correta.
+- Frontend traz fluxo completo de inscrições: botões para alunos (distribuição e turmas), painel de seleção com códigos, bloqueio quando já há solicitação e dashboard unificado exibindo status.
+- Sidebar alterna o item inicial (Meus cursos vs. Painel) conforme o papel logado; instrutores possuem botão direto para “Gerenciar curso” na listagem.
+- `npm run build` segue com sucesso, mantendo apenas os avisos conhecidos de orçamento/seletores do Angular.
