@@ -47,6 +47,21 @@
                 <dd>{{ course.subscribedAt | date:'dd/MM/yyyy' }}</dd>
               </div>
             </dl>
+
+            <button
+              type="button"
+              class="student-course-card__cta"
+              (click)="openCourse(course.id)"
+              [disabled]="!canAccessCourse(course)"
+            >
+              {{ canAccessCourse(course) ? 'Acessar curso' : 'Aguardando aprovacao' }}
+            </button>
+            <small
+              class="student-course-card__hint"
+              *ngIf="!canAccessCourse(course) && course.enrollmentType === 'interactive'"
+            >
+              Aguarde a aprovacao da turma para acessar os materiais.
+            </small>
           </article>
         </div>
       </ng-container>

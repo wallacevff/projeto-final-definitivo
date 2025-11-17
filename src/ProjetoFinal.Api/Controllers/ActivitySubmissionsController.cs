@@ -7,6 +7,7 @@ using ProjetoFinal.Domain.Filters;
 namespace ProjetoFinal.Api.Controllers;
 
 [Route("api/activity-submissions")]
+[Route("api/v1/activity-submissions")]
 public class ActivitySubmissionsController : ControllerBase
 {
     private readonly IActivitySubmissionAppService _service;

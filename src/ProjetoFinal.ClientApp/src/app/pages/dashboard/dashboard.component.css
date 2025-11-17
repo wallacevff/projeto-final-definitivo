@@ -143,6 +143,35 @@
   color: var(--surface-900);
 }
 
+.student-course-card__cta {
+  margin-top: auto;
+  align-self: flex-start;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.4rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--accent-600);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.student-course-card__cta:disabled {
+  background: rgba(148, 163, 184, 0.6);
+  cursor: not-allowed;
+}
+
+.student-course-card__cta:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(15, 23, 42, 0.6);
+}
+
+.student-course-card__hint {
+  font-size: 0.75rem;
+  color: var(--surface-500);
+}
+
 .state {
   padding: 1.5rem;
   border-radius: 16px;

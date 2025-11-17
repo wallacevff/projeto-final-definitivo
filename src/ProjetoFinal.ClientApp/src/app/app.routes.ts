@@ -39,6 +39,13 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'student/courses/:courseId',
+    loadComponent: () =>
+      import('./pages/student-course-view/student-course-view.component').then(m => m.StudentCourseViewComponent),
+    title: 'Meu Curso - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
     path: 'courses/:courseId/contents/:contentId',
     loadComponent: () =>
       import('./pages/course-content-viewer/course-content-viewer.component').then(m => m.CourseContentViewerComponent),

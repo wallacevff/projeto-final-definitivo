@@ -127,6 +127,17 @@ export class DashboardComponent {
     }
   }
 
+  canAccessCourse(course: StudentCourseCard): boolean {
+    if (course.enrollmentType === 'distribution') {
+      return true;
+    }
+    return course.enrollmentStatus === 2;
+  }
+
+  openCourse(courseId: string): void {
+    this.router.navigate(['/student/courses', courseId]);
+  }
+
   private loadStudentCourses(studentId: string): void {
     forkJoin({
       subscriptions: this.subscriptionsService.getByStudent(studentId),

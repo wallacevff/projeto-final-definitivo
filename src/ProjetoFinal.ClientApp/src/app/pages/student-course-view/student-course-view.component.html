@@ -1,0 +1,135 @@
+﻿<section class="student-course-view">
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="course() as course">
+        <header class="student-course-view__header">
+          <div>
+            <p class="breadcrumbs">Dashboard / Meus cursos / {{ course.Title }}</p>
+            <h1>{{ course.Title }}</h1>
+            <p class="lead">{{ course.ShortDescription || 'Explore os materiais disponibilizados para esta turma.' }}</p>
+          </div>
+          <button type="button" class="ghost-button" (click)="backToDashboard()" aria-label="Voltar para o painel">
+            Voltar
+          </button>
+        </header>
+
+        <div class="course-meta">
+          <span class="course-meta__pill">{{ course.CategoryName }}</span>
+          <span class="course-meta__pill">{{ course.Mode === 1 ? 'Interativo' : 'Distribuicao' }}</span>
+          <span class="course-meta__pill">Instrutor: {{ course.InstructorName }}</span>
+        </div>
+
+        <nav class="course-menu" aria-label="Secoes do curso">
+          <button
+            *ngFor="let section of sections"
+            type="button"
+            class="course-menu__button"
+            [class.course-menu__button--active]="activeSection() === section.key"
+            (click)="setSection(section.key)"
+          >
+            <span>{{ section.label }}</span>
+            <small>{{ section.description }}</small>
+          </button>
+        </nav>
+
+        <section class="course-panel" *ngIf="activeSection() === 'activities'" id="activities">
+          <header>
+            <h2>Atividades</h2>
+            <p>Entregas e avaliacoes liberadas para este curso.</p>
+          </header>
+
+          <ng-container *ngIf="activities().length; else noActivities">
+            <article *ngFor="let activity of activities()" class="course-panel__item">
+              <div>
+                <h3>{{ activity.title }}</h3>
+                <p class="muted">
+                  Disponivel para a turma {{ activity.classGroupName }} - {{ activity.dueDateLabel }}
+                </p>
+              </div>
+              <a
+                class="course-panel__link"
+                [routerLink]="['/courses', course.Id, 'activities', activity.id]"
+              >
+                Ver atividade
+              </a>
+            </article>
+          </ng-container>
+        </section>
+
+        <section class="course-panel" *ngIf="activeSection() === 'contents'" id="contents">
+          <header>
+            <h2>Conteudos</h2>
+            <p>Materiais e anexos publicados para estudo.</p>
+          </header>
+
+          <ng-container *ngIf="contents().length; else noContents">
+            <article *ngFor="let content of contents()" class="course-panel__item">
+              <div>
+                <h3>{{ content.title }}</h3>
+                <p class="muted">
+                  {{ content.status }} -
+                  {{ content.publishedAt ? (content.publishedAt | date:'dd/MM/yyyy HH:mm') : 'Sem data' }}
+                </p>
+              </div>
+              <a
+                class="course-panel__link"
+                [routerLink]="['/courses', course.Id, 'contents', content.id]"
+              >
+                Abrir conteudo
+              </a>
+            </article>
+          </ng-container>
+        </section>
+
+        <section class="course-panel" *ngIf="activeSection() === 'forum'" id="forum">
+          <header>
+            <h2>Forum do curso</h2>
+            <p>Discussoes, duvidas e anuncios da turma.</p>
+          </header>
+
+          <ng-container *ngIf="course.EnableForum; else forumDisabled">
+            <ng-container *ngIf="forumThreads().length; else noThreads">
+              <article *ngFor="let thread of forumThreads()" class="course-panel__item">
+                <div>
+                  <h3>{{ thread.title }}</h3>
+                  <p class="muted">
+                    {{ thread.classGroupName }} - {{ thread.replies }} resposta{{ thread.replies === 1 ? '' : 's' }} -
+                    Atualizado {{ thread.lastActivityLabel }}
+                  </p>
+                </div>
+                <button type="button" class="course-panel__link" (click)="openForum()">
+                  Abrir no forum
+                </button>
+              </article>
+            </ng-container>
+            <button type="button" class="ghost-button" (click)="openForum()">Ver forum completo</button>
+          </ng-container>
+        </section>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="course-state">Carregando dados do curso...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="course-state course-state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #noActivities>
+  <p class="course-state">Nenhuma atividade disponivel ainda.</p>
+</ng-template>
+
+<ng-template #noContents>
+  <p class="course-state">Os conteudos serao liberados em breve.</p>
+</ng-template>
+
+<ng-template #noThreads>
+  <p class="course-state">Ainda nao ha discussoes para este curso.</p>
+</ng-template>
+
+<ng-template #forumDisabled>
+  <p class="course-state">O forum nao esta habilitado para este curso.</p>
+</ng-template>

@@ -42,6 +42,114 @@
       </ul>
     </ng-container>
   </section>
+
+  <section class="submission-module" *ngIf="isStudent()">
+    <header class="submission-module__header">
+      <div>
+        <h3>Realizar atividade</h3>
+        <p class="muted">
+          Envie uma observacao e adicione arquivos de apoio para concluir esta atividade.
+        </p>
+      </div>
+      <span class="badge badge--accent">Area do aluno</span>
+    </header>
+
+    <ng-container *ngIf="submissionLoading(); else submissionContent">
+      <div class="state state--info">Verificando envios anteriores...</div>
+    </ng-container>
+
+    <ng-template #submissionContent>
+      <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
+
+      <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
+        <header>
+          <div>
+            <h4>Envio registrado</h4>
+            <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <span class="status-badge" data-status="enviado">Enviado</span>
+        </header>
+
+        <section *ngIf="submission.TextAnswer">
+          <h5>Observacao enviada</h5>
+          <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
+        </section>
+
+        <section>
+          <h5>Anexos do aluno</h5>
+          <ng-container *ngIf="submission.Attachments.length; else noStudentAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of submission.Attachments">
+                <div>
+                  <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
+                  <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="button button--ghost"
+                  (click)="downloadSubmissionAttachment(attachment)"
+                  [disabled]="downloading() === attachment.MediaResourceId"
+                >
+                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                </button>
+              </li>
+            </ul>
+          </ng-container>
+        </section>
+      </article>
+
+      <ng-template #submissionFormTpl>
+        <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
+          <label for="textAnswer">Observacao</label>
+          <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
+          <small class="field-hint">Descreva sua resposta ou contextualize os anexos enviados.</small>
+
+          <div class="submission-form__attachments">
+            <div class="submission-form__attachments-header">
+              <div>
+                <h4>Seus anexos</h4>
+                <p class="muted">Adicione os arquivos em PDF, imagem, audio ou video.</p>
+              </div>
+              <label class="upload-button">
+                <input type="file" multiple (change)="handleSubmissionFiles($event)" [disabled]="isSubmittingWork()" />
+                Adicionar arquivos
+              </label>
+            </div>
+
+            <ng-container *ngIf="submissionAttachments().length; else noDrafts">
+              <ul class="attachment-drafts">
+                <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
+                  <div>
+                    <strong>{{ attachment.fileName }}</strong>
+                    <p class="muted" *ngIf="attachment.status === 'uploading'">Enviando...</p>
+                    <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
+                      Falha no envio
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="button button--ghost"
+                    (click)="removeSubmissionAttachment(attachment.id)"
+                    [disabled]="attachment.status === 'uploading' || isSubmittingWork()"
+                  >
+                    Remover
+                  </button>
+                </li>
+              </ul>
+            </ng-container>
+          </div>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
+          >
+            {{ isSubmittingWork() ? 'Enviando...' : 'Enviar atividade' }}
+          </button>
+        </form>
+      </ng-template>
+    </ng-template>
+  </section>
 </section>
 
 <ng-template #stateBlock>
@@ -54,4 +162,12 @@
 
 <ng-template #noAttachments>
   <p class="muted">Nenhum anexo publicado para esta atividade.</p>
+</ng-template>
+
+<ng-template #noStudentAttachments>
+  <p class="muted">Nenhum arquivo foi anexado neste envio.</p>
+</ng-template>
+
+<ng-template #noDrafts>
+  <p class="muted">Nenhum arquivo adicionado.</p>
 </ng-template>

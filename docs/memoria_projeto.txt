@@ -260,3 +260,9 @@ Data: 2025-11-16 20:30:00
 
 3. Build e Execução
  - `npm run build` continua concluindo com os avisos conhecidos de orçamento (bundle inicial, CSSs de dashboard/courses/app/class-group-manage) e seletores Bootstrap.
+
+=== Atualizacao 2025-11-16 21:20 ===
+- Frontend: dashboard do aluno exibe botao "Acessar curso" e nova rota /student/courses/:courseId mostra aba unica com atividades, conteudos e forum integrados aos services existentes.
+- Frontend: CourseActivityViewer ganhou modulo de envio de atividades (editor rich-text, upload multiplo via MediaService, consultas/envio em ActivitySubmissionsService) com resumo de anexos e reconciliação com backend.
+- Backend: ActivitySubmissionsController agora responde em /api e /api/v1, evitando 405 para o client Angular.
+- Observacao: lembranca para testar fluxos de envio de anexos (upload + download) e validar exibicao imediata no painel do aluno.

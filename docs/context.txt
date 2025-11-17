@@ -15,3 +15,10 @@ Resumo:
 - Frontend traz fluxo completo de inscrições: botões para alunos (distribuição e turmas), painel de seleção com códigos, bloqueio quando já há solicitação e dashboard unificado exibindo status.
 - Sidebar alterna o item inicial (Meus cursos vs. Painel) conforme o papel logado; instrutores possuem botão direto para “Gerenciar curso” na listagem.
 - `npm run build` segue com sucesso, mantendo apenas os avisos conhecidos de orçamento/seletores do Angular.
+
+Data: 2025-11-16
+Resumo:
+- Dashboard do aluno agora leva a /student/courses/:id com seções de atividades, conteúdos e fórum carregadas dos services existentes.
+- CourseActivityViewer passou a permitir envios (rich-text, anexos, validação) e consome ActivitySubmissionsService (inclui busca detalhada via GET por Id).
+- ActivitySubmissionsController atende também em /api/v1, alinhando com o baseUrl do frontend.
+- Quando testar, lembrar de verificar uploads/downloads de anexos e os estados do formulário do aluno.
