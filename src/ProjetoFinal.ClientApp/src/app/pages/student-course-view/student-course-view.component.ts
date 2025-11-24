@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, EMPTY } from 'rxjs';
 import { distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators';
 
 import { CoursesService } from '../../core/services/courses.service';
 import { ActivitiesService } from '../../core/services/activities.service';
 import { CourseContentsService } from '../../core/services/course-contents.service';
 import { ForumService } from '../../core/services/forum.service';
+import { AuthService } from '../../core/services/auth.service';
 import { CourseDto } from '../../core/api/courses.api';
 import { ActivityListItem } from '../../core/api/activities.api';
 import { CourseContentListItem } from '../../core/api/contents.api';
@@ -28,11 +29,13 @@ export class StudentCourseViewComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
   private readonly coursesService = inject(CoursesService);
   private readonly activitiesService = inject(ActivitiesService);
   private readonly contentsService = inject(CourseContentsService);
   private readonly forumService = inject(ForumService);
 
+  readonly currentUser = this.authService.currentUser;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly course = signal<CourseDto | null>(null);
@@ -66,6 +69,13 @@ export class StudentCourseViewComponent {
         filter((courseId): courseId is string => Boolean(courseId)),
         distinctUntilChanged(),
         switchMap(courseId => {
+          const studentId = this.currentUser()?.id;
+          if (!studentId) {
+            this.loading.set(false);
+            this.error.set('Usuario nao identificado.');
+            return EMPTY;
+          }
+
           this.loading.set(true);
           this.error.set(null);
           this.activeSection.set('activities');
@@ -76,14 +86,16 @@ export class StudentCourseViewComponent {
           return this.coursesService.getCourseById(courseId).pipe(
             tap(course => this.course.set(course)),
             switchMap(course => {
+              const studentGroupIds = this.resolveAccessibleClassGroups(course, studentId);
               const courseLookup = new Map<string, string>([[course.Id, course.Title]]);
 
               const forum$ = course.EnableForum
                 ? this.forumService.getThreads(courseLookup, { CourseId: course.Id })
                 : of<ForumThreadListItem[]>([]);
+              const activities$ = this.loadActivitiesForStudent(course, studentGroupIds);
 
               return forkJoin({
-                activities: this.activitiesService.getActivities({ CourseId: course.Id, VisibleToStudents: true }),
+                activities: activities$,
                 contents: this.contentsService.getContents({ CourseId: course.Id }),
                 forumThreads: forum$
               });
@@ -115,5 +127,56 @@ export class StudentCourseViewComponent {
 
   openForum(): void {
     this.router.navigate(['/forum']);
+  }
+
+  private resolveAccessibleClassGroups(course: CourseDto, studentId: string): string[] {
+    const groups = course.ClassGroups ?? [];
+    if (!groups.length) {
+      return [];
+    }
+
+    const allowedStatus = new Set([1, 2]);
+    const allowedGroups = new Set<string>();
+
+    groups.forEach(group => {
+      if (group.IsMaterialsDistribution) {
+        allowedGroups.add(group.Id);
+        return;
+      }
+
+      const enrollments = group.Enrollments ?? [];
+      const hasEnrollment = enrollments.some(
+        enrollment => enrollment.StudentId === studentId && allowedStatus.has(enrollment.Status)
+      );
+      if (hasEnrollment) {
+        allowedGroups.add(group.Id);
+      }
+    });
+
+    return Array.from(allowedGroups);
+  }
+
+  private loadActivitiesForStudent(course: CourseDto, classGroupIds: string[]) {
+    if (classGroupIds.length === 0) {
+      const hasClassGroups = (course.ClassGroups ?? []).length > 0;
+      if (hasClassGroups) {
+        return of<ActivityListItem[]>([]);
+      }
+
+      return this.activitiesService.getActivities({ CourseId: course.Id, VisibleToStudents: true });
+    }
+
+    if (classGroupIds.length === 1) {
+      return this.activitiesService.getActivities({
+        CourseId: course.Id,
+        ClassGroupId: classGroupIds[0],
+        VisibleToStudents: true
+      });
+    }
+
+    const requests = classGroupIds.map(classGroupId =>
+      this.activitiesService.getActivities({ CourseId: course.Id, ClassGroupId: classGroupId, VisibleToStudents: true })
+    );
+    return forkJoin(requests).pipe(map(results => results.flat()));
   }
 }

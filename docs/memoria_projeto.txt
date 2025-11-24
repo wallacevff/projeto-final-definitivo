@@ -273,3 +273,7 @@ Data: 2025-11-16 20:30:00
 - API/Contracts: ActivitySubmissionDto passou a expor StudentName e o AutoMapper injeta o nome vindo do user associado.
 - Services: activity-submissions.service oferece getById/updateSubmission; UsersService tem getById para complementar nomes.
 - Observacao: builds ng reportam os avisos de budget conhecidos; lembrar de executar npm run build e dotnet build antes de PR.
+
+=== Atualizacao 2025-11-23 21:25 ===
+- Frontend: student-course-view agora identifica o aluno logado e restringe as atividades exibidas às turmas aprovadas/pendentes ou grupos de distribuição do curso, evitando mostrar tarefas de outras turmas.
+- Documentacao: transcricao atualizada conforme solicitado, mantendo o historico das interacoes.

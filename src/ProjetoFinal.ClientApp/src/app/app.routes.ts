@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/guards/auth.guard';
+import { instructorGuard } from './core/guards/instructor.guard';
 
 export const routes: Routes = [
   {
@@ -30,13 +31,13 @@ export const routes: Routes = [
     path: 'courses/create',
     loadComponent: () => import('./pages/course-create/course-create.component').then(m => m.CourseCreateComponent),
     title: 'Criar Curso - SES EAD',
-    canActivate: [authGuard]
+    canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'courses/:courseId/manage',
     loadComponent: () => import('./pages/course-manage/course-manage.component').then(m => m.CourseManageComponent),
     title: 'Gerenciar Curso - SES EAD',
-    canActivate: [authGuard]
+    canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'student/courses/:courseId',
@@ -63,20 +64,20 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/class-group-manage/class-group-manage.component').then(m => m.ClassGroupManageComponent),
     title: 'Gerenciar Turma - SES EAD',
-    canActivate: [authGuard]
+    canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'class-groups/create',
     loadComponent: () =>
       import('./pages/class-group-create/class-group-create.component').then(m => m.ClassGroupCreateComponent),
     title: 'Criar Turma - SES EAD',
-    canActivate: [authGuard]
+    canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'class-groups',
     loadComponent: () => import('./pages/class-groups/class-groups.component').then(m => m.ClassGroupsComponent),
     title: 'Turmas - SES EAD',
-    canActivate: [authGuard]
+    canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'activities',

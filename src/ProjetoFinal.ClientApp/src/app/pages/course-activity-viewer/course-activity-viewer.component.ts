@@ -61,6 +61,7 @@ export class CourseActivityViewerComponent {
   readonly dueDateLabel = computed(() => this.formatDate(this.activity()?.DueDate));
   readonly currentUser = this.authService.currentUser;
   readonly isStudent = computed(() => this.currentUser()?.role === 1);
+  readonly isInstructor = computed(() => this.currentUser()?.role === 2);
   readonly hasUploadingSubmissionAttachments = computed(() =>
     this.submissionAttachments().some(item => item.status === 'uploading')
   );
@@ -106,6 +107,14 @@ export class CourseActivityViewerComponent {
         }
       });
   }
+
+  readonly backLink = computed(() => {
+    const id = this.courseId();
+    if (this.isInstructor()) {
+      return ['/courses', id ?? '', 'manage'];
+    }
+    return id ? ['/student/courses', id] : ['/dashboard'];
+  });
 
   downloadAttachment(attachment: ActivityAttachmentDto): void {
     this.downloadMedia(attachment.MediaResourceId, attachment.Caption || 'anexo');

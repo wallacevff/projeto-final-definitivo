@@ -1,6 +1,6 @@
 <section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
   <header class="activity-viewer__header">
-    <a class="back-link" [routerLink]="['/courses', courseId() ?? '', 'manage']">← Voltar</a>
+    <a class="back-link" [routerLink]="backLink()">← Voltar</a>
     <h2>{{ pageTitle() }}</h2>
     <span class="badge">{{ current.ClassGroupName }}</span>
   </header>
