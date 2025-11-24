@@ -5,6 +5,7 @@ export interface ActivitySubmissionDto {
   Id: string;
   ActivityId: string;
   StudentId: string;
+  StudentName?: string;
   ClassGroupId?: string;
   Status: number;
   SubmittedAt: string;
@@ -28,6 +29,15 @@ export interface ActivitySubmissionCreatePayload {
   ActivityId: string;
   StudentId: string;
   ClassGroupId?: string;
+  TextAnswer?: string;
+  Attachments: SubmissionAttachmentCreatePayload[];
+}
+
+export interface ActivitySubmissionUpdatePayload {
+  Status: number;
+  Score?: number;
+  GradedById: string;
+  Feedback?: string;
   TextAnswer?: string;
   Attachments: SubmissionAttachmentCreatePayload[];
 }

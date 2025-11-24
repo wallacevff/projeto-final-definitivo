@@ -7,6 +7,7 @@ import {
   ActivitySubmissionCreatePayload,
   ActivitySubmissionDto,
   ActivitySubmissionFilter,
+  ActivitySubmissionUpdatePayload,
   mapSubmissionsResponse
 } from '../api/activity-submissions.api';
 import { ApiPagedResponse } from '../api/api.types';
@@ -44,5 +45,11 @@ export class ActivitySubmissionsService {
     return this.getSubmissions({ ActivityId: activityId, StudentId: studentId, PageSize: 1 }).pipe(
       map(response => response.items[0] ?? null)
     );
+  }
+
+  updateSubmission(submissionId: string, payload: ActivitySubmissionUpdatePayload) {
+    return this.http
+      .put<ActivitySubmissionDto>(`${this.baseUrl}/activity-submissions/${submissionId}`, payload)
+      .pipe(catchError(error => throwError(() => error)));
   }
 }

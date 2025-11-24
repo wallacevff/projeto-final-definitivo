@@ -268,6 +268,143 @@
             </ng-container>
           </ng-container>
         </section>
+
+        <section class="activities-card">
+          <header>
+            <div>
+              <h3>Gerencia de atividades</h3>
+              <p>Selecione uma atividade para visualizar e corrigir as submissões.</p>
+            </div>
+            <span class="badge">{{ activities().length }} atividade(s)</span>
+          </header>
+
+          <div class="activities-layout">
+            <aside class="activities-list">
+              <div class="state state--info" *ngIf="activitiesLoading()">Carregando atividades...</div>
+              <ng-container *ngIf="!activitiesLoading()">
+                <ng-container *ngIf="activities().length; else emptyActivities">
+                  <button
+                    type="button"
+                    class="activity-item"
+                    *ngFor="let activity of activities(); trackBy: trackByActivity"
+                    [class.activity-item--active]="selectedActivityId() === activity.id"
+                    (click)="selectActivity(activity.id)"
+                  >
+                    <h4>{{ activity.title }}</h4>
+                    <small>Prazo: {{ activity.dueDateLabel }}</small>
+                    <span class="activity-item__meta">{{ activity.classGroupName }}</span>
+                  </button>
+                </ng-container>
+              </ng-container>
+            </aside>
+
+            <div class="activities-panel">
+              <div class="submissions-card">
+                <header>
+                  <div>
+                    <h4>Submissões</h4>
+                    <p>Listagem baseada na atividade selecionada.</p>
+                  </div>
+                  <span class="badge">{{ submissions().length }} registro(s)</span>
+                </header>
+
+                <div class="state state--info" *ngIf="submissionsLoading()">Carregando submissões...</div>
+                <div class="state state--error" *ngIf="submissionsError() && !submissionsLoading()">{{ submissionsError() }}</div>
+
+                <ng-container *ngIf="!submissionsLoading() && !submissionsError()">
+                  <ng-container *ngIf="submissions().length; else emptySubmissions">
+                    <table class="submissions-table">
+                      <thead>
+                        <tr>
+                          <th>Aluno</th>
+                          <th>Status</th>
+                          <th>Nota</th>
+                          <th>Enviado em</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          *ngFor="let submission of submissions(); trackBy: trackBySubmission"
+                          (click)="selectSubmission(submission.Id)"
+                          [class.is-active]="selectedSubmission()?.Id === submission.Id"
+                        >
+                          <td>{{ submissionStudentName(submission) }}</td>
+                          <td>{{ submissionStatusLabel(submission.Status) }}</td>
+                          <td>{{ submission.Score ?? '—' }}</td>
+                          <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-container>
+                </ng-container>
+              </div>
+
+              <div class="submission-detail">
+                <header>
+                  <div>
+                    <h4>Correção</h4>
+                    <p *ngIf="selectedActivity()">Atividade: {{ selectedActivity()?.title }}</p>
+                  </div>
+                </header>
+
+                <div class="state state--info" *ngIf="submissionDetailsLoading()">Carregando detalhes...</div>
+                <ng-container *ngIf="!submissionDetailsLoading() && selectedSubmission(); else noSubmission">
+                  <article>
+                    <h5>Resposta do aluno</h5>
+                    <div class="rich-content" [innerHTML]="safeHtml(selectedSubmission()?.TextAnswer)"></div>
+                  </article>
+
+                    <section class="submission-detail__attachments">
+                      <h5>Anexos</h5>
+                      <ng-container *ngIf="selectedSubmission()?.Attachments?.length; else noSubmissionAttachments">
+                        <ul class="attachments-list">
+                          <li *ngFor="let attachment of selectedSubmission()?.Attachments">
+                            <div>
+                              <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
+                              <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+                            </div>
+                            <button
+                              type="button"
+                              class="button button--ghost"
+                              (click)="downloadSubmissionAttachment(attachment.MediaResourceId, attachment.Media?.OriginalFileName)"
+                              [disabled]="downloadingAttachment() === attachment.MediaResourceId"
+                            >
+                              {{ downloadingAttachment() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                            </button>
+                          </li>
+                        </ul>
+                      </ng-container>
+                    </section>
+
+                  <form class="grading-form" [formGroup]="gradingForm" (ngSubmit)="saveGrading()">
+                    <div class="field">
+                      <label for="status">Status</label>
+                      <select id="status" formControlName="status">
+                        <option [ngValue]="option.value" *ngFor="let option of submissionStatusOptions">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="field">
+                      <label for="score">Nota</label>
+                      <input id="score" type="number" step="0.1" formControlName="score" />
+                    </div>
+
+                    <div class="field">
+                      <label for="feedback">Feedback</label>
+                      <textarea id="feedback" rows="4" formControlName="feedback"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                      <button type="submit" class="primary-button" [disabled]="submissionDetailsLoading()">Salvar correção</button>
+                    </div>
+                  </form>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </section>
       </ng-container>
     </ng-container>
   </ng-container>
@@ -291,4 +428,20 @@
 
 <ng-template #emptyThreads>
   <div class="state state--info">Ainda nao existem topicos para esta turma.</div>
+</ng-template>
+
+<ng-template #emptyActivities>
+  <div class="state state--info">Nenhuma atividade associada a esta turma.</div>
+</ng-template>
+
+<ng-template #emptySubmissions>
+  <div class="state state--info">Nenhuma submissao recebida para esta atividade.</div>
+</ng-template>
+
+<ng-template #noSubmission>
+  <div class="state state--info">Selecione uma submissao para visualizar.</div>
+</ng-template>
+
+<ng-template #noSubmissionAttachments>
+  <p class="muted">Nenhum anexo enviado.</p>
 </ng-template>

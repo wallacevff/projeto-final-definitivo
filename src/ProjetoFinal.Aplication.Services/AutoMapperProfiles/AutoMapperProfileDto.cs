@@ -66,7 +66,8 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<ActivitySubmission, ActivitySubmissionDto>()
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
-            .ForMember(dest => dest.VideoAnnotations, opt => opt.MapFrom(src => src.VideoAnnotations));
+            .ForMember(dest => dest.VideoAnnotations, opt => opt.MapFrom(src => src.VideoAnnotations))
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty));
 
         CreateMap<SubmissionAttachment, SubmissionAttachmentDto>()
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));

@@ -67,6 +67,12 @@ export class CourseActivityViewerComponent {
   readonly submissionForm = this.fb.group({
     textAnswer: this.fb.control('', { validators: [Validators.maxLength(5000)] })
   });
+  private readonly submissionStatusLabels: Record<number, string> = {
+    1: 'Rascunho',
+    2: 'Submetida',
+    3: 'Corrigida',
+    4: 'Devolvida'
+  };
 
   constructor() {
     this.route.paramMap
@@ -323,6 +329,13 @@ export class CourseActivityViewerComponent {
       ...submission,
       Attachments: submission.Attachments ?? []
     };
+  }
+
+  submissionStatusLabel(status?: number): string {
+    if (!status) {
+      return '';
+    }
+    return this.submissionStatusLabels[status] ?? 'Desconhecido';
   }
 
   private buildUiAttachmentsFromDrafts(): SubmissionAttachmentDto[] {

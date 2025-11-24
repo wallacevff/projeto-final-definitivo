@@ -10,6 +10,7 @@ public class ActivitySubmissionDto
     public Guid Id { get; set; }
     public Guid ActivityId { get; set; }
     public Guid StudentId { get; set; }
+    public string? StudentName { get; set; }
     public Guid? ClassGroupId { get; set; }
     public SubmissionStatus Status { get; set; }
     public DateTime SubmittedAt { get; set; }

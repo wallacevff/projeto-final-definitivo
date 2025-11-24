@@ -266,3 +266,10 @@ Data: 2025-11-16 20:30:00
 - Frontend: CourseActivityViewer ganhou modulo de envio de atividades (editor rich-text, upload multiplo via MediaService, consultas/envio em ActivitySubmissionsService) com resumo de anexos e reconciliação com backend.
 - Backend: ActivitySubmissionsController agora responde em /api e /api/v1, evitando 405 para o client Angular.
 - Observacao: lembranca para testar fluxos de envio de anexos (upload + download) e validar exibicao imediata no painel do aluno.
+
+=== Atualizacao 2025-11-23 15:50 ===
+- Frontend: class-group-manage ganhou secao completa de gerencia de atividades (listagem, tabela de submissões, painel de correção com download de anexos e salvamento de status/notas).
+- Frontend: CourseActivityViewer agora mostra a correção ao aluno (status, nota, feedback) após envio.
+- API/Contracts: ActivitySubmissionDto passou a expor StudentName e o AutoMapper injeta o nome vindo do user associado.
+- Services: activity-submissions.service oferece getById/updateSubmission; UsersService tem getById para complementar nomes.
+- Observacao: builds ng reportam os avisos de budget conhecidos; lembrar de executar npm run build e dotnet build antes de PR.

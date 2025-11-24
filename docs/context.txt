@@ -22,3 +22,10 @@ Resumo:
 - CourseActivityViewer passou a permitir envios (rich-text, anexos, validação) e consome ActivitySubmissionsService (inclui busca detalhada via GET por Id).
 - ActivitySubmissionsController atende também em /api/v1, alinhando com o baseUrl do frontend.
 - Quando testar, lembrar de verificar uploads/downloads de anexos e os estados do formulário do aluno.
+
+Data: 2025-11-23
+Resumo:
+- class-group-manage ganhou gerencia de atividades com listagem, submissões e painel de correção (download de anexos, feedback, status/nota).
+- CourseActivityViewer exibe status/nota/feedback ao aluno quando a submissão é corrigida.
+- ActivitySubmissionDto expõe StudentName; AutoMapper e UsersService foram ajustados para preencher o nome real.
+- ActivitySubmissionsService agora possui getById/updateSubmission; lembrar dos warnings de budget no ng build.

@@ -61,19 +61,39 @@
     <ng-template #submissionContent>
       <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
 
-      <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
-        <header>
-          <div>
-            <h4>Envio registrado</h4>
-            <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
-          </div>
-          <span class="status-badge" data-status="enviado">Enviado</span>
-        </header>
+        <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
+          <header>
+            <div>
+              <h4>Envio registrado</h4>
+              <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <span class="status-badge" data-status="enviado">Enviado</span>
+          </header>
 
-        <section *ngIf="submission.TextAnswer">
-          <h5>Observacao enviada</h5>
-          <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
-        </section>
+          <section class="submission-summary__grading">
+            <h5>Correção</h5>
+            <ng-container *ngIf="submission.Status !== 2 || submission.Score != null || submission.Feedback; else notReviewed">
+              <dl>
+                <div>
+                  <dt>Status</dt>
+                  <dd>{{ submissionStatusLabel(submission.Status) }}</dd>
+                </div>
+                <div *ngIf="submission.Score != null">
+                  <dt>Nota</dt>
+                  <dd>{{ submission.Score }}</dd>
+                </div>
+                <div *ngIf="submission.Feedback">
+                  <dt>Feedback do instrutor</dt>
+                  <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>
+                </div>
+              </dl>
+            </ng-container>
+          </section>
+
+          <section *ngIf="submission.TextAnswer">
+            <h5>Observacao enviada</h5>
+            <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
+          </section>
 
         <section>
           <h5>Anexos do aluno</h5>
@@ -170,4 +190,8 @@
 
 <ng-template #noDrafts>
   <p class="muted">Nenhum arquivo adicionado.</p>
+</ng-template>
+
+<ng-template #notReviewed>
+  <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
 </ng-template>

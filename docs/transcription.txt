@@ -31,3 +31,6 @@
 [2025-11-16 21:13:38] Assistant: Entreguei o módulo de realização de atividade no CourseActivityViewer: inclui formulário com editor rich-text, upload múltiplo de anexos (com MediaService), consulta/envio via ActivitySubmissionsService, estado para envios existentes e resumo do que o aluno já entregou.
 [2025-11-16 21:17:17] User: Quando clico em Enviar atividade... Porque isso acontece?
 [2025-11-16 21:42:34] User: Funcionou, salve nosso progresso
+[2025-11-16 21:43:10] Assistant: Atualizei memória/contexto, finalizei o módulo do aluno (curso, envio de atividades), corrigi o backend para /api/v1, conferi os anexos com nova consulta detalhada e fiz commit/push "feat: liberar acesso ao curso e envio de atividades".
+[2025-11-23 15:37:43] User: Na visualização do professor, preciso que adicione na turma do curso. A gerência de atividades, onde o professor poderá visualizar e corrigir as atividades submetidas pelos alunos.
+[2025-11-23 15:43:46] Assistant: Adicionei a gerencia de atividades na tela de turma do professor: lista de atividades, tabela de submissões por atividade, painel de detalhes com resposta do aluno, anexos e formulário de correção (status/nota/feedback) salvando via ActivitySubmissionsService e permitindo download dos anexos.
