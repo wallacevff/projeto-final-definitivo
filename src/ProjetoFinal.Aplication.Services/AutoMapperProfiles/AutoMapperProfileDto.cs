@@ -53,6 +53,10 @@ public class AutoMapperProfileDto : Profile
         CreateMap<ContentAttachment, ContentAttachmentDto>()
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
 
+        CreateMap<ContentVideoAnnotation, ContentVideoAnnotationDto>().ReverseMap();
+        CreateMap<ContentVideoAnnotationCreateDto, ContentVideoAnnotation>();
+        CreateMap<ContentVideoAnnotationUpdateDto, ContentVideoAnnotation>();
+
         CreateMap<Activity, ActivityDto>()
             .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
             .ForMember(dest => dest.Audiences, opt => opt.MapFrom(src => src.Audiences))

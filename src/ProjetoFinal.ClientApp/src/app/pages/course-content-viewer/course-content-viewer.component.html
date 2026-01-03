@@ -61,21 +61,21 @@
                           <input
                             type="text"
                             placeholder="Mensagem"
-                            [value]="annotationDraft(attachment.MediaResourceId)"
-                            (input)="updateAnnotationDraft(attachment.MediaResourceId, ($any($event.target).value || ''))"
+                            [value]="annotationDraft(attachment.Id)"
+                            (input)="updateAnnotationDraft(attachment.Id, ($any($event.target).value || ''))"
                           />
                           <button
                             type="button"
                             class="button button--ghost"
-                            (click)="addAnnotation(attachment.MediaResourceId, videoPlayer.currentTime)"
+                            (click)="addAnnotation(attachment.Id, videoPlayer.currentTime)"
                           >
                             Adicionar ({{ formatTime(videoPlayer.currentTime) }})
                           </button>
                         </div>
 
-                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.MediaResourceId).length; else noAnnotations">
+                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.Id).length; else noAnnotations">
                           <li
-                            *ngFor="let annotation of annotationsFor(attachment.MediaResourceId)"
+                            *ngFor="let annotation of annotationsFor(attachment.Id)"
                             (click)="seekTo(videoPlayer, annotation.time)"
                           >
                             <span>{{ formatTime(annotation.time) }}</span>

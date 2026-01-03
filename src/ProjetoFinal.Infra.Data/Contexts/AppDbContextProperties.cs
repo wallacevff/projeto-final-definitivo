@@ -12,6 +12,7 @@ public partial class AppDbContext
     public DbSet<CourseSubscription> CourseSubscriptions => Set<CourseSubscription>();
     public DbSet<CourseContent> CourseContents => Set<CourseContent>();
     public DbSet<ContentAttachment> ContentAttachments => Set<ContentAttachment>();
+    public DbSet<ContentVideoAnnotation> ContentVideoAnnotations => Set<ContentVideoAnnotation>();
     public DbSet<MediaResource> MediaResources => Set<MediaResource>();
     public DbSet<ForumThread> ForumThreads => Set<ForumThread>();
     public DbSet<ForumPost> ForumPosts => Set<ForumPost>();

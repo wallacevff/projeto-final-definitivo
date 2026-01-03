@@ -205,7 +205,9 @@ export class DashboardComponent {
     }
 
     const classGroups = course.ClassGroups ?? [];
-    const enrolledStudents = classGroups.reduce((total, group) => total + (group.ApprovedEnrollments ?? 0), 0);
+    const approvedStudents = classGroups.reduce((total, group) => total + (group.ApprovedEnrollments ?? 0), 0);
+    const pendingStudents = classGroups.reduce((total, group) => total + (group.PendingEnrollments ?? 0), 0);
+    const enrolledStudents = approvedStudents + pendingStudents;
     const capacity = classGroups.reduce((total, group) => total + (group.Capacity ?? 0), 0);
 
     return {
@@ -218,6 +220,8 @@ export class DashboardComponent {
       published: course.IsPublished,
       publishedAt: course.PublishedAt,
       enrolledStudents,
+      approvedStudents,
+      pendingStudents,
       capacity,
       classGroups: classGroups.length
     };

@@ -9,6 +9,7 @@ import { CourseContentsService } from '../../core/services/course-contents.servi
 import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
 import { MediaService } from '../../core/services/media.service';
 import { ToastrService } from 'ngx-toastr';
+import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
 
 interface LocalVideoAnnotation {
   id: string;
@@ -31,6 +32,7 @@ export class CourseContentViewerComponent {
   private readonly mediaService = inject(MediaService);
   private readonly toastr = inject(ToastrService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly annotationsService = inject(ContentAnnotationsService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -64,6 +66,7 @@ export class CourseContentViewerComponent {
       .subscribe({
         next: content => {
           this.content.set(content);
+          this.loadPersistedAnnotations(content.Attachments ?? []);
           this.loading.set(false);
           this.error.set(null);
         },
@@ -160,17 +163,30 @@ export class CourseContentViewerComponent {
       return;
     }
 
-    const annotation: LocalVideoAnnotation = {
-      id: crypto.randomUUID?.() ?? Math.random().toString(36).slice(2, 11),
-      time: currentTime,
-      text
-    };
-
-    this.annotationsState.update(state => {
-      const list = state[attachmentId] ?? [];
-      return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
-    });
-    this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
+    this.annotationsService
+      .addAnnotation({
+        ContentAttachmentId: attachmentId,
+        TimeMarkerSeconds: currentTime,
+        Comment: text
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: saved => {
+          const annotation: LocalVideoAnnotation = {
+            id: saved.Id,
+            time: saved.TimeMarkerSeconds,
+            text: saved.Comment
+          };
+          this.annotationsState.update(state => {
+            const list = state[attachmentId] ?? [];
+            return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
+          });
+          this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel salvar a anotacao.');
+        }
+      });
   }
 
   seekTo(video: HTMLVideoElement, time: number): void {
@@ -204,6 +220,31 @@ export class CourseContentViewerComponent {
   private cleanupVideoUrls(): void {
     const urls = Object.values(this.videoUrls());
     urls.forEach(url => URL.revokeObjectURL(url));
+  }
+
+  private loadPersistedAnnotations(attachments: ContentAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoAttachment(attachment))
+      .forEach(attachment => {
+        this.annotationsService
+          .getAnnotations({ ContentAttachmentId: attachment.Id })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: response => {
+              const annotations = response.items
+                .map(item => ({
+                  id: item.Id,
+                  time: item.TimeMarkerSeconds,
+                  text: item.Comment
+                }))
+                .sort((a, b) => a.time - b.time);
+              this.annotationsState.update(state => ({ ...state, [attachment.Id]: annotations }));
+            },
+            error: () => {
+              this.toastr.error('Nao foi possivel carregar as anotacoes do video.');
+            }
+          });
+      });
   }
 
   safeHtml(content?: string | null): SafeHtml {

@@ -91,6 +91,8 @@ export interface CourseListItem {
   published: boolean;
   publishedAt?: string;
   enrolledStudents: number;
+  approvedStudents?: number;
+  pendingStudents?: number;
   capacity: number;
   classGroups: number;
 }
@@ -107,7 +109,9 @@ export function mapCoursesResponse(response: ApiPagedResponse<CourseDto>): Cours
 
 function mapCourseDtoToListItem(course: CourseDto): CourseListItem {
   const classGroups = course.ClassGroups ?? [];
-  const enrolledStudents = classGroups.reduce((total, group) => total + (group.ApprovedEnrollments ?? 0), 0);
+  const approvedStudents = classGroups.reduce((total, group) => total + (group.ApprovedEnrollments ?? 0), 0);
+  const pendingStudents = classGroups.reduce((total, group) => total + (group.PendingEnrollments ?? 0), 0);
+  const enrolledStudents = approvedStudents + pendingStudents;
   const capacity = classGroups.reduce((total, group) => total + (group.Capacity ?? 0), 0);
 
   return {
@@ -120,6 +124,8 @@ function mapCourseDtoToListItem(course: CourseDto): CourseListItem {
     published: course.IsPublished,
     publishedAt: course.PublishedAt,
     enrolledStudents,
+    approvedStudents,
+    pendingStudents,
     capacity,
     classGroups: classGroups.length
   };

@@ -71,13 +71,13 @@
                   <span [style.width.%]="percentOccupied(course)"></span>
                 </div>
                 <small>
-                  {{ course.enrolledStudents }} inscritos · {{ course.classGroups }} turmas ·
+                  {{ approvedEnrollments(course) }} aprovados · {{ course.classGroups }} turmas ·
                   {{ percentOccupied(course) }}%
                 </small>
               </div>
               <div class="stats">
                 <span class="stats__label">Disponibilidade</span>
-                <strong>{{ course.capacity || 'Ilimitado' }}</strong>
+                <strong>{{ availableSlots(course) ?? 'Ilimitado' }}</strong>
               </div>
             </div>
 

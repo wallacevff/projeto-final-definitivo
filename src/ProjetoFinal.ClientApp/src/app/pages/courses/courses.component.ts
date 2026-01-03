@@ -300,12 +300,31 @@ export class CoursesComponent {
     return item.Id;
   }
 
+  approvedEnrollments(course: CourseListItem): number {
+    if (typeof course.approvedStudents === 'number') {
+      return course.approvedStudents;
+    }
+    if (typeof course.pendingStudents === 'number') {
+      return Math.max(0, course.enrolledStudents - course.pendingStudents);
+    }
+    return course.enrolledStudents;
+  }
+
   percentOccupied(course: CourseListItem): number {
     if (!course.capacity) {
       return 0;
     }
 
-    return Math.min(100, Math.round((course.enrolledStudents / course.capacity) * 100));
+    const approvedStudents = this.approvedEnrollments(course);
+    return Math.min(100, Math.round((approvedStudents / course.capacity) * 100));
+  }
+
+  availableSlots(course: CourseListItem): number | null {
+    if (!course.capacity) {
+      return null;
+    }
+
+    return Math.max(0, course.capacity - course.enrolledStudents);
   }
 
   private loadCourses(): void {

@@ -277,3 +277,10 @@ Data: 2025-11-16 20:30:00
 === Atualizacao 2025-11-23 21:25 ===
 - Frontend: student-course-view agora identifica o aluno logado e restringe as atividades exibidas às turmas aprovadas/pendentes ou grupos de distribuição do curso, evitando mostrar tarefas de outras turmas.
 - Documentacao: transcricao atualizada conforme solicitado, mantendo o historico das interacoes.
+
+=== Atualizacao 2026-01-03 14:14:14 ===
+- Backend: persistencia de anotacoes de video para conteudos do curso via ContentVideoAnnotation (entidade, repositorio, service e controller /api/content-annotations).
+- Backend: migration 20260103170626_AddContentVideoAnnotations criada; dotnet ef database update executado (banco ja estava atualizado).
+- Frontend: viewer de conteudo passa a salvar/carregar anotacoes de video por anexo usando ContentAttachmentId.
+- Frontend: ajustes em cursos para disponibilidade e ocupacao (aprovados + pendentes para disponibilidade; barra alinhada com aprovados).
+- Infra: minio-compose.yaml atualizado para credenciais/portas do appsettings.Development.
