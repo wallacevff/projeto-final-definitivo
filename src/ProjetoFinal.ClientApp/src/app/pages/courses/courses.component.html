@@ -4,8 +4,19 @@
       <h2>Cursos disponiveis</h2>
       <p class="description">Escolha sua proxima trilha de aprendizado filtrando por nome, categoria ou instrutor.</p>
     </div>
-    <div class="courses__count">
-      {{ filteredCourses().length }} resultado{{ filteredCourses().length === 1 ? '' : 's' }}
+    <div class="courses__actions">
+      <div class="courses__count">
+        {{ filteredCourses().length }} resultado{{ filteredCourses().length === 1 ? '' : 's' }}
+      </div>
+      <button
+        *ngIf="isInstructorUser()"
+        type="button"
+        class="courses__create"
+        (click)="goToCreateCourse()"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        Criar novo curso
+      </button>
     </div>
   </header>
 

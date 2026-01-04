@@ -109,6 +109,13 @@ export class CoursesComponent {
     this.router.navigate(['/courses', courseId, 'manage']);
   }
 
+  goToCreateCourse(): void {
+    if (!this.isInstructorUser()) {
+      return;
+    }
+    this.router.navigate(['/courses/create']);
+  }
+
   trackByCourseId(_: number, item: CourseListItem): string {
     return item.id;
   }

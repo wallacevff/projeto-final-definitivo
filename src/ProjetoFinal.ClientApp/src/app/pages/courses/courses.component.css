@@ -18,10 +18,48 @@
   color: var(--surface-900);
 }
 
+.courses__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .courses__count {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--surface-500);
+}
+
+.courses__create {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.35rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.courses__create:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .courses__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .courses__create {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .courses__filters {
