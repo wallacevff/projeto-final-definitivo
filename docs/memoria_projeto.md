@@ -320,3 +320,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-05 18:20:46
 - Frontend: botao "Baixar" dos anexos na gerencia de turmas agora segue a paleta de cores do sistema.
+
+## Atualizacao 2026-01-05 18:37:58
+- Frontend: anexos de submissao na gerencia de turmas agora exibem videos carregados inline com player.

@@ -63,6 +63,8 @@ export class ClassGroupManageComponent {
   readonly submissionDetailsLoading = signal(false);
   readonly downloadingAttachment = signal<string | null>(null);
   readonly studentNames = signal<Map<string, string>>(new Map());
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
 
   readonly capacity = computed(() => this.classGroup()?.Capacity ?? 0);
   readonly approved = computed(() => this.classGroup()?.ApprovedEnrollments ?? 0);
@@ -114,6 +116,7 @@ export class ClassGroupManageComponent {
     3: 'Corrigida',
     4: 'Devolvida'
   };
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
 
   constructor() {
     this.route.paramMap
@@ -150,6 +153,8 @@ export class ClassGroupManageComponent {
           this.loading.set(false);
         }
       });
+
+    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
   }
 
   openThreadForm(): void {
@@ -346,6 +351,7 @@ export class ClassGroupManageComponent {
     if (!submissionId) {
       return;
     }
+    this.resetVideoUrls();
     this.submissionDetailsLoading.set(true);
     this.gradingForm.reset({ status: null, score: null, feedback: '' });
     this.submissionsService
@@ -409,6 +415,56 @@ export class ClassGroupManageComponent {
         error: () => {
           this.downloadingAttachment.set(null);
           this.toastr.error('Nao foi possivel baixar o anexo.');
+        }
+      });
+  }
+
+  isVideoAttachment(attachment: ActivitySubmissionDto['Attachments'][number]): boolean {
+    if (attachment.IsVideo) {
+      return true;
+    }
+
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(attachmentId: string): string | null {
+    return this.videoUrls()[attachmentId] ?? null;
+  }
+
+  videoIsLoading(attachmentId: string): boolean {
+    return Boolean(this.videoLoading()[attachmentId]);
+  }
+
+  loadVideo(attachment: ActivitySubmissionDto['Attachments'][number]): void {
+    if (!attachment?.MediaResourceId || this.videoIsLoading(attachment.MediaResourceId)) {
+      return;
+    }
+
+    if (this.videoUrlFor(attachment.MediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
+
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video.');
         }
       });
   }
@@ -524,5 +580,16 @@ export class ClassGroupManageComponent {
         });
         this.studentNames.set(updated);
       });
+  }
+
+  private resetVideoUrls(): void {
+    this.cleanupVideoUrls();
+    this.videoUrls.set({});
+    this.videoLoading.set({});
+  }
+
+  private cleanupVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
   }
 }

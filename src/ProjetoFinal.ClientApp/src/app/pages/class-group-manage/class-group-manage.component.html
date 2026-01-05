@@ -361,18 +361,32 @@
                       <ng-container *ngIf="selectedSubmission()?.Attachments?.length; else noSubmissionAttachments">
                         <ul class="attachments-list">
                           <li *ngFor="let attachment of selectedSubmission()?.Attachments">
-                            <div>
+                            <div class="attachment-row">
                               <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
                               <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
                             </div>
-                            <button
-                              type="button"
-                              class="button button--ghost"
-                              (click)="downloadSubmissionAttachment(attachment.MediaResourceId, attachment.Media?.OriginalFileName)"
-                              [disabled]="downloadingAttachment() === attachment.MediaResourceId"
-                            >
-                              {{ downloadingAttachment() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                            </button>
+                            <div class="attachment-actions">
+                              <button
+                                type="button"
+                                class="button button--ghost"
+                                (click)="downloadSubmissionAttachment(attachment.MediaResourceId, attachment.Media?.OriginalFileName)"
+                                [disabled]="downloadingAttachment() === attachment.MediaResourceId"
+                              >
+                                {{ downloadingAttachment() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                              </button>
+                              <button
+                                *ngIf="isVideoAttachment(attachment)"
+                                type="button"
+                                class="button button--ghost"
+                                (click)="loadVideo(attachment)"
+                                [disabled]="videoIsLoading(attachment.MediaResourceId) || videoUrlFor(attachment.MediaResourceId)"
+                              >
+                                {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : (videoUrlFor(attachment.MediaResourceId) ? 'Video carregado' : 'Carregar video') }}
+                              </button>
+                            </div>
+                            <div class="attachment-video" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
+                              <video controls [src]="videoUrl"></video>
+                            </div>
                           </li>
                         </ul>
                       </ng-container>

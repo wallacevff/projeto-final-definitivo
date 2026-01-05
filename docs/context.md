@@ -81,3 +81,7 @@
 ### Data: 2026-01-05
 ### Resumo
 - Class-group-manage: botao "Baixar" dos anexos ajustado para paleta do sistema.
+
+### Data: 2026-01-05
+### Resumo
+- Class-group-manage: anexos de submissao com video podem ser carregados e visualizados no painel.
