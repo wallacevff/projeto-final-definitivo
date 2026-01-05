@@ -48,3 +48,7 @@
 ### Resumo
 - Documentacao: memoria/contexto agora em Markdown (docs/memoria_projeto.md e docs/context.md).
 - Instrucoes: antes de qualquer commit, atualizar memoria e contexto.
+
+### Data: 2026-01-04
+### Resumo
+- Sidebar: icone de colapso atualizado para hamburguer e estado colapsado exibe apenas icones, preservando o logo.

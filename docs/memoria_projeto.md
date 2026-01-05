@@ -293,3 +293,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## Atualizacao 2026-01-04 21:09:38
 - Documentacao: memoria e contexto migrados para Markdown (.md) e referencias atualizadas.
 - Instrucoes: AGENTS.md reforca atualizar memoria/contexto antes de qualquer commit.
+
+## Atualizacao 2026-01-04 21:17:13
+- Frontend: botao de collapse da sidebar usa icone hamburguer e alinhamento corrigido; modo colapsado esconde textos mantendo apenas icones e preserva o logo SES.
