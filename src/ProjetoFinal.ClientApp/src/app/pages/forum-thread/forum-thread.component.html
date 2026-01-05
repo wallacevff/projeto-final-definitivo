@@ -18,7 +18,7 @@
 
   <ng-container *ngIf="!loading(); else loadingState">
     <ng-container *ngIf="!error(); else errorState">
-      <section class="reply-card">
+      <section class="reply-card" #replySection>
         <h3>Responder</h3>
         <p class="muted" *ngIf="replyTarget() as target">
           Respondendo a <strong>{{ target.authorName }}</strong>

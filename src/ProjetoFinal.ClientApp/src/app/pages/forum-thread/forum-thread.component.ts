@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -31,6 +31,7 @@ interface ForumPostView {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForumThreadComponent {
+  @ViewChild('replySection') replySection?: ElementRef<HTMLElement>;
   private readonly forumService = inject(ForumService);
   private readonly postsService = inject(ForumPostsService);
   private readonly authService = inject(AuthService);
@@ -78,6 +79,7 @@ export class ForumThreadComponent {
       return;
     }
     this.replyTarget.set(post);
+    this.scrollToReplyForm();
   }
 
   cancelReply(): void {
@@ -138,6 +140,14 @@ export class ForumThreadComponent {
 
   safeHtml(content?: string | null): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+
+  private scrollToReplyForm(): void {
+    const element = this.replySection?.nativeElement;
+    if (!element) {
+      return;
+    }
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   private loadThread(threadId: string): void {

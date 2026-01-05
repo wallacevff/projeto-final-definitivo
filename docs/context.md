@@ -69,3 +69,7 @@
 ### Data: 2026-01-04
 ### Resumo
 - Forum: links de topicos na gerencia de turma estilizados para manter visual do card.
+
+### Data: 2026-01-04
+### Resumo
+- Forum: scroll ao responder aponta para a secao completa de resposta.

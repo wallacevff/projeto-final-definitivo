@@ -311,3 +311,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:50:05
 - Frontend: estilizacao dos links de topicos na gerencia de turma para manter visual do card com foco acessivel.
+
+## Atualizacao 2026-01-04 21:52:56
+- Forum: acao "Responder" agora rola ate a secao de resposta incluindo o titulo.
