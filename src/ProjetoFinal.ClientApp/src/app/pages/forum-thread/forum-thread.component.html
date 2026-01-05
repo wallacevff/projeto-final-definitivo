@@ -1,0 +1,86 @@
+<section class="forum-thread">
+  <header class="forum-thread__header">
+    <a routerLink="/forum" class="back-link">← Voltar ao forum</a>
+
+    <div *ngIf="thread() as current" class="header-content">
+      <div class="header-title">
+        <h2>{{ current.Title }}</h2>
+        <span class="badge" *ngIf="current.IsPinned">Fixado</span>
+        <span class="badge badge--locked" *ngIf="current.IsLocked">Bloqueado</span>
+      </div>
+      <p class="description" *ngIf="current.Description" [innerHTML]="safeHtml(current.Description)"></p>
+      <div class="meta">
+        <span>Turma: {{ current.ClassGroupName }}</span>
+        <span>Criado por {{ current.CreatedByName }}</span>
+      </div>
+    </div>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <section class="reply-card">
+        <h3>Responder</h3>
+        <p class="muted" *ngIf="replyTarget() as target">
+          Respondendo a <strong>{{ target.authorName }}</strong>
+          <button type="button" class="link-button" (click)="cancelReply()">Cancelar</button>
+        </p>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <app-rich-text-editor
+            formControlName="message"
+            placeholder="Escreva sua mensagem"
+          ></app-rich-text-editor>
+          <div class="form-actions">
+            <button type="submit" class="primary-button" [disabled]="isSubmitting() || isLocked()">
+              {{ isLocked() ? 'Topico bloqueado' : 'Enviar mensagem' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="posts">
+        <h3>{{ posts().length }} mensagem(ns)</h3>
+        <div class="posts__list" *ngIf="posts().length; else emptyState">
+          <article class="post" *ngFor="let post of posts(); trackBy: trackByPost">
+            <div class="post__meta">
+              <span class="author">{{ post.authorName }}</span>
+              <span class="time">{{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="post__content" [innerHTML]="safeHtml(post.message)"></div>
+            <div class="post__actions">
+              <button type="button" class="ghost-button" (click)="openReply(post)" [disabled]="isLocked()">
+                Responder
+              </button>
+            </div>
+
+            <div class="post__replies" *ngIf="post.replies.length">
+              <article class="post post--reply" *ngFor="let reply of post.replies; trackBy: trackByPost">
+                <div class="post__meta">
+                  <span class="author">{{ reply.authorName }}</span>
+                  <span class="time">{{ reply.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="post__content" [innerHTML]="safeHtml(reply.message)"></div>
+                <div class="post__actions">
+                  <button type="button" class="ghost-button" (click)="openReply(reply)" [disabled]="isLocked()">
+                    Responder
+                  </button>
+                </div>
+              </article>
+            </div>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando discussao...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state state--info">Nenhuma mensagem ainda. Seja o primeiro a responder.</div>
+</ng-template>

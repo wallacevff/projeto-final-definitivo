@@ -85,7 +85,8 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<ForumPost, ForumPostDto>()
             .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments));
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author != null ? src.Author.FullName : string.Empty));
 
         CreateMap<ForumPostAttachment, ForumPostAttachmentDto>()
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));

@@ -299,3 +299,9 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:29:16
 - Frontend: preferencia de sidebar colapsada agora persiste por usuario via localStorage (chave sidebar:collapsed:{userId}).
+
+## Atualizacao 2026-01-04 21:40:09
+- Forum: backend passou a exigir autenticacao, vincula autor pelo token e restringe criacao de topicos para instrutores.
+- Forum: endpoint de posts agora retorna AuthorName e inclui relacionamentos necessarios.
+- Forum: frontend ganhou tela de discussao com respostas (aluno e professor), rota /forum/threads/:threadId e servico de posts.
+- Forum: listagem bloqueia criacao de topico para alunos.

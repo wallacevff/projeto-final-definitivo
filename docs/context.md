@@ -56,3 +56,8 @@
 ### Data: 2026-01-04
 ### Resumo
 - Sidebar: estado colapsado persistido por usuario via localStorage.
+
+### Data: 2026-01-04
+### Resumo
+- Forum: criacao de topicos restrita a instrutores no backend/frontend; posts vinculados ao autor autenticado.
+- Forum: nova tela de discussao com respostas em /forum/threads/:threadId.

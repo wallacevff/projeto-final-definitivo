@@ -33,6 +33,12 @@ export class ForumService {
     return this.getThreads(courseLookup, { ClassGroupId: classGroupId });
   }
 
+  getThreadById(threadId: string) {
+    return this.http
+      .get<ForumThreadDto>(`${this.baseUrl}/forum/threads/${threadId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
   createThread(payload: ForumThreadCreatePayload) {
     return this.http
       .post<ForumThreadDto>(`${this.baseUrl}/forum/threads`, payload)

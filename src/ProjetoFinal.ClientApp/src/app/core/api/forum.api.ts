@@ -20,6 +20,7 @@ export interface ForumPostDto {
   Id: string;
   ThreadId: string;
   AuthorId: string;
+  AuthorName: string;
   ParentPostId?: string;
   Message: string;
   CreatedAt: string;
@@ -55,6 +56,21 @@ export interface ForumThreadCreatePayload {
   Title: string;
   Description?: string;
   IsPinned: boolean;
+}
+
+export interface ForumPostFilter {
+  ThreadId?: string;
+  AuthorId?: string;
+  ParentPostId?: string;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export interface ForumPostCreatePayload {
+  ThreadId: string;
+  AuthorId: string;
+  ParentPostId?: string;
+  Message: string;
 }
 
 export function mapForumThreadsResponse(

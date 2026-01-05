@@ -26,6 +26,7 @@ public class ForumPostDto
     public Guid Id { get; set; }
     public Guid ThreadId { get; set; }
     public Guid AuthorId { get; set; }
+    public string AuthorName { get; set; } = string.Empty;
     public Guid? ParentPostId { get; set; }
     public string Message { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }

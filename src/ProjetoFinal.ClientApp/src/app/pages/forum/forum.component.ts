@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 import { ForumService } from '../../core/services/forum.service';
 import { CoursesService } from '../../core/services/courses.service';
@@ -26,6 +27,7 @@ export class ForumComponent {
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
   private courseLookup = new Map<string, string>();
 
   readonly loading = signal(true);
@@ -55,6 +57,7 @@ export class ForumComponent {
       (course.ClassGroups ?? []).some(group => !group.IsMaterialsDistribution)
     )
   );
+  readonly isInstructorUser = computed(() => this.authService.isInstructorRole());
 
   constructor() {
     this.loadCourses();
@@ -69,6 +72,11 @@ export class ForumComponent {
   }
 
   openCreateForm(): void {
+    if (!this.isInstructorUser()) {
+      this.toastr.warning('Apenas instrutores podem criar topicos.');
+      return;
+    }
+
     if (!this.hasClassGroups()) {
       this.toastr.warning('Nenhum curso com turmas disponiveis para criar topico.');
       return;
@@ -100,6 +108,11 @@ export class ForumComponent {
   }
 
   submit(): void {
+    if (!this.isInstructorUser()) {
+      this.toastr.warning('Apenas instrutores podem criar topicos.');
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -143,6 +156,13 @@ export class ForumComponent {
           this.isSubmitting.set(false);
         }
       });
+  }
+
+  openThread(threadId: string): void {
+    if (!threadId) {
+      return;
+    }
+    this.router.navigate(['/forum/threads', threadId]);
   }
 
   private loadCourses(): void {
