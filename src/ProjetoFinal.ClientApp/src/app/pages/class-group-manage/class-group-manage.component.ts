@@ -116,9 +116,16 @@ export class ClassGroupManageComponent {
     3: 'Corrigida',
     4: 'Devolvida'
   };
+  private readonly initialActivityId = signal<string | null>(null);
   private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
 
   constructor() {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.initialActivityId.set(params.get('activityId'));
+      });
+
     this.route.paramMap
       .pipe(
         map(params => params.get('classGroupId')),
@@ -294,12 +301,15 @@ export class ClassGroupManageComponent {
           this.activities.set(items);
           this.activitiesLoading.set(false);
           if (items.length) {
-            this.selectActivity(items[0].id);
+            const preferredId = this.initialActivityId();
+            const target = preferredId && items.some(item => item.id === preferredId) ? preferredId : items[0].id;
+            this.selectActivity(target);
           } else {
             this.selectedActivityId.set(null);
             this.submissions.set([]);
             this.selectedSubmission.set(null);
           }
+          this.initialActivityId.set(null);
         },
         error: () => {
           this.activitiesLoading.set(false);

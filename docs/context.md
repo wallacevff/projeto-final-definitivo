@@ -98,3 +98,7 @@
 ### Resumo
 - Activities: tela de correcoes dedicada em /activities/:activityId/corrections com seletor de turma.
 - Activities: labels de turma mostram "Todas as turmas" quando aplicavel.
+
+### Data: 2026-01-05
+### Resumo
+- Course-manage: botao para criar turma na secao de turmas.

@@ -151,6 +151,28 @@
   gap: 0.75rem;
 }
 
+.course-groups__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.course-groups__create {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.course-groups__create:hover {
+  transform: translateY(-1px);
+}
+
 .course-groups h3 {
   margin: 0;
   color: var(--surface-700);

@@ -334,3 +334,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Frontend: nova tela de correcoes em /activities/:activityId/corrections com seletor de turma e painel de correcao.
 - Frontend: botao "Gerenciar correcoes" em /activities aponta para a nova tela.
 - Frontend: labels de turma em /activities agora exibem "Todas as turmas" quando aplicavel.
+
+## Atualizacao 2026-01-05 19:26:41
+- Frontend: botao "Criar turma" na gerencia de curso com pre-selecao do curso na tela de criacao.

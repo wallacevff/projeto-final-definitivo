@@ -121,6 +121,13 @@ export class CourseManageComponent {
     return new Date(course.CreatedAt).toLocaleDateString('pt-BR');
   }
 
+  goToCreateClassGroup(): void {
+    const course = this.course();
+    this.router.navigate(['/class-groups/create'], {
+      queryParams: course?.Id ? { courseId: course.Id } : undefined
+    });
+  }
+
   classGroupOccupancy(group: ClassGroupDto): number {
     if (!group.Capacity) {
       return 0;

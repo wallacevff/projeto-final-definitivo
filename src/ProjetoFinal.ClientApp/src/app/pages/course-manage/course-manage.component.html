@@ -76,7 +76,12 @@
         <section class="course-groups">
           <header>
             <h3>Turmas do curso</h3>
-            <span>{{ current.ClassGroups.length }} turma(s)</span>
+            <div class="course-groups__actions">
+              <span>{{ current.ClassGroups.length }} turma(s)</span>
+              <button type="button" class="course-groups__create" (click)="goToCreateClassGroup()">
+                Criar turma
+              </button>
+            </div>
           </header>
 
           <ng-container *ngIf="current.ClassGroups.length; else emptyGroups">
