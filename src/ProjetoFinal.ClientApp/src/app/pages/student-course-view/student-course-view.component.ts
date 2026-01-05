@@ -129,6 +129,13 @@ export class StudentCourseViewComponent {
     this.router.navigate(['/forum']);
   }
 
+  openForumThread(threadId: string): void {
+    if (!threadId) {
+      return;
+    }
+    this.router.navigate(['/forum/threads', threadId]);
+  }
+
   private resolveAccessibleClassGroups(course: CourseDto, studentId: string): string[] {
     const groups = course.ClassGroups ?? [];
     if (!groups.length) {

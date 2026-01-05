@@ -73,3 +73,7 @@
 ### Data: 2026-01-04
 ### Resumo
 - Forum: scroll ao responder aponta para a secao completa de resposta.
+
+### Data: 2026-01-04
+### Resumo
+- Student course view: botao para abrir forum agora vai direto ao topico.

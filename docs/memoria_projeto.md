@@ -314,3 +314,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:52:56
 - Forum: acao "Responder" agora rola ate a secao de resposta incluindo o titulo.
+
+## Atualizacao 2026-01-04 21:56:09
+- Frontend: botao "Abrir no forum" do curso do aluno agora abre a discussao do topico correspondente.
