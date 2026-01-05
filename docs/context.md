@@ -43,3 +43,8 @@
 - Frontend: botao "Criar novo curso" adicionado na tela de cursos para instrutores, com icone e responsividade ajustada.
 - Infra: copy-to-wwwroot.js valida pasta de destino antes de remover e cria wwwroot se necessario.
 - Git: user.name e user.email configurados globalmente conforme solicitado.
+
+### Data: 2026-01-04
+### Resumo
+- Documentacao: memoria/contexto agora em Markdown (docs/memoria_projeto.md e docs/context.md).
+- Instrucoes: antes de qualquer commit, atualizar memoria e contexto.

@@ -289,3 +289,7 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Frontend: botao "Criar novo curso" visivel na tela de cursos para instrutores, com icone e responsividade ajustada.
 - Infra: script copy-to-wwwroot agora valida existencia/estado da pasta antes de remover e cria wwwroot caso nao exista.
 - Git: user.name e user.email configurados globalmente conforme solicitado.
+
+## Atualizacao 2026-01-04 21:09:38
+- Documentacao: memoria e contexto migrados para Markdown (.md) e referencias atualizadas.
+- Instrucoes: AGENTS.md reforca atualizar memoria/contexto antes de qualquer commit.
