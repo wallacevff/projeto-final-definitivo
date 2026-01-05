@@ -33,6 +33,16 @@ interface AttachmentDraft {
   media?: MediaResource;
 }
 
+interface ActivityGroup {
+  id: string;
+  courseId: string;
+  title: string;
+  dueDateLabel: string;
+  allowLate: boolean;
+  attachments: number;
+  classGroupLabel: string;
+}
+
 @Component({
   selector: 'app-course-activities',
   standalone: true,
@@ -73,6 +83,53 @@ export class CourseActivitiesComponent {
   readonly hasUploadingAttachments = computed(() =>
     this.attachments().some(item => item.status === 'uploading')
   );
+  readonly activityGroups = computed<ActivityGroup[]>(() => {
+    const items = this.activities();
+    if (!items.length) {
+      return [];
+    }
+
+    const groupCount = this.availableGroups().length;
+    const groups = new Map<string, { activity: ActivityListItem; classGroups: Set<string> }>();
+
+    items.forEach(activity => {
+      const key = [
+        activity.courseId,
+        activity.title,
+        activity.dueDateLabel,
+        String(activity.allowLate),
+        String(activity.attachments)
+      ].join('|');
+
+      const entry = groups.get(key);
+      if (entry) {
+        entry.classGroups.add(activity.classGroupName || 'Turma nao informada');
+      } else {
+        groups.set(key, {
+          activity,
+          classGroups: new Set([activity.classGroupName || 'Turma nao informada'])
+        });
+      }
+    });
+
+    return Array.from(groups.values()).map(({ activity, classGroups }) => {
+      const names = Array.from(classGroups);
+      const label =
+        groupCount > 0 && classGroups.size >= groupCount
+          ? 'Todas as turmas'
+          : names.join(', ');
+
+      return {
+        id: activity.id,
+        courseId: activity.courseId,
+        title: activity.title,
+        dueDateLabel: activity.dueDateLabel,
+        allowLate: activity.allowLate,
+        attachments: activity.attachments,
+        classGroupLabel: label
+      };
+    });
+  });
 
   readonly form = this.fb.group({
     classGroupId: this.fb.control('', { validators: [Validators.required] }),
@@ -131,11 +188,15 @@ export class CourseActivitiesComponent {
     return item.id;
   }
 
+  trackByGroup(_: number, item: ActivityGroup): string {
+    return item.id;
+  }
+
   trackByAttachment(_: number, item: AttachmentDraft): string {
     return item.id;
   }
 
-  viewActivity(activity: ActivityListItem): void {
+  viewActivity(activity: ActivityGroup): void {
     this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
   }
 

@@ -323,3 +323,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-05 18:37:58
 - Frontend: anexos de submissao na gerencia de turmas agora exibem videos carregados inline com player.
+
+## Atualizacao 2026-01-05 18:48:08
+- Frontend: cards de atividades na gerencia de curso agora exibem "Todas as turmas" ou lista de turmas conforme alcance da atividade.

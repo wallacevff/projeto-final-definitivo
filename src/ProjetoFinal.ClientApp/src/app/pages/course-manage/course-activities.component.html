@@ -157,15 +157,15 @@
     </header>
 
     <ng-container *ngIf="!activitiesLoading(); else loadingActivities">
-      <ng-container *ngIf="activities().length; else emptyActivities">
+      <ng-container *ngIf="activityGroups().length; else emptyActivities">
         <div class="activities-list__grid">
           <article
             class="activity-card"
-            *ngFor="let activity of activities(); trackBy: trackByActivity"
+            *ngFor="let activity of activityGroups(); trackBy: trackByGroup"
           >
             <header>
               <h5>{{ activity.title }}</h5>
-              <span class="chip">{{ activity.classGroupName }}</span>
+              <span class="chip">{{ activity.classGroupLabel }}</span>
             </header>
             <p class="due-date">{{ activity.dueDateLabel }}</p>
             <ul>

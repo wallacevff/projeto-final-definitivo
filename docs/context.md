@@ -85,3 +85,7 @@
 ### Data: 2026-01-05
 ### Resumo
 - Class-group-manage: anexos de submissao com video podem ser carregados e visualizados no painel.
+
+### Data: 2026-01-05
+### Resumo
+- Course-manage: cards de atividades exibem label "Todas as turmas" quando aplicavel.
