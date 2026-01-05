@@ -17,7 +17,11 @@ try {
 function getCommandByEnvironmentAndOs() {
   const isWindows = os.platform() === "win32";
   const {from, to} = getPaths(isWindows);
-  let completeCommandLinux = `rm -rf ${to}/* && cp -r ${from}/* ${to}/`;
+  let completeCommandLinux = [
+    `if [ -d "${to}" ] && [ "$(ls -A "${to}")" ]; then rm -rf "${to}"/*; fi`,
+    `mkdir -p "${to}"`,
+    `cp -r "${from}"/* "${to}/"`
+  ].join(" && ");
   let completeCommandWindows = `xcopy /E /Y /I ${from} ${to}`;
   if (isWindows)
     return completeCommandWindows;
