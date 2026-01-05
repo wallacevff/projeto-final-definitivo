@@ -308,3 +308,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:48:37
 - Frontend: topicos do forum na gerencia de turma agora sao links para a discussao completa.
+
+## Atualizacao 2026-01-04 21:50:05
+- Frontend: estilizacao dos links de topicos na gerencia de turma para manter visual do card com foco acessivel.

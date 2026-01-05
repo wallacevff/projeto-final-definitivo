@@ -65,3 +65,7 @@
 ### Data: 2026-01-04
 ### Resumo
 - Forum: topicos na gerencia da turma agora linkam para a pagina de discussao.
+
+### Data: 2026-01-04
+### Resumo
+- Forum: links de topicos na gerencia de turma estilizados para manter visual do card.
