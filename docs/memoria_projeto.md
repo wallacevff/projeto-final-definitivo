@@ -1,6 +1,6 @@
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-09-29 22:02:37
+### Data: 2025-09-29 22:02:37
 
 1. API e Contratos
  - `BaseController` alinhado com o novo `IDefaultService` e endpoints REST criados para usuários, cursos, turmas, conteúdos, atividades, submissões, fórum, chat, mídia e inscrições (`src/ProjetoFinal.Api/Controllers`).
@@ -28,9 +28,9 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
  - Implementar telas completas para cursos, turmas, atividades e fórum baseadas no novo layout.
  - Tratar os avisos de build Angular (budget e seletores) antes do pacote de produção.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-01 22:33:01
+### Data: 2025-10-01 22:33:01
 
 1. API e Contratos
  - Sem novas alteracoes nesta sessao.
@@ -49,9 +49,9 @@ Data: 2025-10-01 22:33:01
  - Reforcar a consulta periodica aos documentos docs/propont.txt e docs/especificacao.txt como base de requisitos.
  - Manter as pendencias registradas nas entradas anteriores.
  - Commits devem ser criados por categoria, respeitando a organizacao definida pelo usuario.
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-01 22:50:46
+### Data: 2025-10-01 22:50:46
 
 1. API e Contratos
  - Sem novas alteracoes nesta sessao.
@@ -69,9 +69,9 @@ Data: 2025-10-01 22:50:46
 5. Observacao proximo encontro
  - Validar o envio do formulario contra a API real e ajustar mensagens conforme resposta.
  - Manter as pendencias anteriores, consulta aos arquivos docs/propont.txt e docs/especificacao.txt e a regra de commits por categoria.
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-12 08:45:42
+### Data: 2025-10-12 08:45:42
 
 1. API e Contratos
  - Seed automatico garante categorias padrao e instrutor demonstrativo ao subir o backend.
@@ -90,9 +90,9 @@ Data: 2025-10-12 08:45:42
  - Validar a disponibilidade de categorias/instrutores no backend antes de novas demos e revisar o feedback visual apos a gravacao das turmas/publicacao.
 
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-16 21:57:54
+### Data: 2025-10-16 21:57:54
 
 1. API e Contratos
  - Autenticacao JWT implementada com emissao via `AuthController`/`AuthAppService` e claims para identificacao do instrutor logado.
@@ -114,9 +114,9 @@ Data: 2025-10-16 21:57:54
 
 
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-17 15:40:00
+### Data: 2025-10-17 15:40:00
 
 1. API e Contratos
  - ClassGroupsController agora responde tambem em /api/v1/class-groups, alinhando com os endpoints usados pelo frontend.
@@ -139,9 +139,9 @@ Data: 2025-10-17 15:40:00
  - Avaliar ajuste no warning de disabled nos formularios.
  - Popular dashboard e forum com dados reais quando API estiver pronta.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-10-19 23:32:27
+### Data: 2025-10-19 23:32:27
 
 1. API e Contratos
  - Controllers de forum (threads/posts) anotados com ApiController e rota dupla `/api`/`/api/v1`, evitando 405 nas chamadas do frontend.
@@ -162,9 +162,9 @@ Data: 2025-10-19 23:32:27
  - Avaliar limitacao de criacao de topicos por perfil/permicao.
  - Revisar budgets de CSS e bundle do Angular antes do deploy.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-11-09 20:36:00
+### Data: 2025-11-09 20:36:00
 
 1. API e Contratos
  - Configuracao do MinIO adicionada aos appsettings e exposta via `MinioConfiguration`, com registros no IoC e cliente dedicado.
@@ -188,13 +188,13 @@ Data: 2025-11-09 20:36:00
  - Revisar budgets de bundle/estilos do Angular antes do deploy.
  - Avaliar mecanismos de reordenacao em massa para conteudos/atividades quando o volume crescer.
 
-Instrucoes Fixas:
- - Nunca substituir conteudo existente em docs/memoria_projeto.txt; apenas fazer append quando houver novas atualizacoes.
- - Antes de qualquer atividade relevante, ler o arquivo docs/context.txt para garantir alinhamento com o estado atual.
+### Instrucoes Fixas
+ - Nunca substituir conteudo existente em docs/memoria_projeto.md; apenas fazer append quando houver novas atualizacoes.
+ - Antes de qualquer atividade relevante, ler o arquivo docs/context.md para garantir alinhamento com o estado atual.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-11-09 22:15:00
+### Data: 2025-11-09 22:15:00
 
 1. API e Contratos
  - Suporte a download autenticado de mídias via MediaResourcesController, com leitura segura do storagePath (deduplicação por hash mantida).
@@ -204,7 +204,7 @@ Data: 2025-11-09 22:15:00
  - Módulos de criação de atividades e conteúdos com opção "todas as turmas"; uploads e downloads via API com JWT.
  - Novo CourseActivityViewer exibe detalhes, prazos e anexos das atividades; cards de cursos e listagem geral navegam para o viewer.
  - Viewer de conteúdos mostra vídeos com anotações locais e anexos baixados via backend.
- - `docs/context.txt` registra o estado corrente; instruções permanentes reforçam leitura desse contexto e proíbem sobrescrever a memória.
+ - `docs/context.md` registra o estado corrente; instruções permanentes reforçam leitura desse contexto e proíbem sobrescrever a memória.
 
 3. Build e Execução
  - `npm run build` concluído (avisos de budget/seletores do Angular permanecem conhecidos).
@@ -212,11 +212,11 @@ Data: 2025-11-09 22:15:00
 
 4. Pendências / Observações
  - Avaliar os avisos de bundle/estilos antes de deploy final.
- - Manter o hábito de consultar `docs/context.txt` e apenas anexar conteúdo à memória.
+ - Manter o hábito de consultar `docs/context.md` e apenas anexar conteúdo à memória.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-11-10 09:12:00
+### Data: 2025-11-10 09:12:00
 
 1. API e Contratos
  - Sem alterações desde a última sessão; endpoints existentes foram reutilizados para leitura de atividades e anexos.
@@ -231,9 +231,9 @@ Data: 2025-11-10 09:12:00
 4. Pendências
  - Persistência real das anotações de vídeo ainda não foi integrada; campo rich-text envia HTML, avaliar validações/limpeza futura.
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-11-10 11:05:00
+### Data: 2025-11-10 11:05:00
 
 1. Documentação
  - Criado `docs/transcriptions.txt` para armazenar futuras transcrições solicitadas.
@@ -243,9 +243,9 @@ Data: 2025-11-10 11:05:00
  - Lembrar de registrar transcrições no arquivo acima sempre que o usuário pedir.
  - Commits devem ser escritos em PT-BR (títulos e descrições).
 
-=== Estado Atual do Projeto EAD ===
+## Estado Atual do Projeto EAD
 
-Data: 2025-11-16 20:30:00
+### Data: 2025-11-16 20:30:00
 
 1. API e Contratos
  - `CourseSubscriptionsController` agora força o uso do aluno autenticado tanto em `/api` quanto em `/api/v1`.
@@ -261,26 +261,31 @@ Data: 2025-11-16 20:30:00
 3. Build e Execução
  - `npm run build` continua concluindo com os avisos conhecidos de orçamento (bundle inicial, CSSs de dashboard/courses/app/class-group-manage) e seletores Bootstrap.
 
-=== Atualizacao 2025-11-16 21:20 ===
+## Atualizacao 2025-11-16 21:20
 - Frontend: dashboard do aluno exibe botao "Acessar curso" e nova rota /student/courses/:courseId mostra aba unica com atividades, conteudos e forum integrados aos services existentes.
 - Frontend: CourseActivityViewer ganhou modulo de envio de atividades (editor rich-text, upload multiplo via MediaService, consultas/envio em ActivitySubmissionsService) com resumo de anexos e reconciliação com backend.
 - Backend: ActivitySubmissionsController agora responde em /api e /api/v1, evitando 405 para o client Angular.
 - Observacao: lembranca para testar fluxos de envio de anexos (upload + download) e validar exibicao imediata no painel do aluno.
 
-=== Atualizacao 2025-11-23 15:50 ===
+## Atualizacao 2025-11-23 15:50
 - Frontend: class-group-manage ganhou secao completa de gerencia de atividades (listagem, tabela de submissões, painel de correção com download de anexos e salvamento de status/notas).
 - Frontend: CourseActivityViewer agora mostra a correção ao aluno (status, nota, feedback) após envio.
 - API/Contracts: ActivitySubmissionDto passou a expor StudentName e o AutoMapper injeta o nome vindo do user associado.
 - Services: activity-submissions.service oferece getById/updateSubmission; UsersService tem getById para complementar nomes.
 - Observacao: builds ng reportam os avisos de budget conhecidos; lembrar de executar npm run build e dotnet build antes de PR.
 
-=== Atualizacao 2025-11-23 21:25 ===
+## Atualizacao 2025-11-23 21:25
 - Frontend: student-course-view agora identifica o aluno logado e restringe as atividades exibidas às turmas aprovadas/pendentes ou grupos de distribuição do curso, evitando mostrar tarefas de outras turmas.
 - Documentacao: transcricao atualizada conforme solicitado, mantendo o historico das interacoes.
 
-=== Atualizacao 2026-01-03 14:14:14 ===
+## Atualizacao 2026-01-03 14:14:14
 - Backend: persistencia de anotacoes de video para conteudos do curso via ContentVideoAnnotation (entidade, repositorio, service e controller /api/content-annotations).
 - Backend: migration 20260103170626_AddContentVideoAnnotations criada; dotnet ef database update executado (banco ja estava atualizado).
 - Frontend: viewer de conteudo passa a salvar/carregar anotacoes de video por anexo usando ContentAttachmentId.
 - Frontend: ajustes em cursos para disponibilidade e ocupacao (aprovados + pendentes para disponibilidade; barra alinhada com aprovados).
 - Infra: minio-compose.yaml atualizado para credenciais/portas do appsettings.Development.
+
+## Atualizacao 2026-01-04 21:06:07
+- Frontend: botao "Criar novo curso" visivel na tela de cursos para instrutores, com icone e responsividade ajustada.
+- Infra: script copy-to-wwwroot agora valida existencia/estado da pasta antes de remover e cria wwwroot caso nao exista.
+- Git: user.name e user.email configurados globalmente conforme solicitado.

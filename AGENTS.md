@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `ProjetoFinal.sln` reúne nove projetos .NET dentro de `src/`, separados em camadas (`ProjetoFinal.Api`, `...Domain`, `...Infra`, `...IoC`) e contratos/serviços de aplicação.
 - O frontend Angular mora em `src/ProjetoFinal.ClientApp`, com assets públicos em `public` e código em `src/app` (páginas em `pages/`, componentes compartilhados em `shared/`).
-- Documentação viva está em `docs/` (`memoria_projeto.txt`, `context.txt`, `transcription*.txt`). Nunca sobrescreva entradas existentes nesses arquivos: apenas acrescente conteúdo.
+- Documentação viva está em `docs/` (`memoria_projeto.md`, `context.md`, `transcription*.txt`). Nunca sobrescreva entradas existentes nesses arquivos: apenas acrescente conteúdo.
 
 ## Build, Test, and Development Commands
 - Backend: `dotnet build ProjetoFinal.sln` (compila toda a solução) e `dotnet test ProjetoFinal.sln` quando houver projetos de teste.
@@ -24,6 +24,7 @@
 - Commits **devem** estar em português do Brasil; siga padrão `tipo: breve descrição` (ex.: `feat: ajustar fluxo de inscrições interativas`). Descrições detalhadas também em pt-BR.
 - PRs precisam: 1) descrever objetivo e impacto, 2) listar comandos/testes executados, 3) anexar evidências (logs, capturas de tela) quando UI for afetada, 4) referenciar issues/tarefas relevantes.
 - Antes de abrir PR, atualize `docs/transcription*.txt` se a interação exigir, e confirme que builds (`dotnet build`, `npm run build`) passam sem novos avisos além dos já conhecidos (budgets Angular).
+- Antes de qualquer commit, garanta que `docs/memoria_projeto.md` e `docs/context.md` estejam atualizados.
 
 ## Security & Configuration Tips
 - JWT secrets e chaves de storage ficam fora do repositório; gere chaves com `node -p "crypto.randomBytes(256).toString('base64');"` conforme `docs/commands.md`.
