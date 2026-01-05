@@ -305,3 +305,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Forum: endpoint de posts agora retorna AuthorName e inclui relacionamentos necessarios.
 - Forum: frontend ganhou tela de discussao com respostas (aluno e professor), rota /forum/threads/:threadId e servico de posts.
 - Forum: listagem bloqueia criacao de topico para alunos.
+
+## Atualizacao 2026-01-04 21:48:37
+- Frontend: topicos do forum na gerencia de turma agora sao links para a discussao completa.

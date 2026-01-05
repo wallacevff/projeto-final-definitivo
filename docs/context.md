@@ -61,3 +61,7 @@
 ### Resumo
 - Forum: criacao de topicos restrita a instrutores no backend/frontend; posts vinculados ao autor autenticado.
 - Forum: nova tela de discussao com respostas em /forum/threads/:threadId.
+
+### Data: 2026-01-04
+### Resumo
+- Forum: topicos na gerencia da turma agora linkam para a pagina de discussao.

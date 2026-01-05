@@ -249,20 +249,22 @@
             <ng-container *ngIf="threads().length; else emptyThreads">
               <div class="threads-list">
                 <article class="thread-card" *ngFor="let thread of threads(); trackBy: trackByThread">
-                  <header>
-                    <div class="thread-title">
-                      <h4>{{ thread.title }}</h4>
-                      <div class="thread-labels">
-                        <span *ngIf="thread.isPinned" class="thread-badge thread-badge--pinned">Fixado</span>
-                        <span *ngIf="thread.isLocked" class="thread-badge thread-badge--locked">Bloqueado</span>
+                  <a class="thread-link" [routerLink]="['/forum/threads', thread.id]">
+                    <header>
+                      <div class="thread-title">
+                        <h4>{{ thread.title }}</h4>
+                        <div class="thread-labels">
+                          <span *ngIf="thread.isPinned" class="thread-badge thread-badge--pinned">Fixado</span>
+                          <span *ngIf="thread.isLocked" class="thread-badge thread-badge--locked">Bloqueado</span>
+                        </div>
                       </div>
-                    </div>
-                    <span class="thread-meta">{{ thread.replies }} resposta(s) • {{ thread.lastActivityLabel }}</span>
-                  </header>
-                  <footer>
-                    <span>Turma: {{ thread.classGroupName }}</span>
-                    <span>Curso: {{ thread.courseTitle }}</span>
-                  </footer>
+                      <span class="thread-meta">{{ thread.replies }} resposta(s) • {{ thread.lastActivityLabel }}</span>
+                    </header>
+                    <footer>
+                      <span>Turma: {{ thread.classGroupName }}</span>
+                      <span>Curso: {{ thread.courseTitle }}</span>
+                    </footer>
+                  </a>
                 </article>
               </div>
             </ng-container>
