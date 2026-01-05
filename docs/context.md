@@ -77,3 +77,7 @@
 ### Data: 2026-01-04
 ### Resumo
 - Student course view: botao para abrir forum agora vai direto ao topico.
+
+### Data: 2026-01-05
+### Resumo
+- Class-group-manage: botao "Baixar" dos anexos ajustado para paleta do sistema.

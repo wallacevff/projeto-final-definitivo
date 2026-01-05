@@ -317,3 +317,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:56:09
 - Frontend: botao "Abrir no forum" do curso do aluno agora abre a discussao do topico correspondente.
+
+## Atualizacao 2026-01-05 18:20:46
+- Frontend: botao "Baixar" dos anexos na gerencia de turmas agora segue a paleta de cores do sistema.

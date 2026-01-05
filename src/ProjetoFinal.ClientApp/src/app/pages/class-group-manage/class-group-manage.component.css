@@ -31,6 +31,10 @@ dd{margin:4px 0 0;color:var(--color-text-muted)}
 .ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
 .primary-button{background:var(--color-primary);color:#fff}
 .primary-button:disabled{opacity:.6;cursor:not-allowed}
+.button{border-radius:999px;padding:8px 18px;font-weight:600;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--color-primary)}
+.button--ghost{border-color:rgba(13,110,253,.28)}
+.button--ghost:hover{background:rgba(13,110,253,.08)}
+.button--ghost:disabled{opacity:.6;cursor:not-allowed}
 .field{display:flex;flex-direction:column;gap:6px}
 .field input,.field textarea{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
 .field__error{font-size:.75rem;color:#b91c1c}
