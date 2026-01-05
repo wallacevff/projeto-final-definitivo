@@ -86,6 +86,13 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'activities/:activityId/corrections',
+    loadComponent: () =>
+      import('./pages/activity-corrections/activity-corrections.component').then(m => m.ActivityCorrectionsComponent),
+    title: 'Correcoes da Atividade - SES EAD',
+    canActivate: [authGuard]
+  },
+  {
     path: 'forum/threads/:threadId',
     loadComponent: () => import('./pages/forum-thread/forum-thread.component').then(m => m.ForumThreadComponent),
     title: 'Discussao do Forum - SES EAD',

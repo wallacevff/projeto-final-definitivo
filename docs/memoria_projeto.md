@@ -329,3 +329,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-05 18:54:13
 - Frontend: criacao de turma iniciada pela gerencia do curso agora bloqueia o seletor e mostra o curso fixo.
+
+## Atualizacao 2026-01-05 19:05:57
+- Frontend: nova tela de correcoes em /activities/:activityId/corrections com seletor de turma e painel de correcao.
+- Frontend: botao "Gerenciar correcoes" em /activities aponta para a nova tela.
+- Frontend: labels de turma em /activities agora exibem "Todas as turmas" quando aplicavel.

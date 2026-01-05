@@ -93,3 +93,8 @@
 ### Data: 2026-01-05
 ### Resumo
 - Class-group-create: ao acessar via curso, o seletor fica bloqueado e exibe o curso fixo.
+
+### Data: 2026-01-05
+### Resumo
+- Activities: tela de correcoes dedicada em /activities/:activityId/corrections com seletor de turma.
+- Activities: labels de turma mostram "Todas as turmas" quando aplicavel.

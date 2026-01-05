@@ -23,7 +23,7 @@
             </div>
             <div>
               <dt>Turma</dt>
-              <dd>{{ activity.classGroupName }}</dd>
+              <dd>{{ activityGroupLabel(activity) }}</dd>
             </div>
             <div>
               <dt>Anexos</dt>
@@ -33,7 +33,9 @@
 
           <footer>
             <button type="button" (click)="viewActivity(activity)">Ver detalhes</button>
-            <button type="button" class="secondary">Gerenciar correcoes</button>
+            <button type="button" class="secondary" (click)="manageCorrections(activity)">
+              Gerenciar correcoes
+            </button>
           </footer>
         </article>
       </div>
