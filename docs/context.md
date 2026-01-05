@@ -52,3 +52,7 @@
 ### Data: 2026-01-04
 ### Resumo
 - Sidebar: icone de colapso atualizado para hamburguer e estado colapsado exibe apenas icones, preservando o logo.
+
+### Data: 2026-01-04
+### Resumo
+- Sidebar: estado colapsado persistido por usuario via localStorage.

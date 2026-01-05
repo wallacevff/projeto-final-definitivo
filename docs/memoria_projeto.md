@@ -296,3 +296,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-04 21:17:13
 - Frontend: botao de collapse da sidebar usa icone hamburguer e alinhamento corrigido; modo colapsado esconde textos mantendo apenas icones e preserva o logo SES.
+
+## Atualizacao 2026-01-04 21:29:16
+- Frontend: preferencia de sidebar colapsada agora persiste por usuario via localStorage (chave sidebar:collapsed:{userId}).

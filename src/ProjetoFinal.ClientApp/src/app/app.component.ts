@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from './core/services/auth.service';
@@ -23,6 +23,7 @@ export class AppComponent {
 
   title = 'SES EAD';
   isSidebarCollapsed = false;
+  private currentSidebarKey: string | null = null;
 
   readonly navItems = computed<NavItem[]>(() => {
     const user = this.currentUser();
@@ -72,6 +73,7 @@ export class AppComponent {
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    this.persistSidebarPreference();
   }
 
   isAuthenticated(): boolean {
@@ -88,6 +90,43 @@ export class AppComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  constructor() {
+    effect(() => {
+      const user = this.currentUser();
+      const userId = user?.id ?? null;
+      this.currentSidebarKey = userId ? `sidebar:collapsed:${userId}` : null;
+      this.isSidebarCollapsed = this.readSidebarPreference() ?? false;
+    });
+  }
+
+  private readSidebarPreference(): boolean | null {
+    if (!this.currentSidebarKey) {
+      return null;
+    }
+
+    try {
+      const raw = localStorage.getItem(this.currentSidebarKey);
+      if (raw === null) {
+        return null;
+      }
+      return raw === 'true';
+    } catch {
+      return null;
+    }
+  }
+
+  private persistSidebarPreference(): void {
+    if (!this.currentSidebarKey) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(this.currentSidebarKey, String(this.isSidebarCollapsed));
+    } catch {
+      // Ignore storage errors (ex.: modo privado).
+    }
   }
 }
 
