@@ -15,13 +15,18 @@
             <h3>Curso interativo</h3>
             <div class="field">
               <label for="courseId">Selecione o curso</label>
-              <select id="courseId" formControlName="courseId">
-                <option value="">Selecione um curso</option>
-                <option *ngFor="let course of interactiveCourses(); trackBy: trackByCourseId" [value]="course.Id">
-                  {{ course.Title }}
-                </option>
-              </select>
-              <span class="field__error" *ngIf="isInvalid('courseId')">Escolha um curso interativo.</span>
+              <ng-container *ngIf="!isCourseLocked(); else lockedCourse">
+                <select id="courseId" formControlName="courseId">
+                  <option value="">Selecione um curso</option>
+                  <option *ngFor="let course of interactiveCourses(); trackBy: trackByCourseId" [value]="course.Id">
+                    {{ course.Title }}
+                  </option>
+                </select>
+                <span class="field__error" *ngIf="isInvalid('courseId')">Escolha um curso interativo.</span>
+              </ng-container>
+              <ng-template #lockedCourse>
+                <div class="field__static">{{ lockedCourseTitle() }}</div>
+              </ng-template>
             </div>
           </section>
 

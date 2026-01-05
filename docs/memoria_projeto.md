@@ -326,3 +326,6 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-05 18:48:08
 - Frontend: cards de atividades na gerencia de curso agora exibem "Todas as turmas" ou lista de turmas conforme alcance da atividade.
+
+## Atualizacao 2026-01-05 18:54:13
+- Frontend: criacao de turma iniciada pela gerencia do curso agora bloqueia o seletor e mostra o curso fixo.

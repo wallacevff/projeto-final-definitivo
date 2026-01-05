@@ -89,3 +89,7 @@
 ### Data: 2026-01-05
 ### Resumo
 - Course-manage: cards de atividades exibem label "Todas as turmas" quando aplicavel.
+
+### Data: 2026-01-05
+### Resumo
+- Class-group-create: ao acessar via curso, o seletor fica bloqueado e exibe o curso fixo.

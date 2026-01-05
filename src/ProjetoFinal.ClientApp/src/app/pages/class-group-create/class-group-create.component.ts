@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
@@ -25,6 +25,8 @@ export class ClassGroupCreateComponent {
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly initialCourseId = this.route.snapshot.queryParamMap.get('courseId');
 
   readonly loadingCourses = signal(true);
   readonly loadError = signal<string | null>(null);
@@ -65,6 +67,20 @@ export class ClassGroupCreateComponent {
 
   get hasInteractiveCourses(): boolean {
     return this.interactiveCourses().length > 0;
+  }
+
+  isCourseLocked(): boolean {
+    if (!this.initialCourseId) {
+      return false;
+    }
+    return this.interactiveCourses().some(course => course.Id === this.initialCourseId);
+  }
+
+  lockedCourseTitle(): string {
+    if (!this.initialCourseId) {
+      return '';
+    }
+    return this.interactiveCourses().find(course => course.Id === this.initialCourseId)?.Title ?? '';
   }
 
   isInvalid(controlName: string): boolean {
@@ -118,6 +134,7 @@ export class ClassGroupCreateComponent {
           this.courses.set(courses);
           this.loadingCourses.set(false);
           this.loadError.set(null);
+          this.prefillCourseSelection(courses);
         },
         error: () => {
           this.courses.set([]);
@@ -167,6 +184,19 @@ export class ClassGroupCreateComponent {
 
     syncState(this.requiresEnrollmentCodeControl.value);
     this.requiresEnrollmentCodeControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(syncState);
+  }
+
+  private prefillCourseSelection(courses: CourseDto[]): void {
+    if (!this.initialCourseId) {
+      return;
+    }
+
+    const interactive = courses.filter(course => course.Mode === 1);
+    if (!interactive.some(course => course.Id === this.initialCourseId)) {
+      return;
+    }
+
+    this.form.controls.courseId.setValue(this.initialCourseId, { emitEvent: false });
   }
 
   private toIsoString(value: unknown): string | undefined {
