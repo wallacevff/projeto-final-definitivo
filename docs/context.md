@@ -102,3 +102,9 @@
 ### Data: 2026-01-05
 ### Resumo
 - Course-manage: botao para criar turma na secao de turmas.
+
+### Data: 2026-01-06
+### Resumo
+- Auth: cadastro publico de usuarios via /auth/register com hash de senha e validacao de papel (aluno/professor).
+- Frontend: login agora oferece aba de criacao de conta com validacao de senhas e selecao de perfil.
+- Frontend: correcoes de build (RouterLink nao usado e erro passwordMismatch).

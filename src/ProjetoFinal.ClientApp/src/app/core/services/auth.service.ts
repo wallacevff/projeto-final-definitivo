@@ -8,7 +8,8 @@ import {
   AuthUser,
   LoginCredentials,
   LoginPayload,
-  LoginResponse
+  LoginResponse,
+  RegisterPayload
 } from '../api/auth.api';
 
 interface AuthState {
@@ -40,7 +41,7 @@ export class AuthService {
 
   login(credentials: LoginCredentials) {
     const payload: LoginPayload = {
-      Username: credentials.username.trim(),
+      Username: credentials.username.trim().toLowerCase(),
       Password: credentials.password
     };
 
@@ -49,6 +50,10 @@ export class AuthService {
       tap(() => this.navigateAfterLogin()),
       map(() => void 0)
     );
+  }
+
+  register(payload: RegisterPayload) {
+    return this.http.post(`${this.baseUrl}/auth/register`, payload).pipe(map(() => void 0));
   }
 
   logout(redirectToLogin = true): void {

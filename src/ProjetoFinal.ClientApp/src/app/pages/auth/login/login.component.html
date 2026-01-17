@@ -2,10 +2,22 @@
   <div class="login-card">
     <header class="login-header">
       <h1>Plataforma SES EAD</h1>
-      <p>Informe suas credenciais para acessar o painel do professor.</p>
+      <p *ngIf="!isRegistering(); else registerCopy">Entre com sua conta ou crie um novo acesso.</p>
+      <ng-template #registerCopy>
+        <p>Preencha os dados para criar seu acesso como aluno ou professor.</p>
+      </ng-template>
     </header>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+    <div class="login-tabs">
+      <button type="button" class="tab-button" [class.active]="!isRegistering()" (click)="toggleMode(false)">
+        Entrar
+      </button>
+      <button type="button" class="tab-button" [class.active]="isRegistering()" (click)="toggleMode(true)">
+        Criar conta
+      </button>
+    </div>
+
+    <form *ngIf="!isRegistering(); else registerFormTpl" [formGroup]="form" (ngSubmit)="submit()" class="login-form">
       <div class="field">
         <label for="username">Usuário</label>
         <input
@@ -42,7 +54,83 @@
       </ng-template>
     </form>
 
-    <section class="login-hint">
+    <ng-template #registerFormTpl>
+      <form [formGroup]="registerForm" (ngSubmit)="submitRegistration()" class="login-form">
+        <div class="field">
+          <label for="fullName">Nome completo</label>
+          <input id="fullName" type="text" formControlName="fullName" autocomplete="name" placeholder="Ex.: Wallace Vidal" />
+          <span class="field__error" *ngIf="registerForm.controls.fullName.invalid && (registerForm.controls.fullName.dirty || registerForm.controls.fullName.touched)">
+            Informe o nome completo.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" formControlName="email" autocomplete="email" placeholder="voce@exemplo.com" />
+          <span class="field__error" *ngIf="registerForm.controls.email.invalid && (registerForm.controls.email.dirty || registerForm.controls.email.touched)">
+            Informe um e-mail valido.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="registerUsername">Usuário</label>
+          <input id="registerUsername" type="text" formControlName="username" autocomplete="username" placeholder="Ex.: wallace.vidal" />
+          <span class="field__error" *ngIf="registerForm.controls.username.invalid && (registerForm.controls.username.dirty || registerForm.controls.username.touched)">
+            Informe o usuario.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="role">Perfil</label>
+          <select id="role" formControlName="role">
+            <option *ngFor="let option of roleOptions" [ngValue]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="registerPassword">Senha</label>
+          <input
+            id="registerPassword"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="Crie uma senha segura"
+          />
+          <span class="field__error" *ngIf="registerForm.controls.password.invalid && (registerForm.controls.password.dirty || registerForm.controls.password.touched)">
+            Utilize uma senha com pelo menos 6 caracteres.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirmar senha</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            placeholder="Repita a senha"
+          />
+          <span
+            class="field__error"
+            *ngIf="
+              (registerForm.controls.confirmPassword.dirty || registerForm.controls.confirmPassword.touched) &&
+              registerForm.errors?.['passwordMismatch']
+            "
+          >
+            As senhas nao conferem.
+          </span>
+        </div>
+
+        <button type="submit" class="primary-button" [disabled]="isSubmitting()">
+          <span *ngIf="!isSubmitting(); else registerLoading">Criar acesso</span>
+        </button>
+        <ng-template #registerLoading>
+          <span>Registrando...</span>
+        </ng-template>
+      </form>
+    </ng-template>
+
+    <section class="login-hint" *ngIf="!isRegistering()">
       <h2>Usuários de demonstração</h2>
       <ul>
         <li>

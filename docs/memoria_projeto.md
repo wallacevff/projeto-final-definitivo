@@ -337,3 +337,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 
 ## Atualizacao 2026-01-05 19:26:41
 - Frontend: botao "Criar turma" na gerencia de curso com pre-selecao do curso na tela de criacao.
+
+## Atualizacao 2026-01-06 00:05:00
+- Auth: endpoint /auth/register com validacoes, hash de senha e restricao de papel aluno/professor.
+- Frontend: tela de login agora permite criar conta (aluno/professor) com validacao de senha e selecao de perfil.
+- Frontend: ajustes de build removendo RouterLink nao usado e acesso correto ao erro passwordMismatch.

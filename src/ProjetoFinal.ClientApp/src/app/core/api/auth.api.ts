@@ -31,3 +31,13 @@ export interface AuthUser {
   email: string;
   role: number;
 }
+
+export interface RegisterPayload {
+  FullName: string;
+  Email: string;
+  Username: string;
+  Password: string;
+  Role: number;
+  Biography?: string;
+  AvatarUrl?: string;
+}

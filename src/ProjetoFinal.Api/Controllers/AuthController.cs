@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjetoFinal.Application.Contracts.Dto.Auth;
+using ProjetoFinal.Application.Contracts.Dto.Users;
 using ProjetoFinal.Application.Contracts.Services;
 
 namespace ProjetoFinal.Api.Controllers;
@@ -24,6 +25,15 @@ public class AuthController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var response = await _authAppService.LoginAsync(request, cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDto>> RegisterAsync(
+        [FromBody] RegisterRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _authAppService.RegisterAsync(request, cancellationToken);
         return Ok(response);
     }
 }
