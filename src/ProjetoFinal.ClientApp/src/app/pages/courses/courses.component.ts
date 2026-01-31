@@ -335,8 +335,13 @@ export class CoursesComponent {
   }
 
   private loadCourses(): void {
+    const user = this.currentUser();
+    const filter = this.isInstructorUser() && user?.id
+      ? { InstructorId: user.id }
+      : { IsPublished: true };
+
     this.service
-      .getCourseCards({ IsPublished: true })
+      .getCourseCards(filter)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (courses: CourseListItem[]) => {

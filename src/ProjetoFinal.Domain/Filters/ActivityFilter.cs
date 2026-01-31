@@ -8,6 +8,7 @@ public class ActivityFilter : Filter
 {
     public Guid? CourseId { get; set; }
     public Guid? ClassGroupId { get; set; }
+    public Guid? InstructorId { get; set; }
     public ActivityScope? Scope { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }

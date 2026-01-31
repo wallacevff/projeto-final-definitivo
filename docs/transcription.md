@@ -103,3 +103,37 @@
 [2026-01-06 01:22:00] User: Continuando, ainda no Painel do Professor, na parte Proximos marcos, troque para. Atividade recente em forums que vai ter o topico do forum mais a ultima interacao desse topico com a data. Serao exibidos as 3 mais recentes. Depois builde o front e o backend. Adicione a instrucao no AGENTS.md para que sempre que algo for alterado no codigo fonte backend ou frontend sempre seja feito o build para verificar erros.
 
 [2026-01-06 01:22:00] Assistant: Atualizei o painel para atividade recente em foruns, adicionei a regra de build no AGENTS.md e rodei dotnet build e npm run build (warnings conhecidos).
+
+[2026-01-06 01:30:00] User: Analise o frontend do projeto e disserte se ele esta seguindo os padroes de usabilidade
+
+[2026-01-06 01:30:00] Assistant: Forneci analise de usabilidade do frontend com pontos fortes e melhorias sugeridas.
+
+[2026-01-06 01:40:00] User: Inicie um cronograma para tratar todos os itens que voce levantou sobre o que ainda pode melhorar crie um plano e realize as alteracoes.
+
+[2026-01-06 01:40:00] Assistant: Iniciei cronograma no relatorio e apliquei melhorias de usabilidade (foco visivel, tabelas responsivas e indicador de upload).
+
+[2026-01-06 01:55:00] User: Detectei um problema, criei outro professor. E estao aparecendo cursos de outro professor na tela de cursos do professor logado. Esse comportamento nao deve acontecer. Professor somente pode ver e gerenciar seus proprios cursos e turmas.
+
+[2026-01-06 01:55:00] Assistant: Ajustei a listagem de cursos para instrutor filtrar por InstructorId do usuario logado.
+
+[2026-01-06 02:05:00] User: Detectei um problema, criei outro professor. E estao aparecendo cursos de outro professor na tela de cursos do professor logado. Esse comportamento nao deve acontecer. Professor somente pode ver e gerenciar seus proprios cursos e turmas.
+
+[2026-01-06 02:05:00] Assistant: Ajustei filtros no frontend e adicionei validacoes no backend para impedir acesso a cursos/turmas de outros instrutores.
+
+[2026-01-06 02:20:00] User: Fui testar e me deparei com esse erro... TaskCanceledException...
+
+[2026-01-06 02:20:00] Assistant: Ajustei o CourseRepository para usar AsSplitQuery e reduzir custo da listagem; vou rebuildar.
+
+[2026-01-06 02:35:00] User: Agora esse erro: ... Skip without ordering em split query...
+
+[2026-01-06 02:35:00] Assistant: Adicionei ordenacao padrao (CreatedAt/Id) no CourseRepository para suportar split query com paginacao e vou rebuildar.
+
+[2026-01-06 02:45:00] User: Agora temos que adicionar esse comportamento nas atividades. Pois o professor esta vendo atividades de outras turmas e cursos de outro professor. Esse comportamento nao deve ocorrer
+
+[2026-01-06 02:45:00] Assistant: Apliquei filtro por instrutor no backend das atividades (listagem e CRUD) e adicionei InstructorId ao filtro, com includes do Course.
+
+[2026-01-06 03:05:00] User: Adicione o mesmo comportamento ao Forum. O professor logado so deve ter acesso aos furums de seus cursos.
+
+[2026-01-06 03:05:00] Assistant: Adicionei filtros por instrutor no forum (threads/posts) e protecoes de acesso por curso no backend.
+
+[2026-01-06 03:15:00] Assistant: Corrigi warning de nullabilidade no ForumPostRepository (Thread).

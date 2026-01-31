@@ -216,6 +216,22 @@
   color: #b91c1c;
 }
 
+.loading-dots::after {
+  content: '...';
+  display: inline-block;
+  margin-left: 4px;
+  animation: loadingDots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 .primary-button {
   border-radius: 999px;
   border: 0;

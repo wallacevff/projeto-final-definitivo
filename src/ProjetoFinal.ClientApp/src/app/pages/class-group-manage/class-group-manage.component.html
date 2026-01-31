@@ -129,37 +129,39 @@
           </header>
 
           <ng-container *ngIf="enrollments().length; else emptyEnrollments">
-            <table>
-              <thead>
-                <tr>
-                  <th>Aluno</th>
-                  <th>Status</th>
-                  <th>Solicitado em</th>
-                  <th>Decisao</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let enrollment of enrollments()">
-                  <td>
-                    <span class="student-name">{{ enrollment.StudentName }}</span>
-                  </td>
-                  <td>
-                    <span class="status-badge" [class]="statusBadgeClass(enrollment.Status)">
-                      {{ statusLabel(enrollment.Status) }}
-                    </span>
-                  </td>
-                  <td>
-                    {{ enrollment.RequestedAt | date: 'dd/MM/yyyy HH:mm' }}
-                  </td>
-                  <td>
-                    <ng-container *ngIf="enrollment.DecisionAt; else awaitingDecision">
-                      {{ enrollment.DecisionAt | date: 'dd/MM/yyyy HH:mm' }}
-                    </ng-container>
-                    <ng-template #awaitingDecision>—</ng-template>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Aluno</th>
+                    <th>Status</th>
+                    <th>Solicitado em</th>
+                    <th>Decisao</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let enrollment of enrollments()">
+                    <td>
+                      <span class="student-name">{{ enrollment.StudentName }}</span>
+                    </td>
+                    <td>
+                      <span class="status-badge" [class]="statusBadgeClass(enrollment.Status)">
+                        {{ statusLabel(enrollment.Status) }}
+                      </span>
+                    </td>
+                    <td>
+                      {{ enrollment.RequestedAt | date: 'dd/MM/yyyy HH:mm' }}
+                    </td>
+                    <td>
+                      <ng-container *ngIf="enrollment.DecisionAt; else awaitingDecision">
+                        {{ enrollment.DecisionAt | date: 'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #awaitingDecision>—</ng-template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </ng-container>
         </section>
 
@@ -315,28 +317,30 @@
 
                 <ng-container *ngIf="!submissionsLoading() && !submissionsError()">
                   <ng-container *ngIf="submissions().length; else emptySubmissions">
-                    <table class="submissions-table">
-                      <thead>
-                        <tr>
-                          <th>Aluno</th>
-                          <th>Status</th>
-                          <th>Nota</th>
-                          <th>Enviado em</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          *ngFor="let submission of submissions(); trackBy: trackBySubmission"
-                          (click)="selectSubmission(submission.Id)"
-                          [class.is-active]="selectedSubmission()?.Id === submission.Id"
-                        >
-                          <td>{{ submissionStudentName(submission) }}</td>
-                          <td>{{ submissionStatusLabel(submission.Status) }}</td>
-                          <td>{{ submission.Score ?? '—' }}</td>
-                          <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div class="table-scroll">
+                      <table class="submissions-table">
+                        <thead>
+                          <tr>
+                            <th>Aluno</th>
+                            <th>Status</th>
+                            <th>Nota</th>
+                            <th>Enviado em</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            *ngFor="let submission of submissions(); trackBy: trackBySubmission"
+                            (click)="selectSubmission(submission.Id)"
+                            [class.is-active]="selectedSubmission()?.Id === submission.Id"
+                          >
+                            <td>{{ submissionStudentName(submission) }}</td>
+                            <td>{{ submissionStatusLabel(submission.Status) }}</td>
+                            <td>{{ submission.Score ?? '—' }}</td>
+                            <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </ng-container>
                 </ng-container>
               </div>

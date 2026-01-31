@@ -7,6 +7,7 @@ using ProjetoFinal.Application.Contracts.Dto.Forum;
 using ProjetoFinal.Application.Contracts.Services;
 using ProjetoFinal.Domain.Enums;
 using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
 using ProjetoFinal.Domain.Shared.Enums;
 using ProjetoFinal.Domain.Shared.Exceptions;
 
@@ -19,10 +20,17 @@ namespace ProjetoFinal.Api.Controllers;
 public class ForumThreadsController : ControllerBase
 {
     private readonly IForumAppService _service;
+    private readonly ICourseAppService _courseService;
+    private readonly IClassGroupRepository _classGroupRepository;
 
-    public ForumThreadsController(IForumAppService service)
+    public ForumThreadsController(
+        IForumAppService service,
+        ICourseAppService courseService,
+        IClassGroupRepository classGroupRepository)
     {
         _service = service;
+        _courseService = courseService;
+        _classGroupRepository = classGroupRepository;
     }
 
     [HttpPost]
@@ -42,7 +50,7 @@ public class ForumThreadsController : ControllerBase
         }
 
         dto.CreatedById = userId;
-        return _service.CreateThreadAsync(dto, cancellationToken);
+        return CreateThreadInternalAsync(dto, cancellationToken);
     }
 
     [HttpPut("{threadId:guid}")]
@@ -51,6 +59,7 @@ public class ForumThreadsController : ControllerBase
         [FromBody] ForumThreadUpdateDto dto,
         CancellationToken cancellationToken = default)
     {
+        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
         await _service.UpdateThreadAsync(threadId, dto, cancellationToken);
         return NoContent();
     }
@@ -60,6 +69,7 @@ public class ForumThreadsController : ControllerBase
         [FromRoute] Guid threadId,
         CancellationToken cancellationToken = default)
     {
+        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
         await _service.DeleteThreadAsync(threadId, cancellationToken);
         return NoContent();
     }
@@ -69,7 +79,7 @@ public class ForumThreadsController : ControllerBase
         [FromRoute] Guid threadId,
         CancellationToken cancellationToken = default)
     {
-        return _service.GetThreadByIdAsync(threadId, cancellationToken);
+        return GetThreadInternalAsync(threadId, cancellationToken);
     }
 
     [HttpGet]
@@ -77,6 +87,17 @@ public class ForumThreadsController : ControllerBase
         [FromQuery] ForumThreadFilter filter,
         CancellationToken cancellationToken = default)
     {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var instructorId = ResolveCurrentUserId();
+            if (instructorId == Guid.Empty)
+            {
+                throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+            }
+
+            filter.InstructorId = instructorId;
+        }
+
         return _service.GetThreadsAsync(filter, cancellationToken);
     }
 
@@ -105,5 +126,80 @@ public class ForumThreadsController : ControllerBase
         }
 
         return false;
+    }
+
+    private bool IsAdministrator()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Administrator;
+        }
+
+        if (int.TryParse(roleValue, out var numericRole))
+        {
+            return numericRole == (int)UserRole.Administrator;
+        }
+
+        return false;
+    }
+
+    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
+        if (course.InstructorId != instructorId)
+        {
+            throw new BusinessException("Acesso nao permitido ao topico.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task EnsureInstructorOwnsThreadAsync(Guid threadId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
+        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+    }
+
+    private async Task<ForumThreadDto> GetThreadInternalAsync(Guid threadId, CancellationToken cancellationToken)
+    {
+        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
+        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+        return thread;
+    }
+
+    private async Task<ForumThreadDto> CreateThreadInternalAsync(ForumThreadCreateDto dto, CancellationToken cancellationToken)
+    {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var classGroup = await _classGroupRepository.FindAsync(dto.ClassGroupId, cancellationToken);
+            if (classGroup is null)
+            {
+                throw new BusinessException("Turma nao encontrada para criar o topico.", ECodigo.NaoEncontrado);
+            }
+
+            await EnsureInstructorOwnsCourseAsync(classGroup.CourseId, cancellationToken);
+        }
+
+        return await _service.CreateThreadAsync(dto, cancellationToken);
     }
 }

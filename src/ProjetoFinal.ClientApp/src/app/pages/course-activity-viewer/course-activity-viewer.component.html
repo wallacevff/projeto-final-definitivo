@@ -141,7 +141,9 @@
                 <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
                   <div>
                     <strong>{{ attachment.fileName }}</strong>
-                    <p class="muted" *ngIf="attachment.status === 'uploading'">Enviando...</p>
+                    <p class="muted" *ngIf="attachment.status === 'uploading'">
+                      Enviando<span class="loading-dots" aria-hidden="true"></span>
+                    </p>
                     <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
                       Falha no envio
                     </p>

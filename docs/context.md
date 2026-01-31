@@ -128,3 +128,25 @@
 ### Resumo
 - Dashboard professor agora lista atividade recente em foruns (3 topicos mais recentes com ultima interacao).
 - AGENTS.md reforca executar dotnet build e npm run build apos alteracoes de codigo.
+
+### Data: 2026-01-06
+### Resumo
+- Melhorias de usabilidade: foco visivel global, scroll horizontal em tabelas densas e indicador de envio de anexos.
+- Relatorio atualizado com cronograma de melhorias.
+- Builds .NET e Angular concluídos com warnings conhecidos.
+
+### Data: 2026-01-06
+### Resumo
+- Backend reforca restricao de cursos/turmas por instrutor (somente proprietario).
+- Frontend filtra cursos do professor pelo InstructorId.
+- Builds .NET e Angular concluídos com warnings conhecidos.
+
+### Data: 2026-01-06
+### Resumo
+- Atividades agora respeitam instrutor logado (listagem e CRUD filtrados no backend).
+- Builds .NET e Angular concluídos com warnings conhecidos.
+
+### Data: 2026-01-06
+### Resumo
+- Forum agora filtra e valida acesso por instrutor (threads e posts).
+- Builds .NET e Angular concluídos com warnings conhecidos.

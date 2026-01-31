@@ -360,3 +360,23 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Dashboard professor: secao de atividade recente em foruns com 3 ultimas interacoes por topico.
 - Instrucoes: AGENTS.md agora exige build backend/frontend apos mudancas de codigo.
 - Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 01:50:00
+- Usabilidade: foco visivel global para elementos interativos e tabelas com scroll horizontal em telas menores.
+- Usabilidade: indicador animado de envio de anexos em atividades.
+- Docs: cronograma de melhorias adicionado ao relatorio.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 02:15:00
+- Seguranca: listagem de cursos e turmas agora valida instrutor logado no backend (bloqueia acesso a cursos/turmas de outros professores).
+- Frontend: listagem de cursos do professor filtra por InstructorId do usuario logado.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 02:55:00
+- Atividades: filtro por instrutor no backend (ActivityFilter.InstructorId) e protecao de CRUD para evitar acesso a atividades de outros professores.
+- Infra: ActivityRepository inclui Course e aplica filtro por instrutor; ordenacao padrao de cursos mantida.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 03:20:00
+- Forum: filtro por instrutor em threads/posts e protecao de CRUD para acesso somente a cursos do professor logado.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).

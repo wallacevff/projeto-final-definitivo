@@ -92,6 +92,15 @@
   font-size: 0.9rem;
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-scroll table {
+  min-width: 520px;
+}
+
 .submissions-table th,
 .submissions-table td {
   padding: 10px;

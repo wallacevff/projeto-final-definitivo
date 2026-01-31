@@ -39,28 +39,30 @@
 
           <ng-container *ngIf="!submissionsLoading() && !submissionsError()">
             <ng-container *ngIf="submissions().length; else emptySubmissions">
-              <table class="submissions-table">
-                <thead>
-                  <tr>
-                    <th>Aluno</th>
-                    <th>Status</th>
-                    <th>Nota</th>
-                    <th>Enviado em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    *ngFor="let submission of submissions(); trackBy: trackBySubmission"
-                    (click)="selectSubmission(submission.Id)"
-                    [class.is-active]="selectedSubmission()?.Id === submission.Id"
-                  >
-                    <td>{{ submissionStudentName(submission) }}</td>
-                    <td>{{ submissionStatusLabel(submission.Status) }}</td>
-                    <td>{{ submission.Score ?? '—' }}</td>
-                    <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="table-scroll">
+                <table class="submissions-table">
+                  <thead>
+                    <tr>
+                      <th>Aluno</th>
+                      <th>Status</th>
+                      <th>Nota</th>
+                      <th>Enviado em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let submission of submissions(); trackBy: trackBySubmission"
+                      (click)="selectSubmission(submission.Id)"
+                      [class.is-active]="selectedSubmission()?.Id === submission.Id"
+                    >
+                      <td>{{ submissionStudentName(submission) }}</td>
+                      <td>{{ submissionStatusLabel(submission.Status) }}</td>
+                      <td>{{ submission.Score ?? '—' }}</td>
+                      <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </ng-container>
           </ng-container>
         </div>

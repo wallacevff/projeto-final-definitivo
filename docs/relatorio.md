@@ -22,6 +22,7 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Criacao/edicao/publicacao de cursos e turmas no frontend, com pre-selecao de curso ao criar turma pela gerencia.
 - Cursos interativos com turmas, capacidade, aprovacao e codigo de inscricao.
 - Cursos nao interativos (distribuicao) com acesso aberto a materiais e forum.
+- API restringe acesso de instrutores apenas aos proprios cursos e turmas.
 
 ### Inscricoes e matrículas
 - Inscricao de aluno em distribuicao (course-subscriptions) e em turmas interativas (class enrollments).
@@ -37,10 +38,12 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Envio de atividades pelo aluno com rich-text e anexos.
 - Gerencia e correcao pelo professor em turma e em tela dedicada por atividade.
 - Visualizacao de status/nota/feedback pelo aluno.
+- Listagem e gestao de atividades restritas ao instrutor proprietario do curso.
 
 ### Forum e chat
 - Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
 - Criacao de topicos restrita a professores; alunos podem responder.
+- Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
 
 ### Dashboard professor
 - Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
@@ -78,3 +81,21 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 ## Observacoes
 - Builds recentes executados com sucesso; warnings de budget/seletores ja conhecidos no Angular.
 - Documentacao deve seguir append-only em memoria/contexto e transcricao.
+
+## Cronograma de melhorias de usabilidade (iniciado)
+### Itens planejados
+- Consistencia de linguagem e acentos em rotulos e mensagens do frontend.
+- Acessibilidade: foco visivel para links/botoes/inputs.
+- Responsividade de tabelas densas (scroll horizontal em telas menores).
+- Feedback visual de envio de anexos (indicadores durante upload).
+- Performance percebida: reduzir warnings de budget (acao continua).
+
+### Alteracoes ja aplicadas
+- Acessibilidade: foco visivel global em `styles.css`.
+- Responsividade: tabelas de inscricoes/submissoes com wrapper de scroll.
+- Feedback de anexos: indicador visual animado durante envio.
+
+### Proximos passos
+- Padronizar textos com acentos/idioma em todos os modulos.
+- Revisar componentes mais densos para simplificar a hierarquia visual.
+- Definir estrategia para reduzir tamanhos de CSS/bundle.
