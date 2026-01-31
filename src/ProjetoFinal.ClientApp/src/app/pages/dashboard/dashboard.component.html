@@ -88,16 +88,34 @@
     </div>
 
     <section class="dashboard__timeline">
-      <h3>Próximos marcos</h3>
-      <ol>
-        <li *ngFor="let item of timeline">
-          <div class="timeline__date">{{ item.date }}</div>
-          <div class="timeline__details">
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.description }}</p>
-          </div>
-        </li>
-      </ol>
+      <h3>Atividade recente em fóruns</h3>
+      <ng-container *ngIf="forumActivityLoading(); else forumActivityList">
+        <div class="state state--info">Carregando atividades do fórum...</div>
+      </ng-container>
+      <ng-template #forumActivityList>
+        <ng-container *ngIf="!forumActivityError(); else forumActivityErrorState">
+          <ng-container *ngIf="forumActivities().length; else forumActivityEmpty">
+            <ol>
+              <li *ngFor="let item of forumActivities(); trackBy: trackByForumActivity">
+                <div class="timeline__date">{{ item.lastActivityAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                <div class="timeline__details">
+                  <h4>{{ item.title }}</h4>
+                  <p>
+                    Última interação: <strong>{{ item.lastAuthorName }}</strong> ·
+                    {{ item.courseTitle }} · {{ item.classGroupName }}
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+      <ng-template #forumActivityErrorState>
+        <div class="state state--error">{{ forumActivityError() }}</div>
+      </ng-template>
+      <ng-template #forumActivityEmpty>
+        <div class="state">Nenhuma atividade recente no fórum.</div>
+      </ng-template>
     </section>
   </section>
 </ng-template>

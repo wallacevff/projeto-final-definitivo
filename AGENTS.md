@@ -28,6 +28,7 @@
 - Antes de qualquer commit, garanta que `docs/memoria_projeto.md` e `docs/context.md` estejam atualizados.
 - Mantenha o relatorio geral sempre atualizado em `docs/relatorio.md` quando houver mudancas relevantes no projeto ou na documentacao.
 - Sempre que novos arquivos `.md` forem adicionados ou removidos em `docs/`, atualize o `ProjetoFinal.sln` para incluir/remover esses arquivos na secao de Solution Items.
+- Sempre que houver alteracoes no codigo-fonte (backend ou frontend), execute `dotnet build ProjetoFinal.sln` e `npm run build` para verificar erros.
 
 ## Security & Configuration Tips
 - JWT secrets e chaves de storage ficam fora do repositório; gere chaves com `node -p "crypto.randomBytes(256).toString('base64');"` conforme `docs/commands.md`.

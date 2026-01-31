@@ -44,6 +44,7 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 
 ### Dashboard professor
 - Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
+- Secao de atividade recente em foruns mostrando os 3 topicos com ultima interacao e data.
 
 ### Documentacao
 - Memoria/contexto em Markdown com historico de evolucao.

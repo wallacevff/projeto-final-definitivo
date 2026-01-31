@@ -355,3 +355,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## Atualizacao 2026-01-06 00:55:00
 - Docs: criado relatorio geral em docs/relatorio.md com analise do projeto e cronograma.
 - Instrucoes: AGENTS.md agora exige manter o relatorio atualizado.
+
+## Atualizacao 2026-01-06 01:20:00
+- Dashboard professor: secao de atividade recente em foruns com 3 ultimas interacoes por topico.
+- Instrucoes: AGENTS.md agora exige build backend/frontend apos mudancas de codigo.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).

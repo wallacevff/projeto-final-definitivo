@@ -10,7 +10,7 @@ import {
   ForumThreadListItem,
   mapForumThreadsResponse
 } from '../api/forum.api';
-import { ApiPagedResponse } from '../api/api.types';
+import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
 import { toHttpParams } from '../utils/http-params.util';
 
 @Injectable({ providedIn: 'root' })
@@ -26,6 +26,17 @@ export class ForumService {
       .pipe(
         catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
         map(response => mapForumThreadsResponse(response, courseLookup))
+      );
+  }
+
+  getThreadsRaw(filter: ForumThreadFilter = {}) {
+    const params = toHttpParams({ PageSize: 50, PageNumber: 1, ...filter });
+
+    return this.http
+      .get<ApiPagedResponse<ForumThreadDto>>(`${this.baseUrl}/forum/threads`, { params })
+      .pipe(
+        catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
+        map(response => normalizePagedResponse(response).items)
       );
   }
 

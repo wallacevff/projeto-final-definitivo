@@ -123,3 +123,8 @@
 ### Resumo
 - Criado docs/relatorio.md com analise geral e cronograma de implementacoes.
 - AGENTS.md atualizado para manter o relatorio sempre em dia.
+
+### Data: 2026-01-06
+### Resumo
+- Dashboard professor agora lista atividade recente em foruns (3 topicos mais recentes com ultima interacao).
+- AGENTS.md reforca executar dotnet build e npm run build apos alteracoes de codigo.

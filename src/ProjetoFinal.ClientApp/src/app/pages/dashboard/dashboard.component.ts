@@ -9,6 +9,8 @@ import { CourseDto, CourseListItem } from '../../core/api/courses.api';
 import { AuthService } from '../../core/services/auth.service';
 import { CourseSubscriptionsService } from '../../core/services/course-subscriptions.service';
 import { CoursesService } from '../../core/services/courses.service';
+import { ForumService } from '../../core/services/forum.service';
+import { ForumPostDto, ForumThreadDto } from '../../core/api/forum.api';
 
 interface HighlightCard {
   label: string;
@@ -17,10 +19,13 @@ interface HighlightCard {
   context: string;
 }
 
-interface TimelineItem {
+interface ForumActivityItem {
+  threadId: string;
   title: string;
-  date: string;
-  description: string;
+  courseTitle: string;
+  classGroupName: string;
+  lastAuthorName: string;
+  lastActivityAt: Date;
 }
 
 interface StudentCourseCard extends CourseListItem {
@@ -43,6 +48,7 @@ export class DashboardComponent {
   private readonly authService = inject(AuthService);
   private readonly coursesService = inject(CoursesService);
   private readonly subscriptionsService = inject(CourseSubscriptionsService);
+  private readonly forumService = inject(ForumService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly modeLabels: Record<number, string> = {
     1: 'Interactivo',
@@ -67,23 +73,9 @@ export class DashboardComponent {
     { label: 'CURSOS NÃO INTERATIVOS', value: '0', trend: 'steady', context: 'Criados por voce' },
   ]);
 
-  readonly timeline: TimelineItem[] = [
-    {
-      title: 'Lançamento do curso de Transformação Digital',
-      date: '02/out às 09:00',
-      description: 'Configurar materiais e liberar matrículas para a turma piloto.'
-    },
-    {
-      title: 'Reunião com instrutores',
-      date: '03/out às 14:30',
-      description: 'Alinhamento sobre trilhas de aprendizado e feedback dos alunos.'
-    },
-    {
-      title: 'Prazo para avaliação de atividades',
-      date: '05/out',
-      description: 'Concluir correção das submissões pendentes de Design Thinking.'
-    },
-  ];
+  readonly forumActivities = signal<ForumActivityItem[]>([]);
+  readonly forumActivityLoading = signal(false);
+  readonly forumActivityError = signal<string | null>(null);
 
   constructor() {
     const userId = this.currentUser()?.id;
@@ -98,6 +90,7 @@ export class DashboardComponent {
     } else {
       this.loading.set(false);
       this.loadInstructorStats(userId);
+      this.loadInstructorForumActivity(userId);
     }
   }
 
@@ -111,6 +104,10 @@ export class DashboardComponent {
 
   enrollmentStatusLabel(status?: number): string {
     return status ? this.enrollmentStatusLabels[status] ?? 'Desconhecido' : '';
+  }
+
+  trackByForumActivity(_: number, item: ForumActivityItem): string {
+    return item.threadId;
   }
 
   enrollmentStatusClass(status?: number): string {
@@ -269,6 +266,99 @@ export class DashboardComponent {
           ]);
         }
       });
+  }
+
+  private loadInstructorForumActivity(instructorId: string): void {
+    this.forumActivityLoading.set(true);
+    this.forumActivityError.set(null);
+
+    this.coursesService
+      .getCoursesDto({ InstructorId: instructorId, PageSize: 200 })
+      .pipe(
+        switchMap(courses => {
+          if (!courses.length) {
+            return of({ courses: [], threads: [] as ForumThreadDto[] });
+          }
+          const requests = courses.map(course => this.forumService.getThreadsRaw({ CourseId: course.Id, PageSize: 50 }));
+          return forkJoin(requests).pipe(
+            map(threadsLists => ({ courses, threads: threadsLists.flat() }))
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ courses, threads }) => {
+          const courseLookup = new Map(courses.map(course => [course.Id, course.Title]));
+          const items = threads
+            .map(thread => this.mapThreadToActivity(thread, courseLookup))
+            .filter((item): item is ForumActivityItem => item !== null)
+            .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
+            .slice(0, 3);
+
+          this.forumActivities.set(items);
+          this.forumActivityLoading.set(false);
+        },
+        error: () => {
+          this.forumActivityError.set('Nao foi possivel carregar as atividades do forum.');
+          this.forumActivities.set([]);
+          this.forumActivityLoading.set(false);
+        }
+      });
+  }
+
+  private mapThreadToActivity(
+    thread: ForumThreadDto,
+    courseLookup: Map<string, string>
+  ): ForumActivityItem | null {
+    const lastInteraction = this.resolveLastInteraction(thread);
+    if (!lastInteraction) {
+      return null;
+    }
+
+    return {
+      threadId: thread.Id,
+      title: thread.Title,
+      courseTitle: courseLookup.get(thread.CourseId) ?? 'Curso desconhecido',
+      classGroupName: thread.ClassGroupName || 'Turma nao informada',
+      lastAuthorName: lastInteraction.authorName,
+      lastActivityAt: lastInteraction.date
+    };
+  }
+
+  private resolveLastInteraction(thread: ForumThreadDto): { authorName: string; date: Date } | null {
+    const posts = this.flattenPosts(thread.Posts ?? []);
+    if (posts.length) {
+      const latest = posts.reduce((latestPost, current) => {
+        const latestDate = new Date(latestPost.CreatedAt);
+        const currentDate = new Date(current.CreatedAt);
+        return currentDate > latestDate ? current : latestPost;
+      });
+
+      return {
+        authorName: latest.AuthorName || 'Usuario desconhecido',
+        date: new Date(latest.CreatedAt)
+      };
+    }
+
+    if (!thread.LastActivityAt) {
+      return null;
+    }
+
+    return {
+      authorName: thread.CreatedByName || 'Usuario desconhecido',
+      date: new Date(thread.LastActivityAt)
+    };
+  }
+
+  private flattenPosts(posts: ForumPostDto[]): ForumPostDto[] {
+    const result: ForumPostDto[] = [];
+    posts.forEach(post => {
+      result.push(post);
+      if (post.Replies?.length) {
+        result.push(...this.flattenPosts(post.Replies));
+      }
+    });
+    return result;
   }
 
   private mapCourseDtoToListItem(course?: CourseDto): CourseListItem | null {

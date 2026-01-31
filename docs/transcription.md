@@ -95,3 +95,11 @@
 [2026-01-06 01:01:00] User: Deixe instrucoes no AGENTS.md para que sempre adicione os arquivos md novos no sln do projeto do jeito que voce fez agora e que o mesmo seja feito para a exclusao
 
 [2026-01-06 01:01:00] Assistant: Atualizei o AGENTS.md para exigir atualizacao do .sln ao adicionar/remover arquivos .md em docs/.
+
+[2026-01-06 01:15:00] User: Continuando, ainda no Painel do Professor, na parte Proximos marcos, troque para. Atividade recente em fórums que vai ter o topico do forum mais a ultima interacao desse topico com a data. Serao exibidos as 3 mais recentes. Depois builde o front e o backend. Adicione a instrucao no AGENTS.md para que sempre que algo for alterado no codigo fonte backend ou frontend sempre seja feito o build para verificar erros.
+
+[2026-01-06 01:15:00] Assistant: Atualizei o painel para exibir atividade recente de forum e adicionei a regra de build no AGENTS.md; vou executar os builds conforme solicitado.
+
+[2026-01-06 01:22:00] User: Continuando, ainda no Painel do Professor, na parte Proximos marcos, troque para. Atividade recente em forums que vai ter o topico do forum mais a ultima interacao desse topico com a data. Serao exibidos as 3 mais recentes. Depois builde o front e o backend. Adicione a instrucao no AGENTS.md para que sempre que algo for alterado no codigo fonte backend ou frontend sempre seja feito o build para verificar erros.
+
+[2026-01-06 01:22:00] Assistant: Atualizei o painel para atividade recente em foruns, adicionei a regra de build no AGENTS.md e rodei dotnet build e npm run build (warnings conhecidos).
