@@ -384,3 +384,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## Atualizacao 2026-01-06 03:55:00
 - Forum: exibicao de respostas agora suporta niveis recursivos (respostas a respostas).
 - Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## 2026-01-31
+- Ajustei a tela /activities para alunos: agora carrega apenas atividades das turmas em que o aluno esta matriculado ou inscrito em cursos de distribuicao, e inclui filtro de status (todas/pendentes/realizadas).
+- Mantive as acoes de professor ocultas para alunos na listagem de atividades.
+- Builds: `dotnet build ProjetoFinal.sln` e `npm run build` (warnings de budget/seletores ja conhecidos).

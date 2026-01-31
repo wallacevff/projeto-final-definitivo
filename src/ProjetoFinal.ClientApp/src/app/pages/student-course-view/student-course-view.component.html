@@ -34,12 +34,41 @@
 
         <section class="course-panel" *ngIf="activeSection() === 'activities'" id="activities">
           <header>
-            <h2>Atividades</h2>
-            <p>Entregas e avaliacoes liberadas para este curso.</p>
+            <div>
+              <h2>Atividades</h2>
+              <p>Entregas e avaliacoes liberadas para este curso.</p>
+            </div>
+            <div class="activity-filters">
+              <span class="filter-label">Filtrar:</span>
+              <button
+                type="button"
+                class="filter-chip"
+                [class.filter-chip--active]="activityStatusFilter() === 'all'"
+                (click)="setActivityStatusFilter('all')"
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                class="filter-chip"
+                [class.filter-chip--active]="activityStatusFilter() === 'pending'"
+                (click)="setActivityStatusFilter('pending')"
+              >
+                Pendentes
+              </button>
+              <button
+                type="button"
+                class="filter-chip"
+                [class.filter-chip--active]="activityStatusFilter() === 'completed'"
+                (click)="setActivityStatusFilter('completed')"
+              >
+                Realizadas
+              </button>
+            </div>
           </header>
 
-          <ng-container *ngIf="activities().length; else noActivities">
-            <article *ngFor="let activity of activities()" class="course-panel__item">
+          <ng-container *ngIf="filteredActivities().length; else noActivities">
+            <article *ngFor="let activity of filteredActivities()" class="course-panel__item">
               <div>
                 <h3>{{ activity.title }}</h3>
                 <p class="muted">

@@ -155,3 +155,7 @@
 ### Resumo
 - Forum: respostas agora renderizam em arvore (multinivel).
 - Builds .NET e Angular concluídos com warnings conhecidos.
+
+## 2026-01-31
+- Atividades para alunos na rota /activities agora sao filtradas por matricula/inscricao e possuem filtro de status (todas/pendentes/realizadas).
+- Acoes de professor (criar/gerenciar correcoes) ficam ocultas para alunos nessa tela.

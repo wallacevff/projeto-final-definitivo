@@ -143,3 +143,23 @@
 [2026-01-06 03:30:00] Assistant: Pedi detalhes do tópico e passos para reproduzir para investigar respostas no forum.
 
 [2026-01-06 03:40:00] Assistant: Ajustei a tela do topico para renderizar respostas em niveis recursivos (respostas a respostas).
+
+[2026-01-06 03:50:00] User: Confira por favor se atividades na area do aluno esta sendo filtrada apenas na turma que o aluno logado esta matriculado
+
+[2026-01-06 03:50:00] Assistant: Verifiquei no StudentCourseView e confirmei o filtro por turmas com matricula (status 1/2) e distribuicao; expliquei o fluxo.
+
+[2026-01-06 04:05:00] User: Não está, eu loguei com um aluno que não está matriculado em nenhum curso... Adicione também um campo para filtrar as atividades em pendentes e realizadas.
+
+[2026-01-06 04:05:00] Assistant: Ajustei o filtro de atividades por matrícula e adicionei filtro pendentes/realizadas no StudentCourseView.
+
+[2026-01-31 16:05:04] User: Nao esta, eu loguei com um aluno que nao esta matriculado em nenhum curso. Em atividades na area do aluno devem aparecer somente as atividades da turma em que o aluno esta matriculado. Adicione tambem um campo para filtrar as atividades em pendentes e realizadas.
+
+[2026-01-31 16:05:05] Assistant: Ajustei o carregamento das atividades no student-course-view para retornar vazio quando o aluno nao tem matricula ou inscricao valida e adicionei filtro de status (todas, pendentes, realizadas) com botoes no painel.
+
+[2026-01-31 16:25:02] User: As atividades aparecem as atividades.
+
+[2026-01-31 16:25:03] Assistant: Vou verificar onde as atividades do aluno estao sendo carregadas e ajustar o filtro para que apenas atividades das turmas matriculadas aparecam; preciso confirmar em qual tela/rota voce esta vendo isso.
+
+[2026-01-31 16:31:10] User: Sim e! mas agora funcionou! Faca os commits e o push
+
+[2026-01-31 16:31:11] Assistant: Vou atualizar memoria e contexto, fazer o commit em pt-BR e realizar o push das correcoes no filtro de atividades do aluno.

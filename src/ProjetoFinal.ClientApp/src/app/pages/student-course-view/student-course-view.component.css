@@ -103,6 +103,14 @@
   gap: 1rem;
 }
 
+.course-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .course-panel header h2 {
   margin: 0;
   font-size: 1.5rem;
@@ -112,6 +120,35 @@
 .course-panel header p {
   margin: 0.25rem 0 0;
   color: var(--surface-500);
+}
+
+.activity-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  color: var(--surface-500);
+}
+
+.filter-chip {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent-600);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-chip--active {
+  background: var(--accent-600);
+  color: #fff;
+  border-color: transparent;
 }
 
 .course-panel__item {
