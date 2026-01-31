@@ -10,6 +10,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F39C-4898-996F-02BE379BAD86}"
 	ProjectSection(SolutionItems) = preProject
 		docs\commands.md = docs\commands.md
+		docs\memoria_projeto.md = docs\memoria_projeto.md
+		docs\transcriptions.txt = docs\transcriptions.txt
+		docs\propont.txt = docs\propont.txt
+		docs\transcription.txt = docs\transcription.txt
+		docs\especificacao.txt = docs\especificacao.txt
+		docs\context.md = docs\context.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"
