@@ -22,7 +22,7 @@
     },
     "development_http_api": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": ".",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
