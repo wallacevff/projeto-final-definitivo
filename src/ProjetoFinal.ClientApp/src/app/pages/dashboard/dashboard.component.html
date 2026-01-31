@@ -80,7 +80,7 @@
     </header>
 
     <div class="dashboard__highlights">
-      <article *ngFor="let card of highlightCards" class="highlight" [attr.data-trend]="card.trend">
+      <article *ngFor="let card of highlightCards()" class="highlight" [attr.data-trend]="card.trend">
         <span class="highlight__label">{{ card.label }}</span>
         <strong class="highlight__value">{{ card.value }}</strong>
         <span class="highlight__context">{{ card.context }}</span>

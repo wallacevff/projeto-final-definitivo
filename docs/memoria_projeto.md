@@ -342,3 +342,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Auth: endpoint /auth/register com validacoes, hash de senha e restricao de papel aluno/professor.
 - Frontend: tela de login agora permite criar conta (aluno/professor) com validacao de senha e selecao de perfil.
 - Frontend: ajustes de build removendo RouterLink nao usado e acesso correto ao erro passwordMismatch.
+
+## Atualizacao 2026-01-06 00:24:00
+- Dashboard professor: cards agora mostram ALUNOS MATRICULADOS, CURSOS INTERATIVOS e CURSOS NAO INTERATIVOS com contagem real por instrutor.
+- Frontend: agregado de matriculas soma aprovados+pendentes nas turmas interativas e inscricoes em cursos nao interativos.
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).

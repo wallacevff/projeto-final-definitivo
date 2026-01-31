@@ -2,7 +2,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { CourseDto, CourseListItem } from '../../core/api/courses.api';
 import { AuthService } from '../../core/services/auth.service';
@@ -60,11 +61,11 @@ export class DashboardComponent {
   readonly error = signal<string | null>(null);
   readonly studentCourses = signal<StudentCourseCard[]>([]);
 
-  readonly highlightCards: HighlightCard[] = [
-    { label: 'Alunos ativos', value: '1.287', trend: 'up', context: '+6,4% vs. semana anterior' },
-    { label: 'Taxa de conclusão', value: '78%', trend: 'steady', context: 'Meta trimestral: 80%' },
-    { label: 'Atividades pendentes', value: '54', trend: 'down', context: '-12 desde ontem' },
-  ];
+  readonly highlightCards = signal<HighlightCard[]>([
+    { label: 'ALUNOS MATRICULADOS', value: '0', trend: 'steady', context: 'Total nos seus cursos' },
+    { label: 'CURSOS INTERATIVOS', value: '0', trend: 'steady', context: 'Criados por voce' },
+    { label: 'CURSOS NÃO INTERATIVOS', value: '0', trend: 'steady', context: 'Criados por voce' },
+  ]);
 
   readonly timeline: TimelineItem[] = [
     {
@@ -85,19 +86,19 @@ export class DashboardComponent {
   ];
 
   constructor() {
-    if (!this.isStudentView()) {
-      this.loading.set(false);
-      return;
-    }
-
-    const studentId = this.currentUser()?.id;
-    if (!studentId) {
+    const userId = this.currentUser()?.id;
+    if (!userId) {
       this.error.set('Usuario nao identificado.');
       this.loading.set(false);
       return;
     }
 
-    this.loadStudentCourses(studentId);
+    if (this.isStudentView()) {
+      this.loadStudentCourses(userId);
+    } else {
+      this.loading.set(false);
+      this.loadInstructorStats(userId);
+    }
   }
 
   goToCreateCourse(): void {
@@ -195,6 +196,77 @@ export class DashboardComponent {
         error: () => {
           this.error.set('Nao foi possivel carregar seus cursos inscritos.');
           this.loading.set(false);
+        }
+      });
+  }
+
+  private loadInstructorStats(instructorId: string): void {
+    this.coursesService
+      .getCoursesDto({ InstructorId: instructorId, PageSize: 200 })
+      .pipe(
+        switchMap(courses => {
+          const interactiveCourses = courses.filter(course => course.Mode === 1);
+          const nonInteractiveCourses = courses.filter(course => course.Mode !== 1);
+
+          const interactiveStudents = interactiveCourses.reduce((total, course) => {
+            const groups = course.ClassGroups ?? [];
+            const approved = groups.reduce((sum, group) => sum + (group.ApprovedEnrollments ?? 0), 0);
+            const pending = groups.reduce((sum, group) => sum + (group.PendingEnrollments ?? 0), 0);
+            return total + approved + pending;
+          }, 0);
+
+          const nonInteractiveIds = nonInteractiveCourses.map(course => course.Id);
+          const subscriptions$ = nonInteractiveIds.length
+            ? forkJoin(nonInteractiveIds.map(id => this.subscriptionsService.getByCourse(id)))
+            : of([]);
+
+          return subscriptions$.pipe(
+            map(subscriptions => ({
+              interactiveCount: interactiveCourses.length,
+              nonInteractiveCount: nonInteractiveCourses.length,
+              interactiveStudents,
+              subscriptions
+            }))
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ interactiveCount, nonInteractiveCount, interactiveStudents, subscriptions }) => {
+          const subscriptionCount = (subscriptions as Array<{ length: number }>).reduce(
+            (total, list) => total + list.length,
+            0
+          );
+          const totalStudents = interactiveStudents + subscriptionCount;
+          const formatter = new Intl.NumberFormat('pt-BR');
+
+          this.highlightCards.set([
+            {
+              label: 'ALUNOS MATRICULADOS',
+              value: formatter.format(totalStudents),
+              trend: 'steady',
+              context: 'Total nos seus cursos'
+            },
+            {
+              label: 'CURSOS INTERATIVOS',
+              value: formatter.format(interactiveCount),
+              trend: 'steady',
+              context: 'Criados por voce'
+            },
+            {
+              label: 'CURSOS NÃO INTERATIVOS',
+              value: formatter.format(nonInteractiveCount),
+              trend: 'steady',
+              context: 'Criados por voce'
+            }
+          ]);
+        },
+        error: () => {
+          this.highlightCards.set([
+            { label: 'ALUNOS MATRICULADOS', value: '0', trend: 'steady', context: 'Total nos seus cursos' },
+            { label: 'CURSOS INTERATIVOS', value: '0', trend: 'steady', context: 'Criados por voce' },
+            { label: 'CURSOS NÃO INTERATIVOS', value: '0', trend: 'steady', context: 'Criados por voce' }
+          ]);
         }
       });
   }

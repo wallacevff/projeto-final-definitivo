@@ -108,3 +108,8 @@
 - Auth: cadastro publico de usuarios via /auth/register com hash de senha e validacao de papel (aluno/professor).
 - Frontend: login agora oferece aba de criacao de conta com validacao de senhas e selecao de perfil.
 - Frontend: correcoes de build (RouterLink nao usado e erro passwordMismatch).
+
+### Data: 2026-01-06
+### Resumo
+- Dashboard do professor com novos indicadores (alunos matriculados, cursos interativos e nao interativos) calculados a partir dos cursos do instrutor.
+- Build .NET e Angular concluido com warnings conhecidos de budget/seletores.

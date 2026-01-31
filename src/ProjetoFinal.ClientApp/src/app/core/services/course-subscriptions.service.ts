@@ -22,6 +22,16 @@ export class CourseSubscriptionsService {
       );
   }
 
+  getByCourse(courseId: string) {
+    const params = toHttpParams({ CourseId: courseId, PageSize: 500 });
+    return this.http
+      .get<ApiPagedResponse<CourseSubscriptionDto>>(`${this.baseUrl}/course-subscriptions`, { params })
+      .pipe(
+        map(response => normalizePagedResponse(response).items),
+        catchError(() => of<CourseSubscriptionDto[]>([]))
+      );
+  }
+
   subscribe(payload: CourseSubscriptionCreatePayload) {
     return this.http
       .post<CourseSubscriptionDto>(`${this.baseUrl}/course-subscriptions`, payload)
