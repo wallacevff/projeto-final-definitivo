@@ -150,3 +150,8 @@
 ### Resumo
 - Forum agora filtra e valida acesso por instrutor (threads e posts).
 - Builds .NET e Angular concluídos com warnings conhecidos.
+
+### Data: 2026-01-06
+### Resumo
+- Forum: respostas agora renderizam em arvore (multinivel).
+- Builds .NET e Angular concluídos com warnings conhecidos.

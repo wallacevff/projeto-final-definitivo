@@ -380,3 +380,7 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## Atualizacao 2026-01-06 03:20:00
 - Forum: filtro por instrutor em threads/posts e protecao de CRUD para acesso somente a cursos do professor logado.
 - Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 03:55:00
+- Forum: exibicao de respostas agora suporta niveis recursivos (respostas a respostas).
+- Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).

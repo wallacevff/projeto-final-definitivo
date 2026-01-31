@@ -40,33 +40,7 @@
       <section class="posts">
         <h3>{{ posts().length }} mensagem(ns)</h3>
         <div class="posts__list" *ngIf="posts().length; else emptyState">
-          <article class="post" *ngFor="let post of posts(); trackBy: trackByPost">
-            <div class="post__meta">
-              <span class="author">{{ post.authorName }}</span>
-              <span class="time">{{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <div class="post__content" [innerHTML]="safeHtml(post.message)"></div>
-            <div class="post__actions">
-              <button type="button" class="ghost-button" (click)="openReply(post)" [disabled]="isLocked()">
-                Responder
-              </button>
-            </div>
-
-            <div class="post__replies" *ngIf="post.replies.length">
-              <article class="post post--reply" *ngFor="let reply of post.replies; trackBy: trackByPost">
-                <div class="post__meta">
-                  <span class="author">{{ reply.authorName }}</span>
-                  <span class="time">{{ reply.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-                <div class="post__content" [innerHTML]="safeHtml(reply.message)"></div>
-                <div class="post__actions">
-                  <button type="button" class="ghost-button" (click)="openReply(reply)" [disabled]="isLocked()">
-                    Responder
-                  </button>
-                </div>
-              </article>
-            </div>
-          </article>
+          <ng-container *ngTemplateOutlet="renderPosts; context: { $implicit: posts() }"></ng-container>
         </div>
       </section>
     </ng-container>
@@ -83,4 +57,27 @@
 
 <ng-template #emptyState>
   <div class="state state--info">Nenhuma mensagem ainda. Seja o primeiro a responder.</div>
+</ng-template>
+
+<ng-template #renderPosts let-items>
+  <article
+    class="post"
+    *ngFor="let post of items; trackBy: trackByPost"
+    [class.post--reply]="post.parentId"
+  >
+    <div class="post__meta">
+      <span class="author">{{ post.authorName }}</span>
+      <span class="time">{{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+    <div class="post__content" [innerHTML]="safeHtml(post.message)"></div>
+    <div class="post__actions">
+      <button type="button" class="ghost-button" (click)="openReply(post)" [disabled]="isLocked()">
+        Responder
+      </button>
+    </div>
+
+    <div class="post__replies" *ngIf="post.replies.length">
+      <ng-container *ngTemplateOutlet="renderPosts; context: { $implicit: post.replies }"></ng-container>
+    </div>
+  </article>
 </ng-template>

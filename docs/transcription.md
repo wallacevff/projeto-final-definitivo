@@ -137,3 +137,9 @@
 [2026-01-06 03:05:00] Assistant: Adicionei filtros por instrutor no forum (threads/posts) e protecoes de acesso por curso no backend.
 
 [2026-01-06 03:15:00] Assistant: Corrigi warning de nullabilidade no ForumPostRepository (Thread).
+
+[2026-01-06 03:30:00] User: Eu fiz um teste no forum logado como usuário wallvff eu respondi o robert. porém não aparece uma das respostas ao robert.
+
+[2026-01-06 03:30:00] Assistant: Pedi detalhes do tópico e passos para reproduzir para investigar respostas no forum.
+
+[2026-01-06 03:40:00] Assistant: Ajustei a tela do topico para renderizar respostas em niveis recursivos (respostas a respostas).

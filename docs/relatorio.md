@@ -44,6 +44,7 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
 - Criacao de topicos restrita a professores; alunos podem responder.
 - Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
+- UI do topico renderiza respostas em niveis recursivos.
 
 ### Dashboard professor
 - Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
