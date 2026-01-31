@@ -113,3 +113,8 @@
 ### Resumo
 - Dashboard do professor com novos indicadores (alunos matriculados, cursos interativos e nao interativos) calculados a partir dos cursos do instrutor.
 - Build .NET e Angular concluido com warnings conhecidos de budget/seletores.
+
+### Data: 2026-01-06
+### Resumo
+- Migrados docs/especificacao, propont e transcription para .md; referencias no .sln ajustadas.
+- AGENTS.md reforca leitura e manutencao do transcription.md com formato padrao e linha em branco entre falas.

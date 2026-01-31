@@ -1,3 +1,5 @@
+# Especificacao
+
 1. Introdução
 Propósito:  
 Este projeto acadêmico propõe o desenvolvimento de um sistema de Ensino a Distância (EAD) flexível e abrangente, destinado a atender às necessidades tanto do meio acadêmico quanto fora dele. A plataforma EAD resultante oferecerá uma variedade de recursos e funcionalidades para o ensino e a aprendizagem, incluindo a capacidade de enviar vídeos, fotos e áudios. Além disso, os professores e instrutores terão a flexibilidade de escolher entre dois modelos principais de curso: baseado em turmas interativas ou focado apenas na disponibilização de conteúdo didático.

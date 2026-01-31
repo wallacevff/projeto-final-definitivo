@@ -11,10 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F
 	ProjectSection(SolutionItems) = preProject
 		docs\commands.md = docs\commands.md
 		docs\memoria_projeto.md = docs\memoria_projeto.md
-		docs\transcriptions.txt = docs\transcriptions.txt
-		docs\propont.txt = docs\propont.txt
-		docs\transcription.txt = docs\transcription.txt
-		docs\especificacao.txt = docs\especificacao.txt
+		docs\propont.md = docs\propont.md
+		docs\transcription.md = docs\transcription.md
+		docs\especificacao.md = docs\especificacao.md
 		docs\context.md = docs\context.md
 	EndProjectSection
 EndProject

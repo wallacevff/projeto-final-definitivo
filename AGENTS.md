@@ -3,7 +3,8 @@
 ## Project Structure & Module Organization
 - `ProjetoFinal.sln` reúne nove projetos .NET dentro de `src/`, separados em camadas (`ProjetoFinal.Api`, `...Domain`, `...Infra`, `...IoC`) e contratos/serviços de aplicação.
 - O frontend Angular mora em `src/ProjetoFinal.ClientApp`, com assets públicos em `public` e código em `src/app` (páginas em `pages/`, componentes compartilhados em `shared/`).
-- Documentação viva está em `docs/` (`memoria_projeto.md`, `context.md`, `transcription*.txt`). Nunca sobrescreva entradas existentes nesses arquivos: apenas acrescente conteúdo.
+- Documentação viva está em `docs/` (`memoria_projeto.md`, `context.md`, `especificacao.md`, `propont.md`, `transcription.md`). Nunca sobrescreva entradas existentes nesses arquivos: apenas acrescente conteúdo.
+- Antes de iniciar qualquer tarefa, leia `docs/transcription.md` e mantenha esse arquivo atualizado em cada interação, preservando a formatação (timestamp + autor + mensagem) e adicionando uma linha em branco entre falas do User e do Assistant.
 
 ## Build, Test, and Development Commands
 - Backend: `dotnet build ProjetoFinal.sln` (compila toda a solução) e `dotnet test ProjetoFinal.sln` quando houver projetos de teste.

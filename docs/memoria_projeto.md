@@ -347,3 +347,7 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Dashboard professor: cards agora mostram ALUNOS MATRICULADOS, CURSOS INTERATIVOS e CURSOS NAO INTERATIVOS com contagem real por instrutor.
 - Frontend: agregado de matriculas soma aprovados+pendentes nas turmas interativas e inscricoes em cursos nao interativos.
 - Build: dotnet build e npm run build executados (warnings de budget/seletores mantidos).
+
+## Atualizacao 2026-01-06 00:45:00
+- Docs: especificacao, proposta e transcricao migradas para Markdown (.md) e referencias atualizadas no .sln.
+- Docs: transcriptions removido; AGENTS agora exige leitura e atualizacao do transcription.md com formatacao e linhas em branco entre falas.
