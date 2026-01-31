@@ -351,3 +351,7 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## Atualizacao 2026-01-06 00:45:00
 - Docs: especificacao, proposta e transcricao migradas para Markdown (.md) e referencias atualizadas no .sln.
 - Docs: transcriptions removido; AGENTS agora exige leitura e atualizacao do transcription.md com formatacao e linhas em branco entre falas.
+
+## Atualizacao 2026-01-06 00:55:00
+- Docs: criado relatorio geral em docs/relatorio.md com analise do projeto e cronograma.
+- Instrucoes: AGENTS.md agora exige manter o relatorio atualizado.

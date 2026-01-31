@@ -26,6 +26,8 @@
 - PRs precisam: 1) descrever objetivo e impacto, 2) listar comandos/testes executados, 3) anexar evidências (logs, capturas de tela) quando UI for afetada, 4) referenciar issues/tarefas relevantes.
 - Antes de abrir PR, atualize `docs/transcription*.txt` se a interação exigir, e confirme que builds (`dotnet build`, `npm run build`) passam sem novos avisos além dos já conhecidos (budgets Angular).
 - Antes de qualquer commit, garanta que `docs/memoria_projeto.md` e `docs/context.md` estejam atualizados.
+- Mantenha o relatorio geral sempre atualizado em `docs/relatorio.md` quando houver mudancas relevantes no projeto ou na documentacao.
+- Sempre que novos arquivos `.md` forem adicionados ou removidos em `docs/`, atualize o `ProjetoFinal.sln` para incluir/remover esses arquivos na secao de Solution Items.
 
 ## Security & Configuration Tips
 - JWT secrets e chaves de storage ficam fora do repositório; gere chaves com `node -p "crypto.randomBytes(256).toString('base64');"` conforme `docs/commands.md`.

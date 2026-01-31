@@ -118,3 +118,8 @@
 ### Resumo
 - Migrados docs/especificacao, propont e transcription para .md; referencias no .sln ajustadas.
 - AGENTS.md reforca leitura e manutencao do transcription.md com formato padrao e linha em branco entre falas.
+
+### Data: 2026-01-06
+### Resumo
+- Criado docs/relatorio.md com analise geral e cronograma de implementacoes.
+- AGENTS.md atualizado para manter o relatorio sempre em dia.
