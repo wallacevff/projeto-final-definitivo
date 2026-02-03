@@ -389,3 +389,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Ajustei a tela /activities para alunos: agora carrega apenas atividades das turmas em que o aluno esta matriculado ou inscrito em cursos de distribuicao, e inclui filtro de status (todas/pendentes/realizadas).
 - Mantive as acoes de professor ocultas para alunos na listagem de atividades.
 - Builds: `dotnet build ProjetoFinal.sln` e `npm run build` (warnings de budget/seletores ja conhecidos).
+
+## 2026-02-02
+- Criei Dockerfile multi-stage para build da API + frontend e inclui docker-compose com app, SQL Server e MinIO.
+- Adicionei config docker/appsettings.Docker.json e ajustei docker-compose para usar config externo no swarm.
+- Atualizei appsettings.json (default) para apontar para serviços do stack (projeto-final_sqlserver e projeto-final_minio).

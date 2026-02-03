@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  app:
+    image: wallacevff/projeto-final:1.0.0
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "8080:8080"
+    configs:
+      - source: projeto-final-settings
+        target: /app/ConfigurationEnvironment/appsettings.Docker.json
+    depends_on:
+      - sqlserver
+      - minio
+    networks:
+      - app-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "admin123"
+      MINIO_REGION_NAME: "us-east-1"
+    ports:
+      - "9087:9000"
+      - "9088:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    hostname: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "Abc242526@2"
+      TZ: "America/Sao_Paulo"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - app-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  minio_data:
+  sqlserver-data:
+
+networks:
+  app-net:
+    driver: overlay
+
+configs:
+  projeto-final-settings:
+    external: true

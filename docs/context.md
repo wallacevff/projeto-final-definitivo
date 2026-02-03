@@ -159,3 +159,7 @@
 ## 2026-01-31
 - Atividades para alunos na rota /activities agora sao filtradas por matricula/inscricao e possuem filtro de status (todas/pendentes/realizadas).
 - Acoes de professor (criar/gerenciar correcoes) ficam ocultas para alunos nessa tela.
+
+## 2026-02-02
+- Infra de docker adicionada (Dockerfile, docker-compose.yml, docker/appsettings.Docker.json) com suporte a swarm config externo.
+- appsettings.json atualizado para apontar para projeto-final_sqlserver e projeto-final_minio.

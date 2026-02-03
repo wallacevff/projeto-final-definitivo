@@ -100,3 +100,7 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Padronizar textos com acentos/idioma em todos os modulos.
 - Revisar componentes mais densos para simplificar a hierarquia visual.
 - Definir estrategia para reduzir tamanhos de CSS/bundle.
+
+### 2026-02-02
+- Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
+- Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
