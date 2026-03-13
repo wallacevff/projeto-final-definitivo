@@ -401,3 +401,8 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Storage: adicionada operacao `ExistsAsync` no contrato de object storage e implementacao MinIO via `StatObject`.
 - Saneamento: criado `docs/saneamento_media_resources_orfaos.sql` para diagnosticar/remover registros orfaos de `MediaResources` (sem arquivo e sem referencias em tabelas relacionadas).
 - Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso (warnings Angular de budget/seletores mantidos).
+
+## 2026-03-13
+- Docker build: corrigido erro `NETSDK1152` no publish da API causado por artefatos SPA duplicados (`wwwroot` e `dist/browser`).
+- `ProjetoFinal.Api.csproj`: target `PublishRunWebpack` ajustado para nao adicionar novamente `DistFiles`, mantendo apenas o build do frontend e a copia realizada pelo `postbuild`.
+- Validacao: `docker build` concluido com sucesso apos ajuste.

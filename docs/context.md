@@ -170,3 +170,9 @@
 - MediaResources: para hash existente com objeto ausente, upload agora recria o objeto e atualiza o registro existente no banco.
 - Infra storage: contrato `IObjectStorageService` ganhou `ExistsAsync`, implementado no MinIO com `StatObject`.
 - Operacao: adicionado script `docs/saneamento_media_resources_orfaos.sql` para diagnostico e exclusao segura de registros orfaos sem referencias.
+
+### Data: 2026-03-13
+### Resumo
+- Corrigido conflito de publish no Docker (`NETSDK1152`) por duplicidade de arquivos SPA na API.
+- `ProjetoFinal.Api.csproj` simplificado no target de publish para evitar dupla inclusao de assets do frontend.
+- Build Docker validado com sucesso apos a correcao.

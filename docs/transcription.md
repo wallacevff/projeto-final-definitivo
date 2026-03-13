@@ -267,3 +267,11 @@
 [2026-03-12 23:12:05] User: Faça os commits e o push
 
 [2026-03-12 23:12:05] Assistant: Atualizei memoria/contexto/relatorio, regenerei o repomix, commitei as mudancas com a mensagem "fix: fortalecer deduplicacao de midias e saneamento de orfaos" e realizei push para origin/main.
+
+[2026-03-13 16:26:21] User: Estou enfrentando erro no build do docker
+
+[2026-03-13 16:26:21] Assistant: Reproduzi o erro NETSDK1152 no docker build (arquivos SPA duplicados no publish), ajustei o ProjetoFinal.Api.csproj para evitar dupla inclusao e validei com novo docker build concluido com sucesso.
+
+[2026-03-13 16:27:41] User: Pode fazer
+
+[2026-03-13 16:27:41] Assistant: Apliquei a correcao no ProjetoFinal.Api.csproj para remover duplicidade de arquivos SPA no publish, validei dotnet/npm/docker build com sucesso e preparei commit/push com atualizacao de memoria/contexto/relatorio e repomix.

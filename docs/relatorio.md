@@ -109,3 +109,7 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
 - Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
 - Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
+
+### 2026-03-13
+- Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
+- Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
