@@ -21,7 +21,7 @@ interface NavItem {
 export class AppComponent {
   private readonly authService = inject(AuthService);
 
-  title = 'SES EAD';
+  title = 'Plataforma EAD';
   isSidebarCollapsed = false;
   private currentSidebarKey: string | null = null;
 

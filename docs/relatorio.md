@@ -113,3 +113,8 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 ### 2026-03-13
 - Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
 - Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
+
+### 2026-03-13 (tema e nomenclatura)
+- Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
+- Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
+- Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).

@@ -10,9 +10,10 @@
   --surface-600: #475569;
   --surface-700: #334155;
   --surface-900: #0f172a;
-  --accent-500: #6366f1;
-  --accent-600: #4f46e5;
-  --color-primary: #2563eb;
+  --accent-500: #2563eb;
+  --accent-600: #1d4ed8;
+  --accent-700: #1e3a8a;
+  --color-primary: #1d4ed8;
   --color-danger: #dc2626;
   --color-text-primary: #0f172a;
   --color-text-muted: #64748b;
@@ -32,8 +33,8 @@ body {
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08), transparent 55%),
-    radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.08), transparent 50%),
+  background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.12), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(14, 116, 220, 0.1), transparent 50%),
     var(--surface-50);
   color: var(--surface-700);
   line-height: 1.6;
@@ -52,7 +53,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(99, 102, 241, 0.45);
+  outline: 3px solid rgba(37, 99, 235, 0.4);
   outline-offset: 2px;
 }
 

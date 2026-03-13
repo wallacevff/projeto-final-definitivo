@@ -176,3 +176,9 @@
 - Corrigido conflito de publish no Docker (`NETSDK1152`) por duplicidade de arquivos SPA na API.
 - `ProjetoFinal.Api.csproj` simplificado no target de publish para evitar dupla inclusao de assets do frontend.
 - Build Docker validado com sucesso apos a correcao.
+
+### Data: 2026-03-13
+### Resumo
+- Sidebar do shell principal ajustada para tema azul consistente.
+- Removido "SES" dos nomes exibidos no frontend (titulo da app e titulos de paginas/rotas).
+- Atualizada chave de persistencia de autenticacao no frontend para `plataforma-ead-auth-state`.

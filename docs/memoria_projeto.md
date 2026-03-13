@@ -406,3 +406,10 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Docker build: corrigido erro `NETSDK1152` no publish da API causado por artefatos SPA duplicados (`wwwroot` e `dist/browser`).
 - `ProjetoFinal.Api.csproj`: target `PublishRunWebpack` ajustado para nao adicionar novamente `DistFiles`, mantendo apenas o build do frontend e a copia realizada pelo `postbuild`.
 - Validacao: `docker build` concluido com sucesso apos ajuste.
+
+## 2026-03-13 (tema e branding frontend)
+- Frontend: sidebar atualizada para paleta azul (gradiente e estados visuais dos controles da barra lateral).
+- Frontend: removida nomenclatura "SES" dos textos de interface principais (titulo da aplicacao e titulos de rotas).
+- Frontend: chave de armazenamento de autenticacao renomeada para `plataforma-ead-auth-state`.
+- Frontend: titulo da pagina inicial ajustado para identidade sem "SES".
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso (warnings de budget/seletores mantidos).

@@ -7,13 +7,13 @@ export const routes: Routes = [
   {
     path: 'auth/login',
     loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
-    title: 'Entrar - SES EAD'
+    title: 'Entrar - Plataforma EAD'
   },
   {
     path: 'courses/:courseId/activities/:activityId',
     loadComponent: () =>
       import('./pages/course-activity-viewer/course-activity-viewer.component').then(m => m.CourseActivityViewerComponent),
-    title: 'Atividade do Curso - SES EAD',
+    title: 'Atividade do Curso - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
@@ -24,84 +24,84 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    title: 'Painel - SES EAD',
+    title: 'Painel - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'courses/create',
     loadComponent: () => import('./pages/course-create/course-create.component').then(m => m.CourseCreateComponent),
-    title: 'Criar Curso - SES EAD',
+    title: 'Criar Curso - Plataforma EAD',
     canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'courses/:courseId/manage',
     loadComponent: () => import('./pages/course-manage/course-manage.component').then(m => m.CourseManageComponent),
-    title: 'Gerenciar Curso - SES EAD',
+    title: 'Gerenciar Curso - Plataforma EAD',
     canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'student/courses/:courseId',
     loadComponent: () =>
       import('./pages/student-course-view/student-course-view.component').then(m => m.StudentCourseViewComponent),
-    title: 'Meu Curso - SES EAD',
+    title: 'Meu Curso - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'courses/:courseId/contents/:contentId',
     loadComponent: () =>
       import('./pages/course-content-viewer/course-content-viewer.component').then(m => m.CourseContentViewerComponent),
-    title: 'Conteudo do Curso - SES EAD',
+    title: 'Conteudo do Curso - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'courses',
     loadComponent: () => import('./pages/courses/courses.component').then(m => m.CoursesComponent),
-    title: 'Cursos - SES EAD',
+    title: 'Cursos - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'class-groups/:classGroupId/manage',
     loadComponent: () =>
       import('./pages/class-group-manage/class-group-manage.component').then(m => m.ClassGroupManageComponent),
-    title: 'Gerenciar Turma - SES EAD',
+    title: 'Gerenciar Turma - Plataforma EAD',
     canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'class-groups/create',
     loadComponent: () =>
       import('./pages/class-group-create/class-group-create.component').then(m => m.ClassGroupCreateComponent),
-    title: 'Criar Turma - SES EAD',
+    title: 'Criar Turma - Plataforma EAD',
     canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'class-groups',
     loadComponent: () => import('./pages/class-groups/class-groups.component').then(m => m.ClassGroupsComponent),
-    title: 'Turmas - SES EAD',
+    title: 'Turmas - Plataforma EAD',
     canActivate: [authGuard, instructorGuard]
   },
   {
     path: 'activities',
     loadComponent: () => import('./pages/activities/activities.component').then(m => m.ActivitiesComponent),
-    title: 'Atividades - SES EAD',
+    title: 'Atividades - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'activities/:activityId/corrections',
     loadComponent: () =>
       import('./pages/activity-corrections/activity-corrections.component').then(m => m.ActivityCorrectionsComponent),
-    title: 'Correcoes da Atividade - SES EAD',
+    title: 'Correcoes da Atividade - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'forum/threads/:threadId',
     loadComponent: () => import('./pages/forum-thread/forum-thread.component').then(m => m.ForumThreadComponent),
-    title: 'Discussao do Forum - SES EAD',
+    title: 'Discussao do Forum - Plataforma EAD',
     canActivate: [authGuard]
   },
   {
     path: 'forum',
     loadComponent: () => import('./pages/forum/forum.component').then(m => m.ForumComponent),
-    title: 'Forum - SES EAD',
+    title: 'Forum - Plataforma EAD',
     canActivate: [authGuard]
   },
   {

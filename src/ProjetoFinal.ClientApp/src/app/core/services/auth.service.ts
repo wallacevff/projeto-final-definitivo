@@ -29,7 +29,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly baseUrl = environment.baseUrl;
-  private readonly storageKey = 'ses-ead-auth-state';
+  private readonly storageKey = 'plataforma-ead-auth-state';
   private redirectUrl: string | null = null;
 
   private readonly authState = signal<AuthState | null>(this.restoreState());
