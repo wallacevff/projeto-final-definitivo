@@ -163,3 +163,10 @@
 ## 2026-02-02
 - Infra de docker adicionada (Dockerfile, docker-compose.yml, docker/appsettings.Docker.json) com suporte a swarm config externo.
 - appsettings.json atualizado para apontar para projeto-final_sqlserver e projeto-final_minio.
+
+### Data: 2026-03-12
+### Resumo
+- MediaResources: deduplicacao por SHA-256 passou a reutilizar registro existente somente quando o objeto existe no MinIO.
+- MediaResources: para hash existente com objeto ausente, upload agora recria o objeto e atualiza o registro existente no banco.
+- Infra storage: contrato `IObjectStorageService` ganhou `ExistsAsync`, implementado no MinIO com `StatObject`.
+- Operacao: adicionado script `docs/saneamento_media_resources_orfaos.sql` para diagnostico e exclusao segura de registros orfaos sem referencias.

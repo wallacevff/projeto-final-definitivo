@@ -9,6 +9,11 @@ public interface IObjectStorageService
         ObjectStorageUploadRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<bool> ExistsAsync(
+        string bucketName,
+        string objectName,
+        CancellationToken cancellationToken = default);
+
     Task<ObjectStorageDownloadResult> DownloadAsync(
         string bucketName,
         string objectName,

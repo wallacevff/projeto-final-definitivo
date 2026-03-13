@@ -26,6 +26,8 @@
 - PRs precisam: 1) descrever objetivo e impacto, 2) listar comandos/testes executados, 3) anexar evidências (logs, capturas de tela) quando UI for afetada, 4) referenciar issues/tarefas relevantes.
 - Antes de abrir PR, atualize `docs/transcription*.txt` se a interação exigir, e confirme que builds (`dotnet build`, `npm run build`) passam sem novos avisos além dos já conhecidos (budgets Angular).
 - Antes de qualquer commit, garanta que `docs/memoria_projeto.md` e `docs/context.md` estejam atualizados.
+- Antes de cada commit, atualize o repomix executando `repomix --style markdown -o docs/repomix-output.md`.
+- Sempre estude o projeto prioritariamente pelo arquivo de repomix atualizado (`docs/repomix-output.md`) antes de aprofundar em arquivos específicos.
 - Mantenha o relatorio geral sempre atualizado em `docs/relatorio.md` quando houver mudancas relevantes no projeto ou na documentacao.
 - Sempre que novos arquivos `.md` forem adicionados ou removidos em `docs/`, atualize o `ProjetoFinal.sln` para incluir/remover esses arquivos na secao de Solution Items.
 - Sempre que houver alteracoes no codigo-fonte (backend ou frontend), execute `dotnet build ProjetoFinal.sln` e `npm run build` para verificar erros.

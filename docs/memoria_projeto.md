@@ -394,3 +394,10 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Criei Dockerfile multi-stage para build da API + frontend e inclui docker-compose com app, SQL Server e MinIO.
 - Adicionei config docker/appsettings.Docker.json e ajustei docker-compose para usar config externo no swarm.
 - Atualizei appsettings.json (default) para apontar para serviços do stack (projeto-final_sqlserver e projeto-final_minio).
+
+## 2026-03-12
+- Upload de midias: deduplicacao por SHA-256 agora valida existencia fisica do objeto no MinIO antes de reaproveitar registro existente.
+- Upload de midias: quando hash existe no banco mas objeto esta ausente no storage, a API reenvia o arquivo e reidrata o mesmo registro (`MediaResources`) para evitar falso positivo de upload.
+- Storage: adicionada operacao `ExistsAsync` no contrato de object storage e implementacao MinIO via `StatObject`.
+- Saneamento: criado `docs/saneamento_media_resources_orfaos.sql` para diagnosticar/remover registros orfaos de `MediaResources` (sem arquivo e sem referencias em tabelas relacionadas).
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso (warnings Angular de budget/seletores mantidos).

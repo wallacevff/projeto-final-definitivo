@@ -52,12 +52,22 @@ public class MediaResourcesController : BaseController<
         var contentType = NormalizeContentType(request.File);
         var sha256 = await ComputeSha256Async(request.File, cancellationToken);
         var existing = await Service.FindByShaAsync(sha256, cancellationToken);
+        (string bucket, string objectName)? existingStorage = null;
         if (existing is not null)
         {
-            return Ok(existing);
+            existingStorage = ParseStoragePath(existing.StoragePath);
+            if (existingStorage is not null)
+            {
+                var (bucketName, existingObjectName) = existingStorage.Value;
+                var objectExists = await _storageService.ExistsAsync(bucketName, existingObjectName, cancellationToken);
+                if (objectExists)
+                {
+                    return Ok(existing);
+                }
+            }
         }
 
-        var objectName = BuildObjectName(request.File.FileName);
+        var objectName = existingStorage?.objectName ?? BuildObjectName(request.File.FileName);
         var mediaKind = request.Kind ?? InferMediaKind(request.File.ContentType, request.File.FileName);
 
         await using var stream = request.File.OpenReadStream();
@@ -81,6 +91,18 @@ public class MediaResourcesController : BaseController<
             StoragePath = $"{uploadResult.BucketName}/{uploadResult.ObjectName}",
             Sha256 = sha256
         };
+
+        if (existing is not null)
+        {
+            if (string.Equals(existing.StoragePath, dto.StoragePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return Ok(existing);
+            }
+
+            await Service.UpdateAsync(dto, existing.Id, cancellationToken);
+            var updated = await Service.GetByIdAsync(existing.Id, cancellationToken);
+            return Ok(updated);
+        }
 
         var media = await Service.AddAsync(dto, cancellationToken);
         return Ok(media);

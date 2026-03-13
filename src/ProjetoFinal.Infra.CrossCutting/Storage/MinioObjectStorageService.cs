@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
+using Minio.Exceptions;
 using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
 
 namespace ProjetoFinal.Infra.CrossCutting.Storage;
@@ -78,6 +79,31 @@ public class MinioObjectStorageService : IObjectStorageService
         memoryStream.Position = 0;
 
         return new ObjectStorageDownloadResult(bucketName, objectName, memoryStream);
+    }
+
+    public async Task<bool> ExistsAsync(
+        string bucketName,
+        string objectName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bucketName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(objectName);
+
+        await EnsureBucketAsync(cancellationToken);
+
+        try
+        {
+            var args = new StatObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+
+            await _client.StatObjectAsync(args, cancellationToken);
+            return true;
+        }
+        catch (ObjectNotFoundException)
+        {
+            return false;
+        }
     }
 
     private async Task EnsureBucketAsync(CancellationToken cancellationToken)

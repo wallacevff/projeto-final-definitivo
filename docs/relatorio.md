@@ -104,3 +104,8 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 ### 2026-02-02
 - Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
 - Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
+
+### 2026-03-12
+- Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
+- Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
+- Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
