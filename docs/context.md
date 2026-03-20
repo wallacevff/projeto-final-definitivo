@@ -182,3 +182,10 @@
 - Sidebar do shell principal ajustada para tema azul consistente.
 - Removido "SES" dos nomes exibidos no frontend (titulo da app e titulos de paginas/rotas).
 - Atualizada chave de persistencia de autenticacao no frontend para `plataforma-ead-auth-state`.
+
+### Data: 2026-03-20
+### Resumo
+- Feedback de correcao de atividades evoluido para formato estruturado com rubrica por criterio (1-5), tags diagnosticas e acao recomendada.
+- Backend atualizado (dominio, DTOs, service e EF) com migration `AddStructuredActivityFeedback` para persistencia em `ActivitySubmissions`.
+- Frontend de correcao atualizado em `activity-corrections` e `class-group-manage`; tags agora usam dropdown com checklist para selecao multipla.
+- Tela do aluno (`course-activity-viewer`) passou a exibir feedback estruturado quando disponivel.

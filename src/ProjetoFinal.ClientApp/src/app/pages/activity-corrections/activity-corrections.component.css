@@ -197,6 +197,58 @@
   background: var(--color-background);
 }
 
+.field--rubric .rubric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.multi-select {
+  position: relative;
+}
+
+.multi-select__trigger {
+  list-style: none;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--color-background);
+  cursor: pointer;
+}
+
+.multi-select__trigger::-webkit-details-marker {
+  display: none;
+}
+
+.multi-select__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--color-surface);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 10px 28px -20px rgba(15, 23, 42, 0.35);
+}
+
+.multi-select__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.multi-select__item:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -228,6 +280,10 @@
 
 @media (max-width: 960px) {
   .activity-corrections__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .field--rubric .rubric-grid {
     grid-template-columns: 1fr;
   }
 }

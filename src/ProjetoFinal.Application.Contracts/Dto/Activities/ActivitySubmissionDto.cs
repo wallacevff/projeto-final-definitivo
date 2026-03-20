@@ -18,6 +18,11 @@ public class ActivitySubmissionDto
     public Guid? GradedById { get; set; }
     public decimal? Score { get; set; }
     public string? Feedback { get; set; }
+    public int? MasteryScore { get; set; }
+    public int? ApplicationScore { get; set; }
+    public int? CommunicationScore { get; set; }
+    public string? FeedbackTags { get; set; }
+    public string? RecommendedAction { get; set; }
     public string? TextAnswer { get; set; }
 
     public IList<SubmissionAttachmentDto> Attachments { get; set; } = new List<SubmissionAttachmentDto>();

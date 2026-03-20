@@ -24,6 +24,12 @@ public class ActivitySubmissionMap : IContextEntityMap<ActivitySubmission>
         builder.Property(p => p.Feedback)
             .HasMaxLength(2000);
 
+        builder.Property(p => p.FeedbackTags)
+            .HasMaxLength(500);
+
+        builder.Property(p => p.RecommendedAction)
+            .HasMaxLength(120);
+
         builder.Property(p => p.TextAnswer)
             .HasMaxLength(4000);
 

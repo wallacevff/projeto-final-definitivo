@@ -87,6 +87,13 @@ public class ActivitySubmissionAppService : IActivitySubmissionAppService
         submission.Score = dto.Score;
         submission.GradedById = dto.GradedById;
         submission.Feedback = dto.Feedback;
+        submission.MasteryScore = ValidateRubricScore(dto.MasteryScore, nameof(dto.MasteryScore));
+        submission.ApplicationScore = ValidateRubricScore(dto.ApplicationScore, nameof(dto.ApplicationScore));
+        submission.CommunicationScore = ValidateRubricScore(dto.CommunicationScore, nameof(dto.CommunicationScore));
+        submission.FeedbackTags = NormalizeFeedbackTags(dto.FeedbackTags);
+        submission.RecommendedAction = string.IsNullOrWhiteSpace(dto.RecommendedAction)
+            ? null
+            : dto.RecommendedAction.Trim();
         submission.TextAnswer = dto.TextAnswer;
         submission.GradedAt = dto.Score.HasValue ? DateTime.UtcNow : submission.GradedAt;
         submission.Attachments.Clear();
@@ -192,5 +199,40 @@ public class ActivitySubmissionAppService : IActivitySubmissionAppService
         }
 
         return result;
+    }
+
+    private static int? ValidateRubricScore(int? value, string fieldName)
+    {
+        if (!value.HasValue)
+        {
+            return null;
+        }
+
+        if (value.Value < 1 || value.Value > 5)
+        {
+            throw new BusinessException($"{fieldName} deve estar entre 1 e 5.", ECodigo.MaRequisicao);
+        }
+
+        return value.Value;
+    }
+
+    private static string? NormalizeFeedbackTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+        {
+            return null;
+        }
+
+        var normalized = tags
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        return string.Join(",", normalized);
     }
 }

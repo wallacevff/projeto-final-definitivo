@@ -82,6 +82,26 @@
                   <dt>Nota</dt>
                   <dd>{{ submission.Score }}</dd>
                 </div>
+                <div *ngIf="submission.MasteryScore != null">
+                  <dt>Rubrica: Dominio</dt>
+                  <dd>{{ submission.MasteryScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.ApplicationScore != null">
+                  <dt>Rubrica: Aplicacao</dt>
+                  <dd>{{ submission.ApplicationScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.CommunicationScore != null">
+                  <dt>Rubrica: Comunicacao</dt>
+                  <dd>{{ submission.CommunicationScore }}/5</dd>
+                </div>
+                <div *ngIf="recommendedActionLabel(submission.RecommendedAction) as actionLabel">
+                  <dt>Acao recomendada</dt>
+                  <dd>{{ actionLabel }}</dd>
+                </div>
+                <div *ngIf="feedbackTagsList(submission.FeedbackTags).length">
+                  <dt>Tags diagnosticas</dt>
+                  <dd>{{ feedbackTagsList(submission.FeedbackTags).join(', ') }}</dd>
+                </div>
                 <div *ngIf="submission.Feedback">
                   <dt>Feedback do instrutor</dt>
                   <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>

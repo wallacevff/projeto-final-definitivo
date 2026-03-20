@@ -13,6 +13,11 @@ export interface ActivitySubmissionDto {
   GradedById?: string;
   Score?: number;
   Feedback?: string;
+  MasteryScore?: number;
+  ApplicationScore?: number;
+  CommunicationScore?: number;
+  FeedbackTags?: string;
+  RecommendedAction?: string;
   TextAnswer?: string;
   Attachments: SubmissionAttachmentDto[];
 }
@@ -38,6 +43,11 @@ export interface ActivitySubmissionUpdatePayload {
   Score?: number;
   GradedById: string;
   Feedback?: string;
+  MasteryScore?: number;
+  ApplicationScore?: number;
+  CommunicationScore?: number;
+  FeedbackTags?: string;
+  RecommendedAction?: string;
   TextAnswer?: string;
   Attachments: SubmissionAttachmentCreatePayload[];
 }

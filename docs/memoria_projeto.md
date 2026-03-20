@@ -413,3 +413,12 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Frontend: chave de armazenamento de autenticacao renomeada para `plataforma-ead-auth-state`.
 - Frontend: titulo da pagina inicial ajustado para identidade sem "SES".
 - Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso (warnings de budget/seletores mantidos).
+
+## 2026-03-20 (feedback estruturado em correcoes)
+- Correcao de atividades evoluida para feedback estruturado com rubrica (1-5) por criterio (`MasteryScore`, `ApplicationScore`, `CommunicationScore`), tags diagnosticas (`FeedbackTags`) e acao recomendada (`RecommendedAction`), mantendo campo textual livre.
+- Backend atualizado em entidade, DTOs, mapeamento EF e service com validacoes de faixa (1-5) e normalizacao de tags.
+- Migration criada: `AddStructuredActivityFeedback` adicionando novas colunas em `ActivitySubmissions`.
+- Frontend de professor atualizado nas telas `activity-corrections` e `class-group-manage` com novos campos estruturados.
+- UX: campo de tags migrado de `select multiple` para dropdown com checklist, permitindo selecao multipla sem fechar a lista.
+- Visualizacao do aluno em `course-activity-viewer` passou a exibir rubrica, tags e acao recomendada quando informadas.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.

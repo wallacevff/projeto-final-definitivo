@@ -74,10 +74,29 @@ export class ActivityCorrectionsComponent {
     4: 'Devolvida'
   };
   private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
+  readonly feedbackTagOptions = [
+    { value: 'dificuldade_conceitual', label: 'Dificuldade conceitual' },
+    { value: 'erro_interpretacao', label: 'Erro de interpretacao' },
+    { value: 'faltou_referencia', label: 'Faltou referencia' },
+    { value: 'excelente_argumentacao', label: 'Excelente argumentacao' },
+    { value: 'boa_organizacao', label: 'Boa organizacao' }
+  ];
+  readonly recommendedActionOptions = [
+    { value: 'reforco', label: 'Reforco de conteudo' },
+    { value: 'refazer_atividade', label: 'Refazer atividade' },
+    { value: 'monitoria', label: 'Encaminhar para monitoria' },
+    { value: 'proximo_modulo', label: 'Liberar proximo modulo' }
+  ];
+  readonly isTagsDropdownOpen = signal(false);
 
   readonly gradingForm = this.fb.group({
     status: this.fb.control<number | null>(null, { validators: [Validators.required] }),
     score: this.fb.control<string | null>(null),
+    masteryScore: this.fb.control<string | null>(null),
+    applicationScore: this.fb.control<string | null>(null),
+    communicationScore: this.fb.control<string | null>(null),
+    recommendedAction: this.fb.control<string | null>(null),
+    feedbackTags: this.fb.nonNullable.control<string[]>([]),
     feedback: this.fb.control<string | null>('')
   });
 
@@ -160,7 +179,16 @@ export class ActivityCorrectionsComponent {
     }
     this.resetVideoUrls();
     this.submissionDetailsLoading.set(true);
-    this.gradingForm.reset({ status: null, score: null, feedback: '' });
+    this.gradingForm.reset({
+      status: null,
+      score: null,
+      masteryScore: null,
+      applicationScore: null,
+      communicationScore: null,
+      recommendedAction: null,
+      feedbackTags: [],
+      feedback: ''
+    });
     this.submissionsService
       .getById(submissionId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -209,10 +237,27 @@ export class ActivityCorrectionsComponent {
       return;
     }
 
+    const masteryScore = this.parseRubricScore(this.gradingForm.controls.masteryScore.value);
+    const applicationScore = this.parseRubricScore(this.gradingForm.controls.applicationScore.value);
+    const communicationScore = this.parseRubricScore(this.gradingForm.controls.communicationScore.value);
+    if (
+      (masteryScore === null && this.gradingForm.controls.masteryScore.value) ||
+      (applicationScore === null && this.gradingForm.controls.applicationScore.value) ||
+      (communicationScore === null && this.gradingForm.controls.communicationScore.value)
+    ) {
+      this.toastr.error('As notas dos criterios devem estar entre 1 e 5.');
+      return;
+    }
+
     const payload = {
       Status: this.gradingForm.controls.status.value ?? 3,
       Score: parsedScore ?? undefined,
       GradedById: instructor.id,
+      MasteryScore: masteryScore ?? undefined,
+      ApplicationScore: applicationScore ?? undefined,
+      CommunicationScore: communicationScore ?? undefined,
+      FeedbackTags: this.joinFeedbackTags(this.gradingForm.controls.feedbackTags.value),
+      RecommendedAction: this.gradingForm.controls.recommendedAction.value?.trim() || undefined,
       Feedback: this.gradingForm.controls.feedback.value?.trim() || undefined,
       TextAnswer: submission.TextAnswer,
       Attachments: (submission.Attachments ?? []).map(attachment => ({
@@ -362,6 +407,11 @@ export class ActivityCorrectionsComponent {
     this.gradingForm.patchValue({
       status: submission.Status ?? 2,
       score: submission.Score != null ? String(submission.Score) : null,
+      masteryScore: submission.MasteryScore != null ? String(submission.MasteryScore) : null,
+      applicationScore: submission.ApplicationScore != null ? String(submission.ApplicationScore) : null,
+      communicationScore: submission.CommunicationScore != null ? String(submission.CommunicationScore) : null,
+      recommendedAction: submission.RecommendedAction ?? null,
+      feedbackTags: this.parseFeedbackTags(submission.FeedbackTags),
       feedback: submission.Feedback ?? ''
     });
   }
@@ -375,6 +425,70 @@ export class ActivityCorrectionsComponent {
       return null;
     }
     return parsed;
+  }
+
+  private parseRubricScore(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private parseFeedbackTags(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+
+  private joinFeedbackTags(tags: string[]): string | undefined {
+    if (!tags?.length) {
+      return undefined;
+    }
+    return tags.join(',');
+  }
+
+  toggleTagsDropdown(): void {
+    this.isTagsDropdownOpen.update(value => !value);
+  }
+
+  closeTagsDropdown(): void {
+    this.isTagsDropdownOpen.set(false);
+  }
+
+  isTagSelected(tag: string): boolean {
+    return this.gradingForm.controls.feedbackTags.value.includes(tag);
+  }
+
+  toggleFeedbackTag(tag: string, checked: boolean): void {
+    const current = this.gradingForm.controls.feedbackTags.value;
+    if (checked) {
+      if (!current.includes(tag)) {
+        this.gradingForm.controls.feedbackTags.setValue([...current, tag]);
+      }
+      return;
+    }
+
+    this.gradingForm.controls.feedbackTags.setValue(current.filter(item => item !== tag));
+  }
+
+  selectedTagsLabel(): string {
+    const selected = this.gradingForm.controls.feedbackTags.value;
+    if (!selected.length) {
+      return 'Selecione as tags';
+    }
+
+    return this.feedbackTagOptions
+      .filter(option => selected.includes(option.value))
+      .map(option => option.label)
+      .join(', ');
   }
 
   private ensureStudentNames(studentIds: string[]): void {

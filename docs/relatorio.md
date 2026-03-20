@@ -118,3 +118,12 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
 - Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
 - Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).
+
+### 2026-03-20 (feedback estruturado de correcoes)
+- Implementado feedback estruturado nas submissoes de atividades com novos campos persistidos: `MasteryScore`, `ApplicationScore`, `CommunicationScore` (rubrica 1-5), `FeedbackTags` (tags diagnosticas) e `RecommendedAction` (acao recomendada).
+- Backend atualizado em entidade/DTOs/servico com validacao de rubrica (faixa 1-5) e normalizacao de tags para armazenamento consistente.
+- Migration EF criada: `20260320204713_AddStructuredActivityFeedback` com inclusao das novas colunas em `ActivitySubmissions`.
+- Frontend de correcao atualizado nas telas de professor (`activity-corrections` e `class-group-manage`) com novos campos no formulario.
+- Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
+- Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.

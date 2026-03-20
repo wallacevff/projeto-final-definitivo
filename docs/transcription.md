@@ -287,3 +287,15 @@
 [2026-03-13 16:58:17] User: Faça os commits e o push
 
 [2026-03-13 16:58:17] Assistant: Atualizei memoria/contexto/relatorio com as mudancas de tema azul e remocao de "SES" no frontend, regenerei o repomix e realizei commit/push para origin/main.
+
+[2026-03-20 17:47:53] User: A professora sugeriu uma mudança no feedback do professor das atividades que os alunos fazem sem ser apenas um campo texto com padrão para possibilitar levantamento (dados, dashboard, indicadores) . Alguma sugestão?
+
+[2026-03-20 17:47:53] Assistant: Sugeri evoluir para feedback estruturado com rubrica por criterios (1-5), status padronizado, tags diagnosticas, acao recomendada e campo textual livre para viabilizar dashboards e indicadores.
+
+[2026-03-20 17:47:53] User: Pode implementar?
+
+[2026-03-20 17:47:53] Assistant: Implementei feedback estruturado nas correcoes com novos campos persistidos (rubrica, tags e acao recomendada), migration EF, atualizacao das telas de correcao e exibicao para aluno, validando com dotnet build e npm run build.
+
+[2026-03-20 17:53:41] User: Melhore o dropdown multiplo de Tags diagnosticas para que ainda abra o menu, mas permita multiplas seleções
+
+[2026-03-20 17:53:41] Assistant: Substitui o select multiplo por dropdown com checklist nas telas de correcao (activity-corrections e class-group-manage), mantendo abertura do menu com selecao multipla, e validei com dotnet build e npm run build.

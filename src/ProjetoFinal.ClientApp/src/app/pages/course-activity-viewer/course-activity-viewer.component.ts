@@ -74,6 +74,12 @@ export class CourseActivityViewerComponent {
     3: 'Corrigida',
     4: 'Devolvida'
   };
+  private readonly recommendedActionLabels: Record<string, string> = {
+    reforco: 'Reforco de conteudo',
+    refazer_atividade: 'Refazer atividade',
+    monitoria: 'Encaminhar para monitoria',
+    proximo_modulo: 'Liberar proximo modulo'
+  };
 
   constructor() {
     this.route.paramMap
@@ -345,6 +351,23 @@ export class CourseActivityViewerComponent {
       return '';
     }
     return this.submissionStatusLabels[status] ?? 'Desconhecido';
+  }
+
+  recommendedActionLabel(action?: string): string | null {
+    if (!action) {
+      return null;
+    }
+    return this.recommendedActionLabels[action] ?? action;
+  }
+
+  feedbackTagsList(tags?: string): string[] {
+    if (!tags) {
+      return [];
+    }
+    return tags
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
   }
 
   private buildUiAttachmentsFromDrafts(): SubmissionAttachmentDto[] {
