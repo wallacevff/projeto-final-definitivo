@@ -299,3 +299,32 @@
 [2026-03-20 17:53:41] User: Melhore o dropdown multiplo de Tags diagnosticas para que ainda abra o menu, mas permita multiplas seleções
 
 [2026-03-20 17:53:41] Assistant: Substitui o select multiplo por dropdown com checklist nas telas de correcao (activity-corrections e class-group-manage), mantendo abertura do menu com selecao multipla, e validei com dotnet build e npm run build.
+
+[2026-03-20 23:11:36] User: $skill-installer
+
+[2026-03-20 23:11:36] Assistant: Listei as skills curadas disponiveis do repositorio openai/skills para instalacao.
+
+[2026-03-20 23:11:36] User: 1, 20
+
+[2026-03-20 23:11:36] Assistant: Instalei as skills `aspnet-core` e `pdf` no diretorio local de skills do Codex.
+
+[2026-03-20 23:28:07] User: Consegue gerar um arquivo .md fazendo as especificações do sistema e escrevendo um documento de projeto final com os padrões da uerj?
+
+[2026-03-20 23:28:07] Assistant: Criei o arquivo `docs/documento_projeto_final_uerj.md` com modelo completo de especificacao e documento final academico no padrao UERJ, e atualizei o `ProjetoFinal.sln` para incluir o novo `.md` em Solution Items.
+
+[2026-03-21 10:51:27] User: Crie uma tabela no arquivo documento_projeto_final_uerj comparando o projeto com Google Classroom, Moodle e Udemy, mostrando o que tem no projeto e não tem nesses sistemas
+
+[2026-03-21 10:51:27] Assistant: Atualizei `docs/documento_projeto_final_uerj.md` com uma tabela comparativa de funcionalidades em fluxo nativo/padrao entre Projeto, Google Classroom, Moodle e Udemy, destacando os diferenciais do sistema.
+
+[2026-03-21 10:53:31] User: Crie um .docker ignore ignorando as seguintes pastas independente da localização: wwwroot/* e node_modules
+
+[2026-03-21 10:53:31] Assistant: Criei `.dockerignore` na raiz com padroes globais para ignorar `wwwroot` e `node_modules` em qualquer nivel.
+
+[2026-03-21 11:18:40] User: Faça uma edição no Dockerfile:
+Quero que o Dockerfile seja multistaging contendo uma parte que builda o frontend e depois do projeto buildado, copiar o conteúdo do front buildado para a pasta wwwroot do projeto buildado
+
+[2026-03-21 11:18:40] Assistant: Atualizei o Dockerfile para multi-stage (`frontend-build`, `backend-build`, `runtime`) e passei a copiar os artefatos do frontend (`dist/browser`) para `wwwroot` na imagem final, validando com `docker build` bem-sucedido.
+
+[2026-03-21 16:45:18] User: Faça os commits e o push das alterações
+
+[2026-03-21 16:45:18] Assistant: Atualizei memoria/contexto/relatorio e repomix, validei build Docker multi-stage e builds .NET/Angular, e realizei commit/push das alteracoes pendentes.

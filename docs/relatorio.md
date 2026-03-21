@@ -127,3 +127,11 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
 - Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
 - Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.
+
+### 2026-03-20 (documentacao academica)
+- Criado `docs/documento_projeto_final_uerj.md` com estrutura completa de documento final academico (modelo UERJ), incluindo capa, folha de rosto, resumo/abstract, objetivos, especificacao funcional e nao funcional, arquitetura, validacao, cronograma, riscos, conclusao e apendices.
+- `ProjetoFinal.sln` atualizado na secao de Solution Items para incluir o novo arquivo `.md` em `docs/`.
+- Documento academico UERJ (`docs/documento_projeto_final_uerj.md`) atualizado com tabela comparativa entre Projeto, Google Classroom, Moodle e Udemy, destacando diferenciais do sistema em funcionalidades nativas.
+- Criado `.dockerignore` na raiz com regras globais para ignorar `**/wwwroot/**` e `**/node_modules/**` no contexto de build Docker.
+- Dockerfile refatorado para multi-stage com estagio dedicado de build do frontend e copia explicita dos artefatos gerados para `wwwroot` da imagem final da API.
+- Validacao operacional: `docker build -t projeto-final:test-multistage .` executado com sucesso.

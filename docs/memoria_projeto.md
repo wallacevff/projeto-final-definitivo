@@ -422,3 +422,11 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - UX: campo de tags migrado de `select multiple` para dropdown com checklist, permitindo selecao multipla sem fechar a lista.
 - Visualizacao do aluno em `course-activity-viewer` passou a exibir rubrica, tags e acao recomendada quando informadas.
 - Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+## 2026-03-21 (documentacao UERJ e docker)
+- Criado `docs/documento_projeto_final_uerj.md` com estrutura de especificacao e documento final academico no modelo UERJ.
+- `ProjetoFinal.sln` atualizado para incluir o novo arquivo de documentacao em Solution Items.
+- Criado `.dockerignore` com exclusao global de `wwwroot` e `node_modules` no contexto de build.
+- Dockerfile refatorado para multi-stage com build dedicado do frontend e copia de `dist/browser` para `wwwroot` na imagem final da API.
+- Ajustado `ProjetoFinal.Api.csproj` para remover dependencia de `ProjetoFinal.ClientApp.esproj` no publish da API.
+- Validacao de imagem com `docker build -t projeto-final:test-multistage .` concluida com sucesso.

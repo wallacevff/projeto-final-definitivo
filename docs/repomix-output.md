@@ -39,6 +39,7 @@ docker/
 docs/
   commands.md
   context.md
+  documento_projeto_final_uerj.md
   especificacao.md
   memoria_projeto.md
   propont.md
@@ -493,6 +494,7 @@ src/
   ProjetoFinal.IoC/
     IoCManager.cs
     ProjetoFinal.IoC.csproj
+.dockerignore
 .gitignore
 .gitlab-ci.yml
 AGENTS.md
@@ -510,1808 +512,367 @@ README.md
 
 # Files
 
-## File: src/ProjetoFinal.Infra.Data/Migrations/20260320204713_AddStructuredActivityFeedback.cs
-````csharp
-using Microsoft.EntityFrameworkCore.Migrations;
+## File: docs/documento_projeto_final_uerj.md
+````markdown
+# Documento de Projeto Final (Modelo UERJ)
 
-#nullable disable
+> **Instrucao de uso**: este arquivo foi estruturado para servir como base de especificacao do sistema e relatorio final academico. Substitua os campos entre colchetes conforme as exigencias da disciplina/orientador.
 
-namespace ProjetoFinal.Infra.Data.Migrations
-{
-    /// <inheritdoc />
-    public partial class AddStructuredActivityFeedback : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<int>(
-                name: "ApplicationScore",
-                table: "ActivitySubmissions",
-                type: "int",
-                nullable: true);
+## Capa (Modelo Institucional)
 
-            migrationBuilder.AddColumn<int>(
-                name: "CommunicationScore",
-                table: "ActivitySubmissions",
-                type: "int",
-                nullable: true);
+**UNIVERSIDADE DO ESTADO DO RIO DE JANEIRO (UERJ)**  
+**[Centro/Faculdade]**  
+**[Curso de Graduacao]**  
 
-            migrationBuilder.AddColumn<string>(
-                name: "FeedbackTags",
-                table: "ActivitySubmissions",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true);
+**[NOME COMPLETO DO AUTOR]**
 
-            migrationBuilder.AddColumn<int>(
-                name: "MasteryScore",
-                table: "ActivitySubmissions",
-                type: "int",
-                nullable: true);
+**PLATAFORMA EAD MULTIMODAL COM TURMAS INTERATIVAS, DISTRIBUICAO DE CONTEUDO E APOIO ANALITICO AO PROCESSO DE APRENDIZAGEM**
 
-            migrationBuilder.AddColumn<string>(
-                name: "RecommendedAction",
-                table: "ActivitySubmissions",
-                type: "nvarchar(120)",
-                maxLength: 120,
-                nullable: true);
-        }
+**Rio de Janeiro**  
+**2026**
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "ApplicationScore",
-                table: "ActivitySubmissions");
+---
 
-            migrationBuilder.DropColumn(
-                name: "CommunicationScore",
-                table: "ActivitySubmissions");
+## Folha de Rosto
 
-            migrationBuilder.DropColumn(
-                name: "FeedbackTags",
-                table: "ActivitySubmissions");
+**[NOME COMPLETO DO AUTOR]**
 
-            migrationBuilder.DropColumn(
-                name: "MasteryScore",
-                table: "ActivitySubmissions");
+**PLATAFORMA EAD MULTIMODAL COM TURMAS INTERATIVAS, DISTRIBUICAO DE CONTEUDO E APOIO ANALITICO AO PROCESSO DE APRENDIZAGEM**
 
-            migrationBuilder.DropColumn(
-                name: "RecommendedAction",
-                table: "ActivitySubmissions");
-        }
-    }
-}
+Projeto Final apresentado ao curso de [NOME DO CURSO] da Universidade do Estado do Rio de Janeiro (UERJ), como requisito parcial para obtencao do grau de [Bacharel/Licenciado/Tecnologo] em [AREA].
+
+Orientador(a): Prof(a). [NOME DO ORIENTADOR(A)]  
+Coorientador(a) (se houver): Prof(a). [NOME]
+
+**Rio de Janeiro**  
+**2026**
+
+---
+
+## Resumo
+
+Este trabalho apresenta o desenvolvimento de uma plataforma de Ensino a Distancia (EAD) multimodal, concebida para atender dois modelos pedagogicos complementares: (i) cursos com turmas interativas e (ii) cursos focados na distribuicao de conteudo didatico. A solucao integra funcionalidades de gestao academica, comunicacao assíncrona e sincrona, distribuicao de midias e avaliacao de atividades com suporte a anexos multimidia.
+
+No modelo de turmas interativas, o sistema contempla controle de vagas, inscricoes com aprovacao, atividades avaliativas por turma e mecanismos de interacao por forum e chat. No modelo de distribuicao, prioriza-se acesso escalavel aos materiais e discussoes. A arquitetura foi implementada com backend em .NET (API REST), frontend Angular e persistencia em SQL Server, com armazenamento de arquivos em objeto (MinIO/S3).
+
+Como evolucao funcional, foi incorporado feedback estruturado em correcoes de atividades, incluindo rubrica por criterio, tags diagnosticas e acao recomendada, possibilitando extracao de indicadores educacionais e suporte a dashboards docentes.
+
+**Palavras-chave**: EAD, plataforma educacional, rubrica, feedback estruturado, analise de aprendizagem, arquitetura web.
+
+---
+
+## Abstract
+
+This final project presents the development of a multimodal distance learning platform designed to support two complementary educational models: (i) interactive class-based courses and (ii) content-distribution courses. The solution integrates academic management, asynchronous and synchronous communication, media delivery, and assignment evaluation workflows with multimedia attachments.
+
+In the interactive model, the system provides seat control, approval-based enrollment, class-oriented assessments, and collaboration through forum and chat modules. In the distribution model, the focus is scalable content delivery and discussion support. The platform architecture uses a .NET REST API, Angular frontend, SQL Server for transactional data, and object storage (MinIO/S3) for media assets.
+
+As a functional evolution, structured grading feedback was introduced, including criterion-based rubrics, diagnostic tags, and recommended actions, enabling educational indicators and dashboard-oriented analysis.
+
+**Keywords**: e-learning, educational platform, rubric, structured feedback, learning analytics, web architecture.
+
+---
+
+## Sumario (Modelo)
+
+1. Introducao  
+2. Contexto e Problema  
+3. Objetivos  
+4. Escopo do Sistema  
+5. Fundamentacao e Referencial Tecnico  
+6. Especificacao do Sistema  
+7. Arquitetura e Implementacao  
+8. Qualidade, Seguranca e Observabilidade  
+9. Validacao e Resultados  
+10. Cronograma e Gestao do Projeto  
+11. Riscos e Mitigacoes  
+12. Conclusao e Trabalhos Futuros  
+Referencias  
+Apendices e Anexos
+
+---
+
+## 1. Introducao
+
+A digitalizacao do ensino ampliou a demanda por ambientes virtuais de aprendizagem capazes de combinar flexibilidade pedagogica, boa experiencia de uso e instrumentos de acompanhamento do desempenho discente. Este projeto propoe uma plataforma EAD que une caracteristicas de diferentes sistemas consolidados e as adapta para um contexto academico com foco em usabilidade, rastreabilidade e apoio a decisao do professor.
+
+O trabalho organiza-se em duas frentes: desenvolvimento tecnico da plataforma e formalizacao academica do produto, com requisitos, arquitetura, validacao e discussoes sobre sustentabilidade da solucao.
+
+---
+
+## 2. Contexto e Problema
+
+### 2.1 Cenário
+- Sistemas EAD tradicionais tendem a privilegiar apenas um modelo de curso (turma fechada ou distribuicao massiva).
+- Professores necessitam de instrumentos mais objetivos para acompanhar dificuldades recorrentes.
+- Feedback exclusivamente textual limita consolidacao de indicadores e comparacoes entre turmas.
+
+### 2.2 Problema
+Como construir uma plataforma EAD que suporte diferentes modelos de oferta de curso e, ao mesmo tempo, gere dados estruturados para apoiar o acompanhamento pedagogico?
+
+### 2.3 Justificativa
+- Relevancia social e educacional: facilita acesso e monitoramento de aprendizagem.
+- Relevancia tecnica: integra API web moderna, frontend SPA e storage de objetos.
+- Relevancia academica: permite estudo de indicadores pedagogicos a partir de dados operacionais.
+
+### 2.4 Analise comparativa com plataformas de mercado
+
+Tabela comparativa de diferenciais do projeto em relacao a Google Classroom, Moodle e Udemy (considerando funcionalidades nativas em fluxo padrao):
+
+| Funcionalidade | Projeto | Google Classroom | Moodle | Udemy | Diferencial do Projeto |
+|---|---|---|---|---|---|
+| Duas modalidades no mesmo produto (turma interativa + distribuicao de conteudo) | Sim (nativo) | Parcial | Parcial | Nao | Unificacao de dois modelos pedagogicos no mesmo fluxo operacional |
+| Comentario temporal em video enviado pelo aluno (correcao em ponto exato do video) | Sim (nativo) | Nao nativo no fluxo padrao | Nao nativo no fluxo padrao | Nao nativo no fluxo padrao | Revisao audiovisual orientada por tempo no contexto de atividade |
+| Feedback estruturado na correcao (rubrica por criterio + tags + acao recomendada) | Sim (nativo) | Nao nativo no fluxo padrao | Parcial (dependente de configuracao/plugin) | Nao nativo no fluxo padrao | Base pronta para indicadores e dashboards docentes |
+| Controle de inscricao por senha e/ou aprovacao em turmas com limite | Sim (nativo) | Parcial | Parcial | Nao (modelo aberto de marketplace) | Governanca de acesso mais aderente a cursos fechados e academicos |
+| Persistencia unificada de metadados academicos e objetos multimidia em arquitetura propria | Sim | Nao (plataforma fechada) | Parcial (geralmente exige customizacao de infraestrutura) | Nao (plataforma fechada) | Maior liberdade para evoluir analytics, IA e regras institucionais |
+
+> Observacao: a comparacao considera recursos nativos e comportamento padrao de uso. Moodle, por ser altamente extensivel, pode aproximar alguns cenarios mediante plugins e customizacoes.
+
+---
+
+## 3. Objetivos
+
+### 3.1 Objetivo geral
+Desenvolver e validar uma plataforma EAD multimodal com recursos de interacao, avaliacao e feedback estruturado para suporte a analise educacional.
+
+### 3.2 Objetivos especificos
+- Implementar cadastro e autenticacao de usuarios com perfis de professor e aluno.
+- Permitir criacao e gestao de cursos em duas modalidades: turmas interativas e distribuicao de conteudo.
+- Viabilizar forum, chat, atividades e submissao de anexos multimidia.
+- Implementar comentarios temporais em videos para revisao de atividades.
+- Estruturar feedback docente com rubricas, tags diagnosticas e acoes recomendadas.
+- Disponibilizar base de dados para futuros dashboards e indicadores de aprendizagem.
+
+---
+
+## 4. Escopo do Sistema
+
+### 4.1 Escopo funcional
+- Cadastro de usuarios e autenticacao JWT.
+- Criacao/edicao/publicacao de cursos.
+- Gerenciamento de turmas, capacidade e inscricao por aprovacao/senha.
+- Publicacao de conteudos e anexos.
+- Forum por turma e por curso.
+- Chat em contexto de turmas interativas.
+- Atividades com envio textual e anexos.
+- Correcao com nota, status e feedback estruturado.
+
+### 4.2 Fora de escopo (versao atual)
+- Proctoring (fiscalizacao automatica de provas).
+- Motor de recomendacao adaptativa em tempo real.
+- Chatbot tutor totalmente autonomo.
+- Integracao nativa com ERPs academicos externos.
+
+---
+
+## 5. Fundamentacao e Referencial Tecnico
+
+### 5.1 Conceitos-chave
+- Ambientes Virtuais de Aprendizagem (AVA).
+- Learning Analytics.
+- Rubricas avaliativas e feedback formativo.
+- Arquitetura em camadas para aplicacoes web.
+
+### 5.2 Base tecnologica adotada
+- **Backend**: ASP.NET Core (API REST).
+- **Frontend**: Angular.
+- **Banco de dados**: SQL Server.
+- **Storage de arquivos**: MinIO (S3 compatível).
+- **Containerizacao**: Docker/Swarm.
+
+---
+
+## 6. Especificacao do Sistema
+
+### 6.1 Perfis de usuario
+- **Professor/Instrutor**: cria cursos, publica materiais, define atividades, corrige e acompanha indicadores.
+- **Aluno**: inscreve-se, consome conteudo, participa de forum/chat e envia atividades.
+
+### 6.2 Requisitos funcionais (RF)
+- **RF01**: permitir cadastro e autenticacao de usuarios.
+- **RF02**: permitir criacao de cursos por professores.
+- **RF03**: suportar modalidades "turmas interativas" e "distribuicao".
+- **RF04**: permitir gerenciamento de turmas, vagas e politicas de inscricao.
+- **RF05**: permitir upload/download de anexos e midias.
+- **RF06**: permitir publicacao e entrega de atividades.
+- **RF07**: permitir correcao com nota e status.
+- **RF08**: permitir feedback estruturado (rubrica + tags + acao recomendada).
+- **RF09**: permitir anotacoes temporais em videos de submissao.
+- **RF10**: disponibilizar dados para consolidacao de indicadores pedagogicos.
+
+### 6.3 Requisitos nao funcionais (RNF)
+- **RNF01 - Seguranca**: autenticacao via token, validacao de acesso por perfil, cuidado com segredos fora do codigo.
+- **RNF02 - Desempenho**: resposta adequada para consultas e operacoes de upload.
+- **RNF03 - Disponibilidade**: suporte a deploy containerizado e resiliencia de servicos.
+- **RNF04 - Usabilidade**: interface responsiva e fluxo claro para docentes/discentes.
+- **RNF05 - Escalabilidade**: separacao de responsabilidades entre API, banco e storage.
+- **RNF06 - Auditabilidade**: persistencia de eventos de submissao/correcao para rastreabilidade.
+
+### 6.4 Regras de negocio
+- Um aluno nao pode enviar duas submissões distintas para a mesma atividade (na configuracao atual).
+- Em turmas com capacidade lotada, novas inscricoes devem ser bloqueadas ou pendentes de aprovacao, conforme configuracao.
+- Correcao pode registrar nota numerica e feedback textual.
+- Feedback estruturado aceita rubrica por criterio na escala de 1 a 5.
+- Tags diagnosticas devem ser armazenadas de forma normalizada para analise posterior.
+
+### 6.5 Casos de uso principais
+- UC01: professor cria curso.
+- UC02: professor cria turma e define regras de inscricao.
+- UC03: aluno solicita inscricao.
+- UC04: professor publica conteudo e atividade.
+- UC05: aluno envia atividade (texto e anexos).
+- UC06: professor corrige submissao com feedback estruturado.
+- UC07: aluno visualiza retorno da correcao.
+
+---
+
+## 7. Arquitetura e Implementacao
+
+### 7.1 Visao arquitetural
+- **Cliente (Angular)**: interface e orquestracao de chamadas HTTP.
+- **API (.NET)**: regras de negocio, autorizacao e contratos.
+- **Banco SQL**: dados transacionais (usuarios, cursos, turmas, atividades, correcoes).
+- **Object Storage (MinIO)**: arquivos e midias.
+
+### 7.2 Camadas da solucao
+- `ProjetoFinal.Api`: endpoints e configuracao HTTP.
+- `ProjetoFinal.Application.Contracts`: DTOs e interfaces.
+- `ProjetoFinal.Aplication.Services`: servicos de negocio.
+- `ProjetoFinal.Domain`: entidades e regras de dominio.
+- `ProjetoFinal.Infra.Data`: EF Core, mapeamentos e repositorios.
+
+### 7.3 Modelo de dados (resumo)
+Entidades centrais:
+- Usuario
+- Curso
+- Turma (`ClassGroup`)
+- Atividade
+- Submissao de atividade (`ActivitySubmission`)
+- Anexos de submissao
+
+Campos relevantes de feedback estruturado em submissao:
+- `MasteryScore`
+- `ApplicationScore`
+- `CommunicationScore`
+- `FeedbackTags`
+- `RecommendedAction`
+
+### 7.4 Integracao e deploy
+- API e frontend empacotados em imagem Docker.
+- SQL Server e MinIO em servicos dedicados.
+- Nginx como proxy reverso HTTPS.
+
+---
+
+## 8. Qualidade, Seguranca e Observabilidade
+
+### 8.1 Qualidade
+- Build de backend com `dotnet build`.
+- Build de frontend com `npm run build`.
+- Tratamento de erros e padronizacao de respostas no backend.
+
+### 8.2 Seguranca
+- Controle de acesso por papel e por contexto (professor/aluno).
+- Recomendacao de segredo JWT fora do repositorio.
+- Validacao de upload e restricoes de tamanho conforme ambiente.
+
+### 8.3 Observabilidade
+- Logs de aplicacao.
+- Diagnostico de inconsistencias entre banco e storage (scripts operacionais).
+
+---
+
+## 9. Validacao e Resultados
+
+### 9.1 Cenarios validados
+- Criacao e publicacao de cursos.
+- Fluxo de inscricao em turmas.
+- Submissao de atividades com anexos.
+- Correcao com feedback textual e estruturado.
+- Consulta dos dados de correcao pelo aluno.
+
+### 9.2 Resultados observados
+- Plataforma atende aos fluxos principais previstos no escopo.
+- Introducao de feedback estruturado habilita analises quantitativas por criterio e tag.
+
+### 9.3 Limitacoes atuais
+- Warnings de budget CSS no frontend ainda presentes.
+- Evolucoes de analytics e IA ainda em etapa de planejamento.
+
+---
+
+## 10. Cronograma e Gestao do Projeto
+
+### 10.1 Macroetapas executadas
+- Levantamento de requisitos e proposta.
+- Implementacao de nucleo funcional (cadastro, cursos, turmas, atividades).
+- Integracao de midias e storage.
+- Correcoes, anotacoes em video e refinamento de UX.
+- Evolucao para feedback estruturado.
+
+### 10.2 Planejamento de continuidade
+- Painel analitico docente (dashboards por turma/curso).
+- Pipeline de IA para agrupamento de duvidas.
+- Cobertura de testes automatizados e2e.
+
+---
+
+## 11. Riscos e Mitigacoes
+
+- **Risco**: inconsistencias entre metadata no banco e objetos no storage.  
+  **Mitigacao**: verificacao de existencia de objeto no upload e scripts de saneamento.
+
+- **Risco**: crescimento de bundle frontend.  
+  **Mitigacao**: revisao de estilos/componentes e estrategia de splitting.
+
+- **Risco**: dependencia de configuracao manual em deploy.  
+  **Mitigacao**: padronizacao por compose, configs e documentacao operacional.
+
+---
+
+## 12. Conclusao e Trabalhos Futuros
+
+O projeto alcancou o objetivo de disponibilizar uma plataforma EAD com suporte a diferentes modelos de ensino e mecanismos de avaliacao mais ricos. A evolucao para feedback estruturado representa um passo importante para aproximar o sistema de praticas orientadas a dados no contexto educacional.
+
+Como continuidade, recomenda-se priorizar a camada de analytics/IA para consolidacao automatica de duvidas recorrentes, deteccao de lacunas de aprendizagem e geracao de insights para acao pedagogica.
+
+---
+
+## Referencias (Modelo)
+
+> Substitua pelos itens bibliograficos efetivamente utilizados, no estilo exigido pelo curso (ABNT/UERJ).
+
+1. MICROSOFT. ASP.NET Core Documentation. Disponivel em: <https://learn.microsoft.com/aspnet/core/>. Acesso em: [data].
+2. ANGULAR. Angular Documentation. Disponivel em: <https://angular.dev/>. Acesso em: [data].
+3. MINIO. MinIO Documentation. Disponivel em: <https://min.io/docs/>. Acesso em: [data].
+4. SILVA, [Nome]. [Titulo da obra de referencia pedagogica/AVA]. [Local]: [Editora], [ano].
+
+---
+
+## Apendice A - Checklist de formatacao academica (UERJ)
+
+- [ ] Capa com identificacao institucional completa.
+- [ ] Folha de rosto com natureza do trabalho e orientador.
+- [ ] Resumo e abstract com palavras-chave.
+- [ ] Sumario coerente com titulos do corpo do texto.
+- [ ] Citacoes e referencias no padrao exigido.
+- [ ] Numeracao de secoes e paginas revisada.
+- [ ] Revisao ortografica e padronizacao terminologica.
+
+## Apendice B - Estrutura sugerida para banca
+
+- Motivacao e problema.
+- Solucao proposta.
+- Demo dos fluxos principais.
+- Diferenciais (feedback estruturado e base para analytics).
+- Limitacoes e roadmap de evolucao.
 ````
 
-## File: src/ProjetoFinal.Infra.Data/Migrations/20260320204713_AddStructuredActivityFeedback.Designer.cs
-````csharp
-// <auto-generated />
-using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ProjetoFinal.Infra.Data.Contexts;
-
-#nullable disable
-
-namespace ProjetoFinal.Infra.Data.Migrations
-{
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20260320204713_AddStructuredActivityFeedback")]
-    partial class AddStructuredActivityFeedback
-    {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
-        {
-#pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.13")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("AllowLateSubmissions")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("AvailableAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("LatePenaltyPercentage")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("MaxScore")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<Guid?>("ReferenceContentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Scope")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("VisibleToStudents")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("ReferenceContentId");
-
-                    b.ToTable("Activities", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActivityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Caption")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("MediaResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActivityId");
-
-                    b.HasIndex("MediaResourceId");
-
-                    b.ToTable("ActivityAttachments", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAudience", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActivityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("ActivityId", "ClassGroupId")
-                        .IsUnique();
-
-                    b.ToTable("ActivityAudiences", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActivityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("ApplicationScore")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("CommunicationScore")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Feedback")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("FeedbackTags")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("GradedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("GradedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("MasteryScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RecommendedAction")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<decimal?>("Score")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("SubmittedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("TextAnswer")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("GradedById");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("ActivityId", "StudentId")
-                        .IsUnique();
-
-                    b.ToTable("ActivitySubmissions", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSystemMessage")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid?>("MediaResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<Guid?>("ReplyToMessageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("SentAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("MediaResourceId");
-
-                    b.HasIndex("ReplyToMessageId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("ChatMessages", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassEnrollment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DecidedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DecisionAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DecisionReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DecidedById");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("ClassGroupId", "StudentId")
-                        .IsUnique();
-
-                    b.ToTable("ClassEnrollments", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("EnableChat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<DateTime?>("EndsAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EnrollmentClosesAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EnrollmentCodeHash")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateTime?>("EnrollmentOpensAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsMaterialsDistribution")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<bool>("RequiresApproval")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("RequiresEnrollmentCode")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("StartsAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("ClassGroups", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Caption")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<Guid>("CourseContentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPrimary")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("MediaResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseContentId");
-
-                    b.HasIndex("MediaResourceId");
-
-                    b.ToTable("ContentAttachments", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentVideoAnnotation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<Guid>("ContentAttachmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EditedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("TimeMarkerSeconds")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContentAttachmentId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.ToTable("ContentVideoAnnotations", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DetailedDescription")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<bool>("EnableChat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("EnableForum")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("EnrollmentInstructions")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<Guid>("InstructorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Mode")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ShortDescription")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(220)
-                        .HasColumnType("nvarchar(220)");
-
-                    b.Property<Guid?>("ThumbnailMediaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InstructorId");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.HasIndex("ThumbnailMediaId");
-
-                    b.ToTable("Courses", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Body")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDraft")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("ItemType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Summary")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("CourseContents", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseSubscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("SubscribedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("CourseId", "StudentId")
-                        .IsUnique();
-
-                    b.ToTable("CourseSubscriptions", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EditedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("ParentPostId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ThreadId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
-
-                    b.HasIndex("ParentPostId");
-
-                    b.HasIndex("ThreadId");
-
-                    b.ToTable("ForumPosts", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPostAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Caption")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ForumPostId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("MediaResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ForumPostId");
-
-                    b.HasIndex("MediaResourceId");
-
-                    b.ToTable("ForumPostAttachments", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsLocked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsPinned")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("LastActivityAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassGroupId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("CourseId", "ClassGroupId");
-
-                    b.ToTable("ForumThreads", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.MediaResource", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("DurationInSeconds")
-                        .HasColumnType("float");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("Height")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OriginalFileName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
-
-                    b.Property<string>("Sha256")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<long>("SizeInBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("Width")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Sha256")
-                        .IsUnique()
-                        .HasFilter("[Sha256] IS NOT NULL");
-
-                    b.ToTable("MediaResources", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.SubmissionAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPrimary")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsVideo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("MediaResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SubmissionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaResourceId");
-
-                    b.HasIndex("SubmissionId");
-
-                    b.ToTable("SubmissionAttachments", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AvatarUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<string>("Biography")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(180)
-                        .HasColumnType("nvarchar(180)");
-
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PasswordHash")
-                        .HasMaxLength(180)
-                        .HasColumnType("nvarchar(180)");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Username")
-                        .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("ExternalId")
-                        .IsUnique();
-
-                    b.HasIndex("Username")
-                        .IsUnique()
-                        .HasFilter("[Username] IS NOT NULL");
-
-                    b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.VideoAnnotation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AttachmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EditedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("SubmissionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("TimeMarkerSeconds")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttachmentId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("SubmissionId");
-
-                    b.ToTable("VideoAnnotations", (string)null);
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("Activities")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
-                        .WithMany("Activities")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.CourseContent", "ReferenceContent")
-                        .WithMany()
-                        .HasForeignKey("ReferenceContentId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("Course");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("ReferenceContent");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAttachment", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
-                        .WithMany("Attachments")
-                        .HasForeignKey("ActivityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
-                        .WithMany("ActivityAttachments")
-                        .HasForeignKey("MediaResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-
-                    b.Navigation("MediaResource");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAudience", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
-                        .WithMany("Audiences")
-                        .HasForeignKey("ActivityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("ActivityAudiences")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-
-                    b.Navigation("ClassGroup");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
-                        .WithMany("Submissions")
-                        .HasForeignKey("ActivityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany()
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "GradedBy")
-                        .WithMany()
-                        .HasForeignKey("GradedById")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("GradedBy");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
-                        .WithMany()
-                        .HasForeignKey("MediaResourceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ChatMessage", "ReplyTo")
-                        .WithMany("Replies")
-                        .HasForeignKey("ReplyToMessageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("MediaResource");
-
-                    b.Navigation("ReplyTo");
-
-                    b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassEnrollment", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "DecidedBy")
-                        .WithMany()
-                        .HasForeignKey("DecidedById")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
-                        .WithMany("ClassEnrollments")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("DecidedBy");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
-                        .WithMany("ClassGroups")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentAttachment", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.CourseContent", "CourseContent")
-                        .WithMany("Attachments")
-                        .HasForeignKey("CourseContentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
-                        .WithMany("ContentAttachments")
-                        .HasForeignKey("MediaResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CourseContent");
-
-                    b.Navigation("MediaResource");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentVideoAnnotation", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ContentAttachment", "ContentAttachment")
-                        .WithMany()
-                        .HasForeignKey("ContentAttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ContentAttachment");
-
-                    b.Navigation("CreatedBy");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Instructor")
-                        .WithMany("CoursesAsInstructor")
-                        .HasForeignKey("InstructorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "ThumbnailMedia")
-                        .WithMany()
-                        .HasForeignKey("ThumbnailMediaId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Instructor");
-
-                    b.Navigation("ThumbnailMedia");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("ScopedContents")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
-                        .WithMany("Contents")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Author");
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("Course");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseSubscription", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
-                        .WithMany("CourseSubscriptions")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ForumPost", "ParentPost")
-                        .WithMany("Replies")
-                        .HasForeignKey("ParentPostId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ForumThread", "Thread")
-                        .WithMany("Posts")
-                        .HasForeignKey("ThreadId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Author");
-
-                    b.Navigation("ParentPost");
-
-                    b.Navigation("Thread");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPostAttachment", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ForumPost", "ForumPost")
-                        .WithMany("Attachments")
-                        .HasForeignKey("ForumPostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
-                        .WithMany("ForumPostAttachments")
-                        .HasForeignKey("MediaResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ForumPost");
-
-                    b.Navigation("MediaResource");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
-                        .WithMany("ForumThreads")
-                        .HasForeignKey("ClassGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
-                        .WithMany("ForumThreads")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ClassGroup");
-
-                    b.Navigation("Course");
-
-                    b.Navigation("CreatedBy");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.SubmissionAttachment", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
-                        .WithMany("SubmissionAttachments")
-                        .HasForeignKey("MediaResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ActivitySubmission", "Submission")
-                        .WithMany("Attachments")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MediaResource");
-
-                    b.Navigation("Submission");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.VideoAnnotation", b =>
-                {
-                    b.HasOne("ProjetoFinal.Domain.Entities.SubmissionAttachment", "Attachment")
-                        .WithMany()
-                        .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ProjetoFinal.Domain.Entities.ActivitySubmission", "Submission")
-                        .WithMany("VideoAnnotations")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attachment");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("Submission");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
-                {
-                    b.Navigation("Attachments");
-
-                    b.Navigation("Audiences");
-
-                    b.Navigation("Submissions");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
-                {
-                    b.Navigation("Attachments");
-
-                    b.Navigation("VideoAnnotations");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
-                {
-                    b.Navigation("Replies");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
-                {
-                    b.Navigation("Activities");
-
-                    b.Navigation("ActivityAudiences");
-
-                    b.Navigation("ChatMessages");
-
-                    b.Navigation("Enrollments");
-
-                    b.Navigation("ForumThreads");
-
-                    b.Navigation("ScopedContents");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
-                {
-                    b.Navigation("Activities");
-
-                    b.Navigation("ClassGroups");
-
-                    b.Navigation("Contents");
-
-                    b.Navigation("ForumThreads");
-
-                    b.Navigation("Subscriptions");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
-                {
-                    b.Navigation("Attachments");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
-                {
-                    b.Navigation("Attachments");
-
-                    b.Navigation("Replies");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
-                {
-                    b.Navigation("Posts");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.MediaResource", b =>
-                {
-                    b.Navigation("ActivityAttachments");
-
-                    b.Navigation("ContentAttachments");
-
-                    b.Navigation("ForumPostAttachments");
-
-                    b.Navigation("SubmissionAttachments");
-                });
-
-            modelBuilder.Entity("ProjetoFinal.Domain.Entities.User", b =>
-                {
-                    b.Navigation("ClassEnrollments");
-
-                    b.Navigation("CourseSubscriptions");
-
-                    b.Navigation("CoursesAsInstructor");
-                });
-#pragma warning restore 612, 618
-        }
-    }
-}
+## File: .dockerignore
+````
+**/wwwroot/**
+**/node_modules/**
 ````
 
 ## File: docker/appsettings.Docker.json
@@ -8504,6 +7065,1810 @@ namespace ProjetoFinal.Infra.Data.Migrations
 }
 ````
 
+## File: src/ProjetoFinal.Infra.Data/Migrations/20260320204713_AddStructuredActivityFeedback.cs
+````csharp
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace ProjetoFinal.Infra.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddStructuredActivityFeedback : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<int>(
+                name: "ApplicationScore",
+                table: "ActivitySubmissions",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "CommunicationScore",
+                table: "ActivitySubmissions",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "FeedbackTags",
+                table: "ActivitySubmissions",
+                type: "nvarchar(500)",
+                maxLength: 500,
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "MasteryScore",
+                table: "ActivitySubmissions",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "RecommendedAction",
+                table: "ActivitySubmissions",
+                type: "nvarchar(120)",
+                maxLength: 120,
+                nullable: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "ApplicationScore",
+                table: "ActivitySubmissions");
+
+            migrationBuilder.DropColumn(
+                name: "CommunicationScore",
+                table: "ActivitySubmissions");
+
+            migrationBuilder.DropColumn(
+                name: "FeedbackTags",
+                table: "ActivitySubmissions");
+
+            migrationBuilder.DropColumn(
+                name: "MasteryScore",
+                table: "ActivitySubmissions");
+
+            migrationBuilder.DropColumn(
+                name: "RecommendedAction",
+                table: "ActivitySubmissions");
+        }
+    }
+}
+````
+
+## File: src/ProjetoFinal.Infra.Data/Migrations/20260320204713_AddStructuredActivityFeedback.Designer.cs
+````csharp
+// <auto-generated />
+using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ProjetoFinal.Infra.Data.Contexts;
+
+#nullable disable
+
+namespace ProjetoFinal.Infra.Data.Migrations
+{
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260320204713_AddStructuredActivityFeedback")]
+    partial class AddStructuredActivityFeedback
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.13")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AllowLateSubmissions")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("AvailableAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("LatePenaltyPercentage")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MaxScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid?>("ReferenceContentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("VisibleToStudents")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ReferenceContentId");
+
+                    b.ToTable("Activities", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MediaResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
+
+                    b.HasIndex("MediaResourceId");
+
+                    b.ToTable("ActivityAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAudience", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("ActivityId", "ClassGroupId")
+                        .IsUnique();
+
+                    b.ToTable("ActivityAudiences", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ApplicationScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CommunicationScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Feedback")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("FeedbackTags")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("GradedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("GradedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MasteryScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecommendedAction")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("TextAnswer")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("GradedById");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ActivityId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("ActivitySubmissions", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemMessage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid?>("MediaResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("ReplyToMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SentAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("MediaResourceId");
+
+                    b.HasIndex("ReplyToMessageId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("ChatMessages", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassEnrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DecidedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DecisionAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DecidedById");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ClassGroupId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("ClassEnrollments", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("EnableChat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("EndsAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EnrollmentClosesAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EnrollmentCodeHash")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("EnrollmentOpensAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMaterialsDistribution")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("RequiresApproval")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("RequiresEnrollmentCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("ClassGroups", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid>("CourseContentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MediaResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseContentId");
+
+                    b.HasIndex("MediaResourceId");
+
+                    b.ToTable("ContentAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentVideoAnnotation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("ContentAttachmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("TimeMarkerSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentAttachmentId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("ContentVideoAnnotations", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DetailedDescription")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("EnableChat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("EnableForum")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("EnrollmentInstructions")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("InstructorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("nvarchar(220)");
+
+                    b.Property<Guid?>("ThumbnailMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstructorId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.HasIndex("ThumbnailMediaId");
+
+                    b.ToTable("Courses", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDraft")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("ItemType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseContents", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SubscribedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("CourseId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("CourseSubscriptions", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ParentPostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ThreadId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParentPostId");
+
+                    b.HasIndex("ThreadId");
+
+                    b.ToTable("ForumPosts", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPostAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ForumPostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MediaResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ForumPostId");
+
+                    b.HasIndex("MediaResourceId");
+
+                    b.ToTable("ForumPostAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPinned")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassGroupId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("CourseId", "ClassGroupId");
+
+                    b.ToTable("ForumThreads", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.MediaResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("DurationInSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Sha256")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<long>("SizeInBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Sha256")
+                        .IsUnique()
+                        .HasFilter("[Sha256] IS NOT NULL");
+
+                    b.ToTable("MediaResources", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.SubmissionAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsVideo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MediaResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MediaResourceId");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.ToTable("SubmissionAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("Biography")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasFilter("[Username] IS NOT NULL");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.VideoAnnotation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttachmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("TimeMarkerSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttachmentId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.ToTable("VideoAnnotations", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("Activities")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
+                        .WithMany("Activities")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.CourseContent", "ReferenceContent")
+                        .WithMany()
+                        .HasForeignKey("ReferenceContentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ReferenceContent");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAttachment", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
+                        .WithMany("ActivityAttachments")
+                        .HasForeignKey("MediaResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("MediaResource");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivityAudience", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
+                        .WithMany("Audiences")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("ActivityAudiences")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("ClassGroup");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.Activity", "Activity")
+                        .WithMany("Submissions")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany()
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "GradedBy")
+                        .WithMany()
+                        .HasForeignKey("GradedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("GradedBy");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
+                        .WithMany()
+                        .HasForeignKey("MediaResourceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ChatMessage", "ReplyTo")
+                        .WithMany("Replies")
+                        .HasForeignKey("ReplyToMessageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("MediaResource");
+
+                    b.Navigation("ReplyTo");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassEnrollment", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "DecidedBy")
+                        .WithMany()
+                        .HasForeignKey("DecidedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
+                        .WithMany("ClassEnrollments")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("DecidedBy");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
+                        .WithMany("ClassGroups")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentAttachment", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.CourseContent", "CourseContent")
+                        .WithMany("Attachments")
+                        .HasForeignKey("CourseContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
+                        .WithMany("ContentAttachments")
+                        .HasForeignKey("MediaResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CourseContent");
+
+                    b.Navigation("MediaResource");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ContentVideoAnnotation", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ContentAttachment", "ContentAttachment")
+                        .WithMany()
+                        .HasForeignKey("ContentAttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ContentAttachment");
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Instructor")
+                        .WithMany("CoursesAsInstructor")
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "ThumbnailMedia")
+                        .WithMany()
+                        .HasForeignKey("ThumbnailMediaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Instructor");
+
+                    b.Navigation("ThumbnailMedia");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("ScopedContents")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
+                        .WithMany("Contents")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseSubscription", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Student")
+                        .WithMany("CourseSubscriptions")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ForumPost", "ParentPost")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentPostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ForumThread", "Thread")
+                        .WithMany("Posts")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("ParentPost");
+
+                    b.Navigation("Thread");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPostAttachment", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ForumPost", "ForumPost")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ForumPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
+                        .WithMany("ForumPostAttachments")
+                        .HasForeignKey("MediaResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ForumPost");
+
+                    b.Navigation("MediaResource");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.ClassGroup", "ClassGroup")
+                        .WithMany("ForumThreads")
+                        .HasForeignKey("ClassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.Course", "Course")
+                        .WithMany("ForumThreads")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ClassGroup");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.SubmissionAttachment", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.MediaResource", "MediaResource")
+                        .WithMany("SubmissionAttachments")
+                        .HasForeignKey("MediaResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ActivitySubmission", "Submission")
+                        .WithMany("Attachments")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaResource");
+
+                    b.Navigation("Submission");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.VideoAnnotation", b =>
+                {
+                    b.HasOne("ProjetoFinal.Domain.Entities.SubmissionAttachment", "Attachment")
+                        .WithMany()
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ActivitySubmission", "Submission")
+                        .WithMany("VideoAnnotations")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attachment");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Submission");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Activity", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Audiences");
+
+                    b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ActivitySubmission", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("VideoAnnotations");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ClassGroup", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("ActivityAudiences");
+
+                    b.Navigation("ChatMessages");
+
+                    b.Navigation("Enrollments");
+
+                    b.Navigation("ForumThreads");
+
+                    b.Navigation("ScopedContents");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.Course", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("ClassGroups");
+
+                    b.Navigation("Contents");
+
+                    b.Navigation("ForumThreads");
+
+                    b.Navigation("Subscriptions");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.CourseContent", b =>
+                {
+                    b.Navigation("Attachments");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumPost", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.ForumThread", b =>
+                {
+                    b.Navigation("Posts");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.MediaResource", b =>
+                {
+                    b.Navigation("ActivityAttachments");
+
+                    b.Navigation("ContentAttachments");
+
+                    b.Navigation("ForumPostAttachments");
+
+                    b.Navigation("SubmissionAttachments");
+                });
+
+            modelBuilder.Entity("ProjetoFinal.Domain.Entities.User", b =>
+                {
+                    b.Navigation("ClassEnrollments");
+
+                    b.Navigation("CourseSubscriptions");
+
+                    b.Navigation("CoursesAsInstructor");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+````
+
 ## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ContentVideoAnnotationRepository.cs
 ````csharp
 using System;
@@ -8616,19 +8981,18 @@ configs:
 
 ## File: Dockerfile
 ````dockerfile
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
 
+COPY src/ProjetoFinal.ClientApp/package*.json ./
+RUN npm ci
+
+COPY src/ProjetoFinal.ClientApp/ ./
+RUN npm run ng -- build --configuration=production --delete-output-path --output-path dist --progress --aot --output-hashing all
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-
-# Install Node.js for the SPA build during publish
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && node --version \
-    && npm --version \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY ProjetoFinal.sln ./
 COPY Directory.Build.props ./
@@ -8656,7 +9020,8 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-COPY --from=build /app/publish .
+COPY --from=backend-build /app/publish ./
+COPY --from=frontend-build /app/dist/browser/ ./wwwroot/
 
 ENTRYPOINT ["dotnet", "ProjetoFinal.Api.dll"]
 ````
@@ -9331,248 +9696,6 @@ public class AutoMapperProfileCadastroDto : Profile
 
         CreateMap<ChatMessageCreateDto, ChatMessage>();
         CreateMap<ChatMessageUpdateDto, ChatMessage>();
-    }
-}
-````
-
-## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivitySubmissionAppService.cs
-````csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Dto.Activities;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-using Talonario.Domain.Repositories;
-
-namespace ProjetoFinal.Aplication.Services.Services.Activities;
-
-public class ActivitySubmissionAppService : IActivitySubmissionAppService
-{
-    private readonly IActivitySubmissionRepository _submissionRepository;
-    private readonly IActivityRepository _activityRepository;
-    private readonly IVideoAnnotationRepository _videoAnnotationRepository;
-    private readonly IAutomapApi _mapper;
-    private readonly IUnityOfWork _unityOfWork;
-
-    public ActivitySubmissionAppService(
-        IActivitySubmissionRepository submissionRepository,
-        IActivityRepository activityRepository,
-        IVideoAnnotationRepository videoAnnotationRepository,
-        IUnityOfWork unityOfWork,
-        IAutomapApi mapper)
-    {
-        _submissionRepository = submissionRepository;
-        _activityRepository = activityRepository;
-        _videoAnnotationRepository = videoAnnotationRepository;
-        _unityOfWork = unityOfWork;
-        _mapper = mapper;
-    }
-
-    public async Task<ActivitySubmissionDto> SubmitAsync(ActivitySubmissionCreateDto dto, CancellationToken cancellationToken = default)
-    {
-        var activity = await _activityRepository.FindAsync(dto.ActivityId, cancellationToken);
-        if (activity is null)
-        {
-            throw new BusinessException("Atividade nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        if (activity.DueDate.HasValue && DateTime.UtcNow > activity.DueDate.Value && !activity.AllowLateSubmissions)
-        {
-            throw new BusinessException("Prazo para envio encerrado.", ECodigo.NaoPermitido);
-        }
-
-        var existingSubmission = await _submissionRepository.FirstOrDefaultByPredicateAsync(
-            submission => submission.ActivityId == dto.ActivityId && submission.StudentId == dto.StudentId,
-            cancellationToken);
-
-        if (existingSubmission is not null)
-        {
-            throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
-        }
-
-        var entity = new ActivitySubmission
-        {
-            ActivityId = dto.ActivityId,
-            StudentId = dto.StudentId,
-            ClassGroupId = dto.ClassGroupId,
-            Status = SubmissionStatus.Submitted,
-            SubmittedAt = DateTime.UtcNow,
-            TextAnswer = dto.TextAnswer,
-            Attachments = BuildAttachments(dto.Attachments)
-        };
-
-        var created = await _submissionRepository.AddAsync(entity, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        var withDetails = await _submissionRepository.GetWithDetailsAsync(created.Id, cancellationToken);
-        return _mapper.MapFrom<ActivitySubmissionDto>(withDetails ?? created);
-    }
-
-    public async Task<ActivitySubmissionDto> UpdateAsync(Guid submissionId, ActivitySubmissionUpdateDto dto, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        submission.Status = dto.Status;
-        submission.Score = dto.Score;
-        submission.GradedById = dto.GradedById;
-        submission.Feedback = dto.Feedback;
-        submission.MasteryScore = ValidateRubricScore(dto.MasteryScore, nameof(dto.MasteryScore));
-        submission.ApplicationScore = ValidateRubricScore(dto.ApplicationScore, nameof(dto.ApplicationScore));
-        submission.CommunicationScore = ValidateRubricScore(dto.CommunicationScore, nameof(dto.CommunicationScore));
-        submission.FeedbackTags = NormalizeFeedbackTags(dto.FeedbackTags);
-        submission.RecommendedAction = string.IsNullOrWhiteSpace(dto.RecommendedAction)
-            ? null
-            : dto.RecommendedAction.Trim();
-        submission.TextAnswer = dto.TextAnswer;
-        submission.GradedAt = dto.Score.HasValue ? DateTime.UtcNow : submission.GradedAt;
-        submission.Attachments.Clear();
-        foreach (var attachment in BuildAttachments(dto.Attachments))
-        {
-            submission.Attachments.Add(attachment);
-        }
-        submission.UpdatedAt = DateTime.UtcNow;
-
-        await _submissionRepository.UpdateAsync(submission, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        var updated = await _submissionRepository.GetWithDetailsAsync(submission.Id, cancellationToken);
-        return _mapper.MapFrom<ActivitySubmissionDto>(updated ?? submission);
-    }
-
-    public async Task<ActivitySubmissionDto> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        return _mapper.MapFrom<ActivitySubmissionDto>(submission);
-    }
-
-    public async Task<PagedResultDto<ActivitySubmissionDto>> GetAllAsync(ActivitySubmissionFilter filter, CancellationToken cancellationToken = default)
-    {
-        var result = await _submissionRepository.GetAllAsync(filter, cancellationToken);
-        return _mapper.MapFrom<PagedResultDto<ActivitySubmissionDto>>(result);
-    }
-
-    public async Task<VideoAnnotationDto> AddAnnotationAsync(VideoAnnotationCreateDto dto, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(dto.SubmissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        var attachment = submission.Attachments.FirstOrDefault(a => a.Id == dto.AttachmentId);
-        if (attachment is null || !attachment.IsVideo)
-        {
-            throw new BusinessException("Somente videos permitem anotacoes temporais.", ECodigo.MaRequisicao);
-        }
-
-        var annotation = new VideoAnnotation
-        {
-            SubmissionId = dto.SubmissionId,
-            AttachmentId = dto.AttachmentId,
-            CreatedById = dto.CreatedById,
-            TimeMarkerSeconds = dto.TimeMarkerSeconds,
-            Comment = dto.Comment,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var created = await _videoAnnotationRepository.AddAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.MapFrom<VideoAnnotationDto>(created);
-    }
-
-    public async Task<VideoAnnotationDto> UpdateAnnotationAsync(Guid annotationId, VideoAnnotationUpdateDto dto, CancellationToken cancellationToken = default)
-    {
-        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
-        if (annotation is null)
-        {
-            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        annotation.TimeMarkerSeconds = dto.TimeMarkerSeconds;
-        annotation.Comment = dto.Comment;
-        annotation.EditedAt = DateTime.UtcNow;
-
-        await _videoAnnotationRepository.UpdateAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.MapFrom<VideoAnnotationDto>(annotation);
-    }
-
-    public async Task DeleteAnnotationAsync(Guid annotationId, CancellationToken cancellationToken = default)
-    {
-        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
-        if (annotation is null)
-        {
-            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        await _videoAnnotationRepository.DeleteAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private static List<SubmissionAttachment> BuildAttachments(IList<SubmissionAttachmentCreateDto> attachments)
-    {
-        attachments ??= new List<SubmissionAttachmentCreateDto>();
-        var result = new List<SubmissionAttachment>();
-        foreach (var attachmentDto in attachments)
-        {
-            result.Add(new SubmissionAttachment
-            {
-                MediaResourceId = attachmentDto.MediaResourceId,
-                IsPrimary = attachmentDto.IsPrimary,
-                IsVideo = attachmentDto.IsVideo
-            });
-        }
-
-        return result;
-    }
-
-    private static int? ValidateRubricScore(int? value, string fieldName)
-    {
-        if (!value.HasValue)
-        {
-            return null;
-        }
-
-        if (value.Value < 1 || value.Value > 5)
-        {
-            throw new BusinessException($"{fieldName} deve estar entre 1 e 5.", ECodigo.MaRequisicao);
-        }
-
-        return value.Value;
-    }
-
-    private static string? NormalizeFeedbackTags(string? tags)
-    {
-        if (string.IsNullOrWhiteSpace(tags))
-        {
-            return null;
-        }
-
-        var normalized = tags
-            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        if (normalized.Length == 0)
-        {
-            return null;
-        }
-
-        return string.Join(",", normalized);
     }
 }
 ````
@@ -10269,30 +10392,6 @@ public class SubmissionAttachmentCreateDto
     public Guid MediaResourceId { get; set; }
     public bool IsPrimary { get; set; }
     public bool IsVideo { get; set; }
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionUpdateDto.cs
-````csharp
-using System;
-using System.Collections.Generic;
-using ProjetoFinal.Domain.Enums;
-
-namespace ProjetoFinal.Application.Contracts.Dto.Activities;
-
-public class ActivitySubmissionUpdateDto
-{
-    public SubmissionStatus Status { get; set; }
-    public decimal? Score { get; set; }
-    public Guid? GradedById { get; set; }
-    public string? Feedback { get; set; }
-    public int? MasteryScore { get; set; }
-    public int? ApplicationScore { get; set; }
-    public int? CommunicationScore { get; set; }
-    public string? FeedbackTags { get; set; }
-    public string? RecommendedAction { get; set; }
-    public string? TextAnswer { get; set; }
-    public IList<SubmissionAttachmentCreateDto> Attachments { get; set; } = new List<SubmissionAttachmentCreateDto>();
 }
 ````
 
@@ -11050,82 +11149,6 @@ public interface IApplicationContracts
 </Project>
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/core/api/activity-submissions.api.ts
-````typescript
-import { ApiPagedResponse, normalizePagedResponse } from './api.types';
-import { MediaResource } from './media.api';
-
-export interface ActivitySubmissionDto {
-  Id: string;
-  ActivityId: string;
-  StudentId: string;
-  StudentName?: string;
-  ClassGroupId?: string;
-  Status: number;
-  SubmittedAt: string;
-  GradedAt?: string;
-  GradedById?: string;
-  Score?: number;
-  Feedback?: string;
-  MasteryScore?: number;
-  ApplicationScore?: number;
-  CommunicationScore?: number;
-  FeedbackTags?: string;
-  RecommendedAction?: string;
-  TextAnswer?: string;
-  Attachments: SubmissionAttachmentDto[];
-}
-
-export interface SubmissionAttachmentDto {
-  Id: string;
-  MediaResourceId: string;
-  IsPrimary: boolean;
-  IsVideo: boolean;
-  Media?: MediaResource;
-}
-
-export interface ActivitySubmissionCreatePayload {
-  ActivityId: string;
-  StudentId: string;
-  ClassGroupId?: string;
-  TextAnswer?: string;
-  Attachments: SubmissionAttachmentCreatePayload[];
-}
-
-export interface ActivitySubmissionUpdatePayload {
-  Status: number;
-  Score?: number;
-  GradedById: string;
-  Feedback?: string;
-  MasteryScore?: number;
-  ApplicationScore?: number;
-  CommunicationScore?: number;
-  FeedbackTags?: string;
-  RecommendedAction?: string;
-  TextAnswer?: string;
-  Attachments: SubmissionAttachmentCreatePayload[];
-}
-
-export interface SubmissionAttachmentCreatePayload {
-  MediaResourceId: string;
-  IsPrimary: boolean;
-  IsVideo: boolean;
-}
-
-export interface ActivitySubmissionFilter {
-  ActivityId?: string;
-  StudentId?: string;
-  ClassGroupId?: string;
-  Status?: number;
-  PageNumber?: number;
-  PageSize?: number;
-}
-
-export function mapSubmissionsResponse(response: ApiPagedResponse<ActivitySubmissionDto>) {
-  return normalizePagedResponse(response);
-}
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/core/api/api.types.ts
 ````typescript
 export interface ApiPageInfo {
@@ -11620,1101 +11643,6 @@ export function toHttpParams(source: Record<string, unknown> = {}): HttpParams {
   }
 
   return params;
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.css
-````css
-.activity-corrections {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 24px;
-}
-
-.activity-corrections__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.activity-corrections__header h2 {
-  margin: 0;
-  font-size: 1.6rem;
-}
-
-.description {
-  margin: 0.35rem 0 0;
-  color: var(--color-text-muted);
-}
-
-.breadcrumbs {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  margin: 0 0 0.35rem;
-}
-
-.activity-corrections__selector {
-  background: var(--color-surface);
-  border-radius: 14px;
-  padding: 16px 20px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.activity-corrections__selector label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.activity-corrections__selector select {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 12px;
-  padding: 10px;
-  font: inherit;
-  background: var(--color-background);
-}
-
-.activity-corrections__layout {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 18px;
-}
-
-.submissions-card,
-.submission-detail {
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 18px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  background: var(--color-surface);
-}
-
-.submissions-card header,
-.submission-detail header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  background: rgba(148, 163, 184, 0.18);
-  color: var(--color-text-primary);
-}
-
-.submissions-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.table-scroll {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.table-scroll table {
-  min-width: 520px;
-}
-
-.submissions-table th,
-.submissions-table td {
-  padding: 10px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-  text-align: left;
-}
-
-.submissions-table tr {
-  cursor: pointer;
-}
-
-.submissions-table tr.is-active {
-  background: rgba(59, 130, 246, 0.08);
-}
-
-.submission-detail__attachments ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.attachments-list li {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.attachment-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.attachment-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.attachment-video {
-  background: rgba(148, 163, 184, 0.12);
-  border-radius: 12px;
-  padding: 10px;
-}
-
-.attachment-video video {
-  width: 100%;
-  max-height: 320px;
-  border-radius: 10px;
-  background: #000;
-}
-
-.ghost-button,
-.primary-button,
-.button {
-  border-radius: 999px;
-  padding: 10px 22px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-primary);
-}
-
-.primary-button {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.button--ghost {
-  border-color: rgba(13, 110, 253, 0.28);
-}
-
-.button--ghost:hover {
-  background: rgba(13, 110, 253, 0.08);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field select,
-.field input,
-.field textarea {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 12px;
-  padding: 10px;
-  font: inherit;
-  background: var(--color-background);
-}
-
-.field--rubric .rubric-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
-  gap: 10px;
-}
-
-.multi-select {
-  position: relative;
-}
-
-.multi-select__trigger {
-  list-style: none;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 12px;
-  padding: 10px;
-  background: var(--color-background);
-  cursor: pointer;
-}
-
-.multi-select__trigger::-webkit-details-marker {
-  display: none;
-}
-
-.multi-select__menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 30;
-  background: var(--color-surface);
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 12px;
-  padding: 8px;
-  display: grid;
-  gap: 6px;
-  max-height: 220px;
-  overflow-y: auto;
-  box-shadow: 0 10px 28px -20px rgba(15, 23, 42, 0.35);
-}
-
-.multi-select__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 8px;
-}
-
-.multi-select__item:hover {
-  background: rgba(148, 163, 184, 0.12);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.muted {
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-.state {
-  padding: 16px;
-  border-radius: 14px;
-  text-align: center;
-  font-weight: 500;
-  background: rgba(148, 163, 184, 0.16);
-  color: var(--color-text-muted);
-}
-
-.state--info {
-  background: rgba(59, 130, 246, 0.12);
-  color: var(--color-primary);
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.16);
-  color: #b91c1c;
-}
-
-@media (max-width: 960px) {
-  .activity-corrections__layout {
-    grid-template-columns: 1fr;
-  }
-
-  .field--rubric .rubric-grid {
-    grid-template-columns: 1fr;
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.html
-````html
-<section class="activity-corrections">
-  <header class="activity-corrections__header">
-    <div>
-      <p class="breadcrumbs">Atividades / Correcoes</p>
-      <h2>{{ activityTitle() }}</h2>
-      <p class="description">Selecione a turma para revisar e corrigir as submissões.</p>
-    </div>
-    <button type="button" class="ghost-button" (click)="backToActivities()">Voltar</button>
-  </header>
-
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <section class="activity-corrections__selector">
-        <label>
-          <span>Turma</span>
-          <select
-            [value]="selectedGroup()?.activityId || ''"
-            (change)="selectGroup(($any($event.target).value || ''))"
-          >
-            <option *ngFor="let group of correctionGroups(); trackBy: trackByGroup" [value]="group.activityId">
-              {{ group.classGroupName }}
-            </option>
-          </select>
-        </label>
-      </section>
-
-      <section class="activity-corrections__layout">
-        <div class="submissions-card">
-          <header>
-            <div>
-              <h4>Submissões</h4>
-              <p>Listagem baseada na turma selecionada.</p>
-            </div>
-            <span class="badge">{{ submissions().length }} registro(s)</span>
-          </header>
-
-          <div class="state state--info" *ngIf="submissionsLoading()">Carregando submissões...</div>
-          <div class="state state--error" *ngIf="submissionsError() && !submissionsLoading()">{{ submissionsError() }}</div>
-
-          <ng-container *ngIf="!submissionsLoading() && !submissionsError()">
-            <ng-container *ngIf="submissions().length; else emptySubmissions">
-              <div class="table-scroll">
-                <table class="submissions-table">
-                  <thead>
-                    <tr>
-                      <th>Aluno</th>
-                      <th>Status</th>
-                      <th>Nota</th>
-                      <th>Enviado em</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      *ngFor="let submission of submissions(); trackBy: trackBySubmission"
-                      (click)="selectSubmission(submission.Id)"
-                      [class.is-active]="selectedSubmission()?.Id === submission.Id"
-                    >
-                      <td>{{ submissionStudentName(submission) }}</td>
-                      <td>{{ submissionStatusLabel(submission.Status) }}</td>
-                      <td>{{ submission.Score ?? '—' }}</td>
-                      <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </ng-container>
-          </ng-container>
-        </div>
-
-        <div class="submission-detail">
-          <header>
-            <div>
-              <h4>Correção</h4>
-            </div>
-          </header>
-
-          <div class="state state--info" *ngIf="submissionDetailsLoading()">Carregando detalhes...</div>
-          <ng-container *ngIf="!submissionDetailsLoading() && selectedSubmission(); else noSubmission">
-            <article>
-              <h5>Resposta do aluno</h5>
-              <div class="rich-content" [innerHTML]="safeHtml(selectedSubmission()?.TextAnswer)"></div>
-            </article>
-
-            <section class="submission-detail__attachments">
-              <h5>Anexos</h5>
-              <ng-container *ngIf="selectedSubmission()?.Attachments?.length; else noSubmissionAttachments">
-                <ul class="attachments-list">
-                  <li *ngFor="let attachment of selectedSubmission()?.Attachments">
-                    <div class="attachment-row">
-                      <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
-                      <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
-                    </div>
-                    <div class="attachment-actions">
-                      <button
-                        type="button"
-                        class="button button--ghost"
-                        (click)="downloadSubmissionAttachment(attachment.MediaResourceId, attachment.Media?.OriginalFileName)"
-                        [disabled]="downloadingAttachment() === attachment.MediaResourceId"
-                      >
-                        {{ downloadingAttachment() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                      </button>
-                      <button
-                        *ngIf="isVideoAttachment(attachment)"
-                        type="button"
-                        class="button button--ghost"
-                        (click)="loadVideo(attachment)"
-                        [disabled]="videoIsLoading(attachment.MediaResourceId) || videoUrlFor(attachment.MediaResourceId)"
-                      >
-                        {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : (videoUrlFor(attachment.MediaResourceId) ? 'Video carregado' : 'Carregar video') }}
-                      </button>
-                    </div>
-                    <div class="attachment-video" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
-                      <video controls [src]="videoUrl"></video>
-                    </div>
-                  </li>
-                </ul>
-              </ng-container>
-            </section>
-
-            <form class="grading-form" [formGroup]="gradingForm" (ngSubmit)="saveGrading()">
-              <div class="field">
-                <label for="status">Status</label>
-                <select id="status" formControlName="status">
-                  <option [ngValue]="option.value" *ngFor="let option of submissionStatusOptions">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="score">Nota</label>
-                <input id="score" type="number" step="0.1" formControlName="score" />
-              </div>
-
-              <div class="field field--rubric">
-                <label>Rubrica (1 a 5)</label>
-                <div class="rubric-grid">
-                  <input
-                    id="masteryScore"
-                    type="number"
-                    min="1"
-                    max="5"
-                    step="1"
-                    formControlName="masteryScore"
-                    placeholder="Dominio"
-                  />
-                  <input
-                    id="applicationScore"
-                    type="number"
-                    min="1"
-                    max="5"
-                    step="1"
-                    formControlName="applicationScore"
-                    placeholder="Aplicacao"
-                  />
-                  <input
-                    id="communicationScore"
-                    type="number"
-                    min="1"
-                    max="5"
-                    step="1"
-                    formControlName="communicationScore"
-                    placeholder="Comunicacao"
-                  />
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="recommendedAction">Acao recomendada</label>
-                <select id="recommendedAction" formControlName="recommendedAction">
-                  <option [ngValue]="null">Nao definida</option>
-                  <option [value]="option.value" *ngFor="let option of recommendedActionOptions">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="feedbackTags">Tags diagnosticas</label>
-                <details class="multi-select" [open]="isTagsDropdownOpen()" (toggle)="isTagsDropdownOpen.set($any($event.target).open)">
-                  <summary class="multi-select__trigger" (click)="$event.preventDefault(); toggleTagsDropdown()">
-                    {{ selectedTagsLabel() }}
-                  </summary>
-                  <div class="multi-select__menu">
-                    <label class="multi-select__item" *ngFor="let option of feedbackTagOptions">
-                      <input
-                        type="checkbox"
-                        [checked]="isTagSelected(option.value)"
-                        (change)="toggleFeedbackTag(option.value, $any($event.target).checked)"
-                      />
-                      <span>{{ option.label }}</span>
-                    </label>
-                  </div>
-                </details>
-              </div>
-
-              <div class="field">
-                <label for="feedback">Feedback</label>
-                <textarea id="feedback" rows="4" formControlName="feedback"></textarea>
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" class="primary-button" [disabled]="submissionDetailsLoading()">
-                  Salvar correção
-                </button>
-              </div>
-            </form>
-          </ng-container>
-        </div>
-      </section>
-    </ng-container>
-  </ng-container>
-</section>
-
-<ng-template #loadingState>
-  <div class="state state--info">Carregando correções...</div>
-</ng-template>
-
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
-
-<ng-template #emptySubmissions>
-  <div class="state state--info">Nenhuma submissão recebida para esta turma.</div>
-</ng-template>
-
-<ng-template #noSubmission>
-  <div class="state state--info">Selecione uma submissão para visualizar.</div>
-</ng-template>
-
-<ng-template #noSubmissionAttachments>
-  <p class="muted">Nenhum anexo enviado.</p>
-</ng-template>
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { forkJoin, of } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
-
-import { ActivitiesService } from '../../core/services/activities.service';
-import { ActivityListItem } from '../../core/api/activities.api';
-import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
-import { ActivitySubmissionDto } from '../../core/api/activity-submissions.api';
-import { CoursesService } from '../../core/services/courses.service';
-import { CourseDto } from '../../core/api/courses.api';
-import { AuthService } from '../../core/services/auth.service';
-import { MediaService } from '../../core/services/media.service';
-import { UsersService } from '../../core/services/users.service';
-
-interface CorrectionGroup {
-  activityId: string;
-  classGroupId: string;
-  classGroupName: string;
-}
-
-@Component({
-  selector: 'app-activity-corrections',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './activity-corrections.component.html',
-  styleUrl: './activity-corrections.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ActivityCorrectionsComponent {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly fb = inject(FormBuilder);
-  private readonly activitiesService = inject(ActivitiesService);
-  private readonly submissionsService = inject(ActivitySubmissionsService);
-  private readonly coursesService = inject(CoursesService);
-  private readonly authService = inject(AuthService);
-  private readonly mediaService = inject(MediaService);
-  private readonly usersService = inject(UsersService);
-  private readonly toastr = inject(ToastrService);
-  private readonly sanitizer = inject(DomSanitizer);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly course = signal<CourseDto | null>(null);
-  readonly activity = signal<ActivityListItem | null>(null);
-  readonly correctionGroups = signal<CorrectionGroup[]>([]);
-  readonly selectedGroup = signal<CorrectionGroup | null>(null);
-  readonly submissionsLoading = signal(false);
-  readonly submissionsError = signal<string | null>(null);
-  readonly submissions = signal<ActivitySubmissionDto[]>([]);
-  readonly selectedSubmission = signal<ActivitySubmissionDto | null>(null);
-  readonly submissionDetailsLoading = signal(false);
-  readonly downloadingAttachment = signal<string | null>(null);
-  readonly studentNames = signal<Map<string, string>>(new Map());
-  readonly videoUrls = signal<Record<string, string>>({});
-  readonly videoLoading = signal<Record<string, boolean>>({});
-
-  readonly submissionStatusOptions = [
-    { value: 2, label: 'Submetida' },
-    { value: 3, label: 'Corrigida' },
-    { value: 4, label: 'Devolvida' }
-  ];
-  private readonly submissionStatusLabels: Record<number, string> = {
-    1: 'Rascunho',
-    2: 'Submetida',
-    3: 'Corrigida',
-    4: 'Devolvida'
-  };
-  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
-  readonly feedbackTagOptions = [
-    { value: 'dificuldade_conceitual', label: 'Dificuldade conceitual' },
-    { value: 'erro_interpretacao', label: 'Erro de interpretacao' },
-    { value: 'faltou_referencia', label: 'Faltou referencia' },
-    { value: 'excelente_argumentacao', label: 'Excelente argumentacao' },
-    { value: 'boa_organizacao', label: 'Boa organizacao' }
-  ];
-  readonly recommendedActionOptions = [
-    { value: 'reforco', label: 'Reforco de conteudo' },
-    { value: 'refazer_atividade', label: 'Refazer atividade' },
-    { value: 'monitoria', label: 'Encaminhar para monitoria' },
-    { value: 'proximo_modulo', label: 'Liberar proximo modulo' }
-  ];
-  readonly isTagsDropdownOpen = signal(false);
-
-  readonly gradingForm = this.fb.group({
-    status: this.fb.control<number | null>(null, { validators: [Validators.required] }),
-    score: this.fb.control<string | null>(null),
-    masteryScore: this.fb.control<string | null>(null),
-    applicationScore: this.fb.control<string | null>(null),
-    communicationScore: this.fb.control<string | null>(null),
-    recommendedAction: this.fb.control<string | null>(null),
-    feedbackTags: this.fb.nonNullable.control<string[]>([]),
-    feedback: this.fb.control<string | null>('')
-  });
-
-  readonly activityTitle = computed(() => this.activity()?.title ?? 'Atividade');
-
-  constructor() {
-    this.route.paramMap
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        map(params => params.get('activityId')),
-        filter((activityId): activityId is string => Boolean(activityId)),
-        switchMap(activityId =>
-          this.activitiesService.getActivityById(activityId).pipe(
-            switchMap(activityDto =>
-              forkJoin({
-                activityDto: of(activityDto),
-                course: this.coursesService.getCourseById(activityDto.CourseId),
-                activities: this.activitiesService.getActivities({ CourseId: activityDto.CourseId })
-              })
-            )
-          )
-        )
-      )
-      .subscribe({
-        next: ({ activityDto, course, activities }) => {
-          this.course.set(course);
-          const current = activities.find(item => item.id === activityDto.Id);
-          if (!current) {
-            this.error.set('Atividade nao encontrada para correcoes.');
-            this.loading.set(false);
-            return;
-          }
-
-          this.activity.set(current);
-          const groups = this.buildCorrectionGroups(current, activities);
-          this.correctionGroups.set(groups);
-          const selected = groups.find(group => group.activityId === current.id) ?? groups[0] ?? null;
-          this.selectedGroup.set(selected);
-          if (selected) {
-            this.loadSubmissions(selected.activityId, selected.classGroupId);
-          }
-          this.loading.set(false);
-          this.error.set(null);
-        },
-        error: () => {
-          this.error.set('Nao foi possivel carregar as correcoes desta atividade.');
-          this.loading.set(false);
-        }
-      });
-
-    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
-  }
-
-  trackBySubmission(_: number, item: ActivitySubmissionDto): string {
-    return item.Id;
-  }
-
-  trackByGroup(_: number, item: CorrectionGroup): string {
-    return item.activityId;
-  }
-
-  backToActivities(): void {
-    this.router.navigate(['/activities']);
-  }
-
-  selectGroup(activityId: string): void {
-    const group = this.correctionGroups().find(item => item.activityId === activityId) ?? null;
-    if (!group || this.selectedGroup()?.activityId === group.activityId) {
-      return;
-    }
-    this.selectedGroup.set(group);
-    this.selectedSubmission.set(null);
-    this.resetVideoUrls();
-    this.loadSubmissions(group.activityId, group.classGroupId);
-  }
-
-  selectSubmission(submissionId: string): void {
-    if (!submissionId) {
-      return;
-    }
-    this.resetVideoUrls();
-    this.submissionDetailsLoading.set(true);
-    this.gradingForm.reset({
-      status: null,
-      score: null,
-      masteryScore: null,
-      applicationScore: null,
-      communicationScore: null,
-      recommendedAction: null,
-      feedbackTags: [],
-      feedback: ''
-    });
-    this.submissionsService
-      .getById(submissionId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: submission => {
-          this.selectedSubmission.set(submission);
-          this.patchGradingForm(submission);
-          if (submission.StudentName) {
-            const updated = new Map(this.studentNames());
-            updated.set(submission.StudentId, submission.StudentName);
-            this.studentNames.set(updated);
-          } else {
-            this.ensureStudentNames([submission.StudentId]);
-          }
-          this.submissionDetailsLoading.set(false);
-        },
-        error: () => {
-          this.submissionDetailsLoading.set(false);
-          this.toastr.error('Nao foi possivel carregar os detalhes da submissao.');
-        }
-      });
-  }
-
-  saveGrading(): void {
-    const submission = this.selectedSubmission();
-    const instructor = this.authService.currentUser();
-
-    if (!submission) {
-      this.toastr.warning('Selecione uma submissao para corrigir.');
-      return;
-    }
-
-    if (!instructor) {
-      this.toastr.error('Usuario nao autenticado.');
-      return;
-    }
-
-    if (this.gradingForm.invalid) {
-      this.gradingForm.markAllAsTouched();
-      return;
-    }
-
-    const parsedScore = this.parseScore(this.gradingForm.controls.score.value);
-    if (parsedScore === null && this.gradingForm.controls.score.value) {
-      this.toastr.error('Informe um valor numerico valido para a nota.');
-      return;
-    }
-
-    const masteryScore = this.parseRubricScore(this.gradingForm.controls.masteryScore.value);
-    const applicationScore = this.parseRubricScore(this.gradingForm.controls.applicationScore.value);
-    const communicationScore = this.parseRubricScore(this.gradingForm.controls.communicationScore.value);
-    if (
-      (masteryScore === null && this.gradingForm.controls.masteryScore.value) ||
-      (applicationScore === null && this.gradingForm.controls.applicationScore.value) ||
-      (communicationScore === null && this.gradingForm.controls.communicationScore.value)
-    ) {
-      this.toastr.error('As notas dos criterios devem estar entre 1 e 5.');
-      return;
-    }
-
-    const payload = {
-      Status: this.gradingForm.controls.status.value ?? 3,
-      Score: parsedScore ?? undefined,
-      GradedById: instructor.id,
-      MasteryScore: masteryScore ?? undefined,
-      ApplicationScore: applicationScore ?? undefined,
-      CommunicationScore: communicationScore ?? undefined,
-      FeedbackTags: this.joinFeedbackTags(this.gradingForm.controls.feedbackTags.value),
-      RecommendedAction: this.gradingForm.controls.recommendedAction.value?.trim() || undefined,
-      Feedback: this.gradingForm.controls.feedback.value?.trim() || undefined,
-      TextAnswer: submission.TextAnswer,
-      Attachments: (submission.Attachments ?? []).map(attachment => ({
-        MediaResourceId: attachment.MediaResourceId,
-        IsPrimary: attachment.IsPrimary,
-        IsVideo: attachment.IsVideo
-      }))
-    };
-
-    this.submissionDetailsLoading.set(true);
-    this.submissionsService
-      .updateSubmission(submission.Id, payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: updated => {
-          this.toastr.success('Correcao salva com sucesso.');
-          this.selectedSubmission.set(updated);
-          this.patchGradingForm(updated);
-          this.submissionDetailsLoading.set(false);
-          const group = this.selectedGroup();
-          if (group) {
-            this.loadSubmissions(group.activityId, group.classGroupId);
-          }
-        },
-        error: () => {
-          this.submissionDetailsLoading.set(false);
-          this.toastr.error('Nao foi possivel salvar a correcao.');
-        }
-      });
-  }
-
-  submissionStatusLabel(status: number): string {
-    return this.submissionStatusLabels[status] ?? 'Desconhecido';
-  }
-
-  submissionStudentName(submission: ActivitySubmissionDto): string {
-    return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
-  }
-
-  downloadSubmissionAttachment(attachmentId: string, fileName?: string): void {
-    if (!attachmentId || this.downloadingAttachment() === attachmentId) {
-      return;
-    }
-
-    this.downloadingAttachment.set(attachmentId);
-    this.mediaService
-      .download(attachmentId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = fileName || 'anexo';
-          anchor.click();
-          URL.revokeObjectURL(url);
-          this.downloadingAttachment.set(null);
-        },
-        error: () => {
-          this.downloadingAttachment.set(null);
-          this.toastr.error('Nao foi possivel baixar o anexo.');
-        }
-      });
-  }
-
-  isVideoAttachment(attachment: ActivitySubmissionDto['Attachments'][number]): boolean {
-    if (attachment.IsVideo) {
-      return true;
-    }
-
-    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
-    if (contentType.startsWith('video/')) {
-      return true;
-    }
-
-    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
-    const extension = fileName.split('.').pop() ?? '';
-    return this.videoExtensions.includes(extension);
-  }
-
-  videoUrlFor(attachmentId: string): string | null {
-    return this.videoUrls()[attachmentId] ?? null;
-  }
-
-  videoIsLoading(attachmentId: string): boolean {
-    return Boolean(this.videoLoading()[attachmentId]);
-  }
-
-  loadVideo(attachment: ActivitySubmissionDto['Attachments'][number]): void {
-    if (!attachment?.MediaResourceId || this.videoIsLoading(attachment.MediaResourceId)) {
-      return;
-    }
-
-    if (this.videoUrlFor(attachment.MediaResourceId)) {
-      return;
-    }
-
-    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
-
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        },
-        error: () => {
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-          this.toastr.error('Nao foi possivel carregar o video.');
-        }
-      });
-  }
-
-  safeHtml(content?: string | null): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
-  }
-
-  private loadSubmissions(activityId: string, classGroupId: string): void {
-    this.submissionsLoading.set(true);
-    this.submissionsError.set(null);
-    this.submissionsService
-      .getSubmissions({ ActivityId: activityId, ClassGroupId: classGroupId, PageSize: 100 })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: response => {
-          this.submissions.set(response.items);
-          this.ensureStudentNames(response.items.map(item => item.StudentId));
-          this.submissionsLoading.set(false);
-          if (response.items.length) {
-            this.selectSubmission(response.items[0].Id);
-          } else {
-            this.selectedSubmission.set(null);
-          }
-        },
-        error: () => {
-          this.submissionsLoading.set(false);
-          this.submissionsError.set('Nao foi possivel carregar as submissões desta atividade.');
-          this.submissions.set([]);
-          this.selectedSubmission.set(null);
-        }
-      });
-  }
-
-  private patchGradingForm(submission: ActivitySubmissionDto): void {
-    this.gradingForm.patchValue({
-      status: submission.Status ?? 2,
-      score: submission.Score != null ? String(submission.Score) : null,
-      masteryScore: submission.MasteryScore != null ? String(submission.MasteryScore) : null,
-      applicationScore: submission.ApplicationScore != null ? String(submission.ApplicationScore) : null,
-      communicationScore: submission.CommunicationScore != null ? String(submission.CommunicationScore) : null,
-      recommendedAction: submission.RecommendedAction ?? null,
-      feedbackTags: this.parseFeedbackTags(submission.FeedbackTags),
-      feedback: submission.Feedback ?? ''
-    });
-  }
-
-  private parseScore(value: string | null): number | null {
-    if (!value) {
-      return null;
-    }
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      return null;
-    }
-    return parsed;
-  }
-
-  private parseRubricScore(value: string | null): number | null {
-    if (!value) {
-      return null;
-    }
-    const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
-      return null;
-    }
-    return parsed;
-  }
-
-  private parseFeedbackTags(value?: string): string[] {
-    if (!value) {
-      return [];
-    }
-    return value
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
-  }
-
-  private joinFeedbackTags(tags: string[]): string | undefined {
-    if (!tags?.length) {
-      return undefined;
-    }
-    return tags.join(',');
-  }
-
-  toggleTagsDropdown(): void {
-    this.isTagsDropdownOpen.update(value => !value);
-  }
-
-  closeTagsDropdown(): void {
-    this.isTagsDropdownOpen.set(false);
-  }
-
-  isTagSelected(tag: string): boolean {
-    return this.gradingForm.controls.feedbackTags.value.includes(tag);
-  }
-
-  toggleFeedbackTag(tag: string, checked: boolean): void {
-    const current = this.gradingForm.controls.feedbackTags.value;
-    if (checked) {
-      if (!current.includes(tag)) {
-        this.gradingForm.controls.feedbackTags.setValue([...current, tag]);
-      }
-      return;
-    }
-
-    this.gradingForm.controls.feedbackTags.setValue(current.filter(item => item !== tag));
-  }
-
-  selectedTagsLabel(): string {
-    const selected = this.gradingForm.controls.feedbackTags.value;
-    if (!selected.length) {
-      return 'Selecione as tags';
-    }
-
-    return this.feedbackTagOptions
-      .filter(option => selected.includes(option.value))
-      .map(option => option.label)
-      .join(', ');
-  }
-
-  private ensureStudentNames(studentIds: string[]): void {
-    const cache = this.studentNames();
-    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
-    if (!pending.length) {
-      return;
-    }
-
-    forkJoin(
-      pending.map(id =>
-        this.usersService.getById(id).pipe(catchError(() => of(null)))
-      )
-    )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(users => {
-        const updated = new Map(this.studentNames());
-        users.forEach(user => {
-          if (user) {
-            updated.set(user.Id, user.FullName || user.Email || 'Aluno');
-          }
-        });
-        this.studentNames.set(updated);
-      });
-  }
-
-  private buildCorrectionGroups(current: ActivityListItem, activities: ActivityListItem[]): CorrectionGroup[] {
-    const signature = this.activitySignature(current);
-    const groups = activities
-      .filter(item => this.activitySignature(item) === signature)
-      .map(item => ({
-        activityId: item.id,
-        classGroupId: item.classGroupId,
-        classGroupName: item.classGroupName || 'Turma nao informada'
-      }));
-
-    if (groups.length) {
-      return groups;
-    }
-
-    return [
-      {
-        activityId: current.id,
-        classGroupId: current.classGroupId,
-        classGroupName: current.classGroupName || 'Turma nao informada'
-      }
-    ];
-  }
-
-  private activitySignature(activity: ActivityListItem): string {
-    return [
-      activity.courseId,
-      activity.title,
-      activity.dueDateLabel,
-      String(activity.allowLate),
-      String(activity.attachments)
-    ].join('|');
-  }
-
-  private resetVideoUrls(): void {
-    this.cleanupVideoUrls();
-    this.videoUrls.set({});
-    this.videoLoading.set({});
-  }
-
-  private cleanupVideoUrls(): void {
-    const urls = Object.values(this.videoUrls());
-    urls.forEach(url => URL.revokeObjectURL(url));
-  }
 }
 ````
 
@@ -15079,41 +14007,6 @@ public class ActivityAudience : AuditableEntity
 }
 ````
 
-## File: src/ProjetoFinal.Domain/Entities/ActivitySubmission.cs
-````csharp
-using System;
-using System.Collections.Generic;
-using ProjetoFinal.Domain.Enums;
-
-namespace ProjetoFinal.Domain.Entities;
-
-public class ActivitySubmission : AuditableEntity
-{
-    public Guid ActivityId { get; set; }
-    public Guid StudentId { get; set; }
-    public Guid? ClassGroupId { get; set; }
-    public SubmissionStatus Status { get; set; } = SubmissionStatus.Submitted;
-    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? GradedAt { get; set; }
-    public Guid? GradedById { get; set; }
-    public decimal? Score { get; set; }
-    public string? Feedback { get; set; }
-    public int? MasteryScore { get; set; }
-    public int? ApplicationScore { get; set; }
-    public int? CommunicationScore { get; set; }
-    public string? FeedbackTags { get; set; }
-    public string? RecommendedAction { get; set; }
-    public string? TextAnswer { get; set; }
-
-    public Activity? Activity { get; set; }
-    public ClassGroup? ClassGroup { get; set; }
-    public User? Student { get; set; }
-    public User? GradedBy { get; set; }
-    public ICollection<SubmissionAttachment> Attachments { get; set; } = new List<SubmissionAttachment>();
-    public ICollection<VideoAnnotation> VideoAnnotations { get; set; } = new List<VideoAnnotation>();
-}
-````
-
 ## File: src/ProjetoFinal.Domain/Entities/AuditableEntity.cs
 ````csharp
 using System;
@@ -16303,79 +15196,6 @@ public class ActivityAudienceMap : IContextEntityMap<ActivityAudience>
             .WithMany(p => p.ActivityAudiences)
             .HasForeignKey(p => p.ClassGroupId)
             .OnDelete(DeleteBehavior.Cascade);
-    }
-}
-````
-
-## File: src/ProjetoFinal.Infra.Data/Configurations/ActivitySubmissionMap.cs
-````csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Infra.Data.Interfaces;
-
-namespace ProjetoFinal.Infra.Data.Configurations;
-
-public class ActivitySubmissionMap : IContextEntityMap<ActivitySubmission>
-{
-    public void Configure(EntityTypeBuilder<ActivitySubmission> builder)
-    {
-        builder.ToTable("ActivitySubmissions");
-
-        builder.HasKey(p => p.Id);
-        builder.Property(p => p.Id).ValueGeneratedNever();
-
-        builder.Property(p => p.Status)
-            .HasConversion<int>()
-            .IsRequired();
-
-        builder.Property(p => p.Score)
-            .HasPrecision(10, 2);
-
-        builder.Property(p => p.Feedback)
-            .HasMaxLength(2000);
-
-        builder.Property(p => p.FeedbackTags)
-            .HasMaxLength(500);
-
-        builder.Property(p => p.RecommendedAction)
-            .HasMaxLength(120);
-
-        builder.Property(p => p.TextAnswer)
-            .HasMaxLength(4000);
-
-        builder.Property(p => p.SubmittedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.HasIndex(p => new { p.ActivityId, p.StudentId }).IsUnique();
-
-        builder.HasOne(p => p.Activity)
-            .WithMany(p => p.Submissions)
-            .HasForeignKey(p => p.ActivityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(p => p.ClassGroup)
-            .WithMany()
-            .HasForeignKey(p => p.ClassGroupId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(p => p.Student)
-            .WithMany()
-            .HasForeignKey(p => p.StudentId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(p => p.GradedBy)
-            .WithMany()
-            .HasForeignKey(p => p.GradedById)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasMany(p => p.Attachments)
-            .WithOne(p => p.Submission)
-            .HasForeignKey(p => p.SubmissionId);
-
-        builder.HasMany(p => p.VideoAnnotations)
-            .WithOne(p => p.Submission)
-            .HasForeignKey(p => p.SubmissionId);
     }
 }
 ````
@@ -18744,19 +17564,18 @@ public static class DataSeeder
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.ClientApp\ProjetoFinal.ClientApp.esproj" />
         <ProjectReference Include="..\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="wwwroot\" />
     </ItemGroup>
-    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+<!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />-->
         <!-- O postbuild do ClientApp ja copia os artefatos para ProjetoFinal.Api/wwwroot -->
-    </Target>
+<!--    </Target>-->
 
 </Project>
 ````
@@ -18880,6 +17699,248 @@ public class ActivityAppService : DefaultService<Activity, ActivityDto, Activity
                 ClassGroupId = classGroupId
             }
         };
+    }
+}
+````
+
+## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivitySubmissionAppService.cs
+````csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Dto.Activities;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+using Talonario.Domain.Repositories;
+
+namespace ProjetoFinal.Aplication.Services.Services.Activities;
+
+public class ActivitySubmissionAppService : IActivitySubmissionAppService
+{
+    private readonly IActivitySubmissionRepository _submissionRepository;
+    private readonly IActivityRepository _activityRepository;
+    private readonly IVideoAnnotationRepository _videoAnnotationRepository;
+    private readonly IAutomapApi _mapper;
+    private readonly IUnityOfWork _unityOfWork;
+
+    public ActivitySubmissionAppService(
+        IActivitySubmissionRepository submissionRepository,
+        IActivityRepository activityRepository,
+        IVideoAnnotationRepository videoAnnotationRepository,
+        IUnityOfWork unityOfWork,
+        IAutomapApi mapper)
+    {
+        _submissionRepository = submissionRepository;
+        _activityRepository = activityRepository;
+        _videoAnnotationRepository = videoAnnotationRepository;
+        _unityOfWork = unityOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<ActivitySubmissionDto> SubmitAsync(ActivitySubmissionCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var activity = await _activityRepository.FindAsync(dto.ActivityId, cancellationToken);
+        if (activity is null)
+        {
+            throw new BusinessException("Atividade nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (activity.DueDate.HasValue && DateTime.UtcNow > activity.DueDate.Value && !activity.AllowLateSubmissions)
+        {
+            throw new BusinessException("Prazo para envio encerrado.", ECodigo.NaoPermitido);
+        }
+
+        var existingSubmission = await _submissionRepository.FirstOrDefaultByPredicateAsync(
+            submission => submission.ActivityId == dto.ActivityId && submission.StudentId == dto.StudentId,
+            cancellationToken);
+
+        if (existingSubmission is not null)
+        {
+            throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
+        }
+
+        var entity = new ActivitySubmission
+        {
+            ActivityId = dto.ActivityId,
+            StudentId = dto.StudentId,
+            ClassGroupId = dto.ClassGroupId,
+            Status = SubmissionStatus.Submitted,
+            SubmittedAt = DateTime.UtcNow,
+            TextAnswer = dto.TextAnswer,
+            Attachments = BuildAttachments(dto.Attachments)
+        };
+
+        var created = await _submissionRepository.AddAsync(entity, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        var withDetails = await _submissionRepository.GetWithDetailsAsync(created.Id, cancellationToken);
+        return _mapper.MapFrom<ActivitySubmissionDto>(withDetails ?? created);
+    }
+
+    public async Task<ActivitySubmissionDto> UpdateAsync(Guid submissionId, ActivitySubmissionUpdateDto dto, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        submission.Status = dto.Status;
+        submission.Score = dto.Score;
+        submission.GradedById = dto.GradedById;
+        submission.Feedback = dto.Feedback;
+        submission.MasteryScore = ValidateRubricScore(dto.MasteryScore, nameof(dto.MasteryScore));
+        submission.ApplicationScore = ValidateRubricScore(dto.ApplicationScore, nameof(dto.ApplicationScore));
+        submission.CommunicationScore = ValidateRubricScore(dto.CommunicationScore, nameof(dto.CommunicationScore));
+        submission.FeedbackTags = NormalizeFeedbackTags(dto.FeedbackTags);
+        submission.RecommendedAction = string.IsNullOrWhiteSpace(dto.RecommendedAction)
+            ? null
+            : dto.RecommendedAction.Trim();
+        submission.TextAnswer = dto.TextAnswer;
+        submission.GradedAt = dto.Score.HasValue ? DateTime.UtcNow : submission.GradedAt;
+        submission.Attachments.Clear();
+        foreach (var attachment in BuildAttachments(dto.Attachments))
+        {
+            submission.Attachments.Add(attachment);
+        }
+        submission.UpdatedAt = DateTime.UtcNow;
+
+        await _submissionRepository.UpdateAsync(submission, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        var updated = await _submissionRepository.GetWithDetailsAsync(submission.Id, cancellationToken);
+        return _mapper.MapFrom<ActivitySubmissionDto>(updated ?? submission);
+    }
+
+    public async Task<ActivitySubmissionDto> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        return _mapper.MapFrom<ActivitySubmissionDto>(submission);
+    }
+
+    public async Task<PagedResultDto<ActivitySubmissionDto>> GetAllAsync(ActivitySubmissionFilter filter, CancellationToken cancellationToken = default)
+    {
+        var result = await _submissionRepository.GetAllAsync(filter, cancellationToken);
+        return _mapper.MapFrom<PagedResultDto<ActivitySubmissionDto>>(result);
+    }
+
+    public async Task<VideoAnnotationDto> AddAnnotationAsync(VideoAnnotationCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(dto.SubmissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        var attachment = submission.Attachments.FirstOrDefault(a => a.Id == dto.AttachmentId);
+        if (attachment is null || !attachment.IsVideo)
+        {
+            throw new BusinessException("Somente videos permitem anotacoes temporais.", ECodigo.MaRequisicao);
+        }
+
+        var annotation = new VideoAnnotation
+        {
+            SubmissionId = dto.SubmissionId,
+            AttachmentId = dto.AttachmentId,
+            CreatedById = dto.CreatedById,
+            TimeMarkerSeconds = dto.TimeMarkerSeconds,
+            Comment = dto.Comment,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var created = await _videoAnnotationRepository.AddAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        return _mapper.MapFrom<VideoAnnotationDto>(created);
+    }
+
+    public async Task<VideoAnnotationDto> UpdateAnnotationAsync(Guid annotationId, VideoAnnotationUpdateDto dto, CancellationToken cancellationToken = default)
+    {
+        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
+        if (annotation is null)
+        {
+            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        annotation.TimeMarkerSeconds = dto.TimeMarkerSeconds;
+        annotation.Comment = dto.Comment;
+        annotation.EditedAt = DateTime.UtcNow;
+
+        await _videoAnnotationRepository.UpdateAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        return _mapper.MapFrom<VideoAnnotationDto>(annotation);
+    }
+
+    public async Task DeleteAnnotationAsync(Guid annotationId, CancellationToken cancellationToken = default)
+    {
+        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
+        if (annotation is null)
+        {
+            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        await _videoAnnotationRepository.DeleteAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private static List<SubmissionAttachment> BuildAttachments(IList<SubmissionAttachmentCreateDto> attachments)
+    {
+        attachments ??= new List<SubmissionAttachmentCreateDto>();
+        var result = new List<SubmissionAttachment>();
+        foreach (var attachmentDto in attachments)
+        {
+            result.Add(new SubmissionAttachment
+            {
+                MediaResourceId = attachmentDto.MediaResourceId,
+                IsPrimary = attachmentDto.IsPrimary,
+                IsVideo = attachmentDto.IsVideo
+            });
+        }
+
+        return result;
+    }
+
+    private static int? ValidateRubricScore(int? value, string fieldName)
+    {
+        if (!value.HasValue)
+        {
+            return null;
+        }
+
+        if (value.Value < 1 || value.Value > 5)
+        {
+            throw new BusinessException($"{fieldName} deve estar entre 1 e 5.", ECodigo.MaRequisicao);
+        }
+
+        return value.Value;
+    }
+
+    private static string? NormalizeFeedbackTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+        {
+            return null;
+        }
+
+        var normalized = tags
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        return string.Join(",", normalized);
     }
 }
 ````
@@ -19512,27 +18573,19 @@ public class ActivityAttachmentDto
 }
 ````
 
-## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionDto.cs
+## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionUpdateDto.cs
 ````csharp
 using System;
 using System.Collections.Generic;
-using ProjetoFinal.Application.Contracts.Dto.Media;
 using ProjetoFinal.Domain.Enums;
 
 namespace ProjetoFinal.Application.Contracts.Dto.Activities;
 
-public class ActivitySubmissionDto
+public class ActivitySubmissionUpdateDto
 {
-    public Guid Id { get; set; }
-    public Guid ActivityId { get; set; }
-    public Guid StudentId { get; set; }
-    public string? StudentName { get; set; }
-    public Guid? ClassGroupId { get; set; }
     public SubmissionStatus Status { get; set; }
-    public DateTime SubmittedAt { get; set; }
-    public DateTime? GradedAt { get; set; }
-    public Guid? GradedById { get; set; }
     public decimal? Score { get; set; }
+    public Guid? GradedById { get; set; }
     public string? Feedback { get; set; }
     public int? MasteryScore { get; set; }
     public int? ApplicationScore { get; set; }
@@ -19540,29 +18593,7 @@ public class ActivitySubmissionDto
     public string? FeedbackTags { get; set; }
     public string? RecommendedAction { get; set; }
     public string? TextAnswer { get; set; }
-
-    public IList<SubmissionAttachmentDto> Attachments { get; set; } = new List<SubmissionAttachmentDto>();
-    public IList<VideoAnnotationDto> VideoAnnotations { get; set; } = new List<VideoAnnotationDto>();
-}
-
-public class SubmissionAttachmentDto
-{
-    public Guid Id { get; set; }
-    public Guid MediaResourceId { get; set; }
-    public bool IsPrimary { get; set; }
-    public bool IsVideo { get; set; }
-    public MediaResourceDto? Media { get; set; }
-}
-
-public class VideoAnnotationDto
-{
-    public Guid Id { get; set; }
-    public Guid SubmissionId { get; set; }
-    public Guid AttachmentId { get; set; }
-    public Guid CreatedById { get; set; }
-    public double TimeMarkerSeconds { get; set; }
-    public string Comment { get; set; } = string.Empty;
-    public DateTime? EditedAt { get; set; }
+    public IList<SubmissionAttachmentCreateDto> Attachments { get; set; } = new List<SubmissionAttachmentCreateDto>();
 }
 ````
 
@@ -19729,6 +18760,82 @@ namespace ProjetoFinal.Application.Contracts.Services;
 public interface IMediaResourceAppService : IDefaultService<MediaResourceDto, MediaResourceCreateDto, MediaResourceCreateDto, MediaResourceFilter, Guid>
 {
     Task<MediaResourceDto?> FindByShaAsync(string sha256, CancellationToken cancellationToken = default);
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/api/activity-submissions.api.ts
+````typescript
+import { ApiPagedResponse, normalizePagedResponse } from './api.types';
+import { MediaResource } from './media.api';
+
+export interface ActivitySubmissionDto {
+  Id: string;
+  ActivityId: string;
+  StudentId: string;
+  StudentName?: string;
+  ClassGroupId?: string;
+  Status: number;
+  SubmittedAt: string;
+  GradedAt?: string;
+  GradedById?: string;
+  Score?: number;
+  Feedback?: string;
+  MasteryScore?: number;
+  ApplicationScore?: number;
+  CommunicationScore?: number;
+  FeedbackTags?: string;
+  RecommendedAction?: string;
+  TextAnswer?: string;
+  Attachments: SubmissionAttachmentDto[];
+}
+
+export interface SubmissionAttachmentDto {
+  Id: string;
+  MediaResourceId: string;
+  IsPrimary: boolean;
+  IsVideo: boolean;
+  Media?: MediaResource;
+}
+
+export interface ActivitySubmissionCreatePayload {
+  ActivityId: string;
+  StudentId: string;
+  ClassGroupId?: string;
+  TextAnswer?: string;
+  Attachments: SubmissionAttachmentCreatePayload[];
+}
+
+export interface ActivitySubmissionUpdatePayload {
+  Status: number;
+  Score?: number;
+  GradedById: string;
+  Feedback?: string;
+  MasteryScore?: number;
+  ApplicationScore?: number;
+  CommunicationScore?: number;
+  FeedbackTags?: string;
+  RecommendedAction?: string;
+  TextAnswer?: string;
+  Attachments: SubmissionAttachmentCreatePayload[];
+}
+
+export interface SubmissionAttachmentCreatePayload {
+  MediaResourceId: string;
+  IsPrimary: boolean;
+  IsVideo: boolean;
+}
+
+export interface ActivitySubmissionFilter {
+  ActivityId?: string;
+  StudentId?: string;
+  ClassGroupId?: string;
+  Status?: number;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export function mapSubmissionsResponse(response: ApiPagedResponse<ActivitySubmissionDto>) {
+  return normalizePagedResponse(response);
 }
 ````
 
@@ -19943,6 +19050,1101 @@ export class ClassGroupsService {
     return this.http
       .post<ClassEnrollmentDto>(`${this.baseUrl}/class-groups/${classGroupId}/enrollments`, payload)
       .pipe(catchError(error => throwError(() => error)));
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.css
+````css
+.activity-corrections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 24px;
+}
+
+.activity-corrections__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-corrections__header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.description {
+  margin: 0.35rem 0 0;
+  color: var(--color-text-muted);
+}
+
+.breadcrumbs {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.35rem;
+}
+
+.activity-corrections__selector {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 16px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.activity-corrections__selector label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.activity-corrections__selector select {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 10px;
+  font: inherit;
+  background: var(--color-background);
+}
+
+.activity-corrections__layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 18px;
+}
+
+.submissions-card,
+.submission-detail {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--color-surface);
+}
+
+.submissions-card header,
+.submission-detail header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--color-text-primary);
+}
+
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-scroll table {
+  min-width: 520px;
+}
+
+.submissions-table th,
+.submissions-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  text-align: left;
+}
+
+.submissions-table tr {
+  cursor: pointer;
+}
+
+.submissions-table tr.is-active {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.submission-detail__attachments ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attachments-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attachment-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attachment-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.attachment-video {
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.attachment-video video {
+  width: 100%;
+  max-height: 320px;
+  border-radius: 10px;
+  background: #000;
+}
+
+.ghost-button,
+.primary-button,
+.button {
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-primary);
+}
+
+.primary-button {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.button--ghost {
+  border-color: rgba(13, 110, 253, 0.28);
+}
+
+.button--ghost:hover {
+  background: rgba(13, 110, 253, 0.08);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field select,
+.field input,
+.field textarea {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 10px;
+  font: inherit;
+  background: var(--color-background);
+}
+
+.field--rubric .rubric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.multi-select {
+  position: relative;
+}
+
+.multi-select__trigger {
+  list-style: none;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--color-background);
+  cursor: pointer;
+}
+
+.multi-select__trigger::-webkit-details-marker {
+  display: none;
+}
+
+.multi-select__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--color-surface);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 10px 28px -20px rgba(15, 23, 42, 0.35);
+}
+
+.multi-select__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.multi-select__item:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.muted {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.state {
+  padding: 16px;
+  border-radius: 14px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--color-text-muted);
+}
+
+.state--info {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--color-primary);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.16);
+  color: #b91c1c;
+}
+
+@media (max-width: 960px) {
+  .activity-corrections__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .field--rubric .rubric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.html
+````html
+<section class="activity-corrections">
+  <header class="activity-corrections__header">
+    <div>
+      <p class="breadcrumbs">Atividades / Correcoes</p>
+      <h2>{{ activityTitle() }}</h2>
+      <p class="description">Selecione a turma para revisar e corrigir as submissões.</p>
+    </div>
+    <button type="button" class="ghost-button" (click)="backToActivities()">Voltar</button>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <section class="activity-corrections__selector">
+        <label>
+          <span>Turma</span>
+          <select
+            [value]="selectedGroup()?.activityId || ''"
+            (change)="selectGroup(($any($event.target).value || ''))"
+          >
+            <option *ngFor="let group of correctionGroups(); trackBy: trackByGroup" [value]="group.activityId">
+              {{ group.classGroupName }}
+            </option>
+          </select>
+        </label>
+      </section>
+
+      <section class="activity-corrections__layout">
+        <div class="submissions-card">
+          <header>
+            <div>
+              <h4>Submissões</h4>
+              <p>Listagem baseada na turma selecionada.</p>
+            </div>
+            <span class="badge">{{ submissions().length }} registro(s)</span>
+          </header>
+
+          <div class="state state--info" *ngIf="submissionsLoading()">Carregando submissões...</div>
+          <div class="state state--error" *ngIf="submissionsError() && !submissionsLoading()">{{ submissionsError() }}</div>
+
+          <ng-container *ngIf="!submissionsLoading() && !submissionsError()">
+            <ng-container *ngIf="submissions().length; else emptySubmissions">
+              <div class="table-scroll">
+                <table class="submissions-table">
+                  <thead>
+                    <tr>
+                      <th>Aluno</th>
+                      <th>Status</th>
+                      <th>Nota</th>
+                      <th>Enviado em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let submission of submissions(); trackBy: trackBySubmission"
+                      (click)="selectSubmission(submission.Id)"
+                      [class.is-active]="selectedSubmission()?.Id === submission.Id"
+                    >
+                      <td>{{ submissionStudentName(submission) }}</td>
+                      <td>{{ submissionStatusLabel(submission.Status) }}</td>
+                      <td>{{ submission.Score ?? '—' }}</td>
+                      <td>{{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+
+        <div class="submission-detail">
+          <header>
+            <div>
+              <h4>Correção</h4>
+            </div>
+          </header>
+
+          <div class="state state--info" *ngIf="submissionDetailsLoading()">Carregando detalhes...</div>
+          <ng-container *ngIf="!submissionDetailsLoading() && selectedSubmission(); else noSubmission">
+            <article>
+              <h5>Resposta do aluno</h5>
+              <div class="rich-content" [innerHTML]="safeHtml(selectedSubmission()?.TextAnswer)"></div>
+            </article>
+
+            <section class="submission-detail__attachments">
+              <h5>Anexos</h5>
+              <ng-container *ngIf="selectedSubmission()?.Attachments?.length; else noSubmissionAttachments">
+                <ul class="attachments-list">
+                  <li *ngFor="let attachment of selectedSubmission()?.Attachments">
+                    <div class="attachment-row">
+                      <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
+                      <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+                    </div>
+                    <div class="attachment-actions">
+                      <button
+                        type="button"
+                        class="button button--ghost"
+                        (click)="downloadSubmissionAttachment(attachment.MediaResourceId, attachment.Media?.OriginalFileName)"
+                        [disabled]="downloadingAttachment() === attachment.MediaResourceId"
+                      >
+                        {{ downloadingAttachment() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                      </button>
+                      <button
+                        *ngIf="isVideoAttachment(attachment)"
+                        type="button"
+                        class="button button--ghost"
+                        (click)="loadVideo(attachment)"
+                        [disabled]="videoIsLoading(attachment.MediaResourceId) || videoUrlFor(attachment.MediaResourceId)"
+                      >
+                        {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : (videoUrlFor(attachment.MediaResourceId) ? 'Video carregado' : 'Carregar video') }}
+                      </button>
+                    </div>
+                    <div class="attachment-video" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
+                      <video controls [src]="videoUrl"></video>
+                    </div>
+                  </li>
+                </ul>
+              </ng-container>
+            </section>
+
+            <form class="grading-form" [formGroup]="gradingForm" (ngSubmit)="saveGrading()">
+              <div class="field">
+                <label for="status">Status</label>
+                <select id="status" formControlName="status">
+                  <option [ngValue]="option.value" *ngFor="let option of submissionStatusOptions">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="score">Nota</label>
+                <input id="score" type="number" step="0.1" formControlName="score" />
+              </div>
+
+              <div class="field field--rubric">
+                <label>Rubrica (1 a 5)</label>
+                <div class="rubric-grid">
+                  <input
+                    id="masteryScore"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="1"
+                    formControlName="masteryScore"
+                    placeholder="Dominio"
+                  />
+                  <input
+                    id="applicationScore"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="1"
+                    formControlName="applicationScore"
+                    placeholder="Aplicacao"
+                  />
+                  <input
+                    id="communicationScore"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="1"
+                    formControlName="communicationScore"
+                    placeholder="Comunicacao"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="recommendedAction">Acao recomendada</label>
+                <select id="recommendedAction" formControlName="recommendedAction">
+                  <option [ngValue]="null">Nao definida</option>
+                  <option [value]="option.value" *ngFor="let option of recommendedActionOptions">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="feedbackTags">Tags diagnosticas</label>
+                <details class="multi-select" [open]="isTagsDropdownOpen()" (toggle)="isTagsDropdownOpen.set($any($event.target).open)">
+                  <summary class="multi-select__trigger" (click)="$event.preventDefault(); toggleTagsDropdown()">
+                    {{ selectedTagsLabel() }}
+                  </summary>
+                  <div class="multi-select__menu">
+                    <label class="multi-select__item" *ngFor="let option of feedbackTagOptions">
+                      <input
+                        type="checkbox"
+                        [checked]="isTagSelected(option.value)"
+                        (change)="toggleFeedbackTag(option.value, $any($event.target).checked)"
+                      />
+                      <span>{{ option.label }}</span>
+                    </label>
+                  </div>
+                </details>
+              </div>
+
+              <div class="field">
+                <label for="feedback">Feedback</label>
+                <textarea id="feedback" rows="4" formControlName="feedback"></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="primary-button" [disabled]="submissionDetailsLoading()">
+                  Salvar correção
+                </button>
+              </div>
+            </form>
+          </ng-container>
+        </div>
+      </section>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando correções...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptySubmissions>
+  <div class="state state--info">Nenhuma submissão recebida para esta turma.</div>
+</ng-template>
+
+<ng-template #noSubmission>
+  <div class="state state--info">Selecione uma submissão para visualizar.</div>
+</ng-template>
+
+<ng-template #noSubmissionAttachments>
+  <p class="muted">Nenhum anexo enviado.</p>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/activity-corrections/activity-corrections.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { forkJoin, of } from 'rxjs';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
+
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityListItem } from '../../core/api/activities.api';
+import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
+import { ActivitySubmissionDto } from '../../core/api/activity-submissions.api';
+import { CoursesService } from '../../core/services/courses.service';
+import { CourseDto } from '../../core/api/courses.api';
+import { AuthService } from '../../core/services/auth.service';
+import { MediaService } from '../../core/services/media.service';
+import { UsersService } from '../../core/services/users.service';
+
+interface CorrectionGroup {
+  activityId: string;
+  classGroupId: string;
+  classGroupName: string;
+}
+
+@Component({
+  selector: 'app-activity-corrections',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './activity-corrections.component.html',
+  styleUrl: './activity-corrections.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ActivityCorrectionsComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly activitiesService = inject(ActivitiesService);
+  private readonly submissionsService = inject(ActivitySubmissionsService);
+  private readonly coursesService = inject(CoursesService);
+  private readonly authService = inject(AuthService);
+  private readonly mediaService = inject(MediaService);
+  private readonly usersService = inject(UsersService);
+  private readonly toastr = inject(ToastrService);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly course = signal<CourseDto | null>(null);
+  readonly activity = signal<ActivityListItem | null>(null);
+  readonly correctionGroups = signal<CorrectionGroup[]>([]);
+  readonly selectedGroup = signal<CorrectionGroup | null>(null);
+  readonly submissionsLoading = signal(false);
+  readonly submissionsError = signal<string | null>(null);
+  readonly submissions = signal<ActivitySubmissionDto[]>([]);
+  readonly selectedSubmission = signal<ActivitySubmissionDto | null>(null);
+  readonly submissionDetailsLoading = signal(false);
+  readonly downloadingAttachment = signal<string | null>(null);
+  readonly studentNames = signal<Map<string, string>>(new Map());
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
+
+  readonly submissionStatusOptions = [
+    { value: 2, label: 'Submetida' },
+    { value: 3, label: 'Corrigida' },
+    { value: 4, label: 'Devolvida' }
+  ];
+  private readonly submissionStatusLabels: Record<number, string> = {
+    1: 'Rascunho',
+    2: 'Submetida',
+    3: 'Corrigida',
+    4: 'Devolvida'
+  };
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
+  readonly feedbackTagOptions = [
+    { value: 'dificuldade_conceitual', label: 'Dificuldade conceitual' },
+    { value: 'erro_interpretacao', label: 'Erro de interpretacao' },
+    { value: 'faltou_referencia', label: 'Faltou referencia' },
+    { value: 'excelente_argumentacao', label: 'Excelente argumentacao' },
+    { value: 'boa_organizacao', label: 'Boa organizacao' }
+  ];
+  readonly recommendedActionOptions = [
+    { value: 'reforco', label: 'Reforco de conteudo' },
+    { value: 'refazer_atividade', label: 'Refazer atividade' },
+    { value: 'monitoria', label: 'Encaminhar para monitoria' },
+    { value: 'proximo_modulo', label: 'Liberar proximo modulo' }
+  ];
+  readonly isTagsDropdownOpen = signal(false);
+
+  readonly gradingForm = this.fb.group({
+    status: this.fb.control<number | null>(null, { validators: [Validators.required] }),
+    score: this.fb.control<string | null>(null),
+    masteryScore: this.fb.control<string | null>(null),
+    applicationScore: this.fb.control<string | null>(null),
+    communicationScore: this.fb.control<string | null>(null),
+    recommendedAction: this.fb.control<string | null>(null),
+    feedbackTags: this.fb.nonNullable.control<string[]>([]),
+    feedback: this.fb.control<string | null>('')
+  });
+
+  readonly activityTitle = computed(() => this.activity()?.title ?? 'Atividade');
+
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map(params => params.get('activityId')),
+        filter((activityId): activityId is string => Boolean(activityId)),
+        switchMap(activityId =>
+          this.activitiesService.getActivityById(activityId).pipe(
+            switchMap(activityDto =>
+              forkJoin({
+                activityDto: of(activityDto),
+                course: this.coursesService.getCourseById(activityDto.CourseId),
+                activities: this.activitiesService.getActivities({ CourseId: activityDto.CourseId })
+              })
+            )
+          )
+        )
+      )
+      .subscribe({
+        next: ({ activityDto, course, activities }) => {
+          this.course.set(course);
+          const current = activities.find(item => item.id === activityDto.Id);
+          if (!current) {
+            this.error.set('Atividade nao encontrada para correcoes.');
+            this.loading.set(false);
+            return;
+          }
+
+          this.activity.set(current);
+          const groups = this.buildCorrectionGroups(current, activities);
+          this.correctionGroups.set(groups);
+          const selected = groups.find(group => group.activityId === current.id) ?? groups[0] ?? null;
+          this.selectedGroup.set(selected);
+          if (selected) {
+            this.loadSubmissions(selected.activityId, selected.classGroupId);
+          }
+          this.loading.set(false);
+          this.error.set(null);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar as correcoes desta atividade.');
+          this.loading.set(false);
+        }
+      });
+
+    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
+  }
+
+  trackBySubmission(_: number, item: ActivitySubmissionDto): string {
+    return item.Id;
+  }
+
+  trackByGroup(_: number, item: CorrectionGroup): string {
+    return item.activityId;
+  }
+
+  backToActivities(): void {
+    this.router.navigate(['/activities']);
+  }
+
+  selectGroup(activityId: string): void {
+    const group = this.correctionGroups().find(item => item.activityId === activityId) ?? null;
+    if (!group || this.selectedGroup()?.activityId === group.activityId) {
+      return;
+    }
+    this.selectedGroup.set(group);
+    this.selectedSubmission.set(null);
+    this.resetVideoUrls();
+    this.loadSubmissions(group.activityId, group.classGroupId);
+  }
+
+  selectSubmission(submissionId: string): void {
+    if (!submissionId) {
+      return;
+    }
+    this.resetVideoUrls();
+    this.submissionDetailsLoading.set(true);
+    this.gradingForm.reset({
+      status: null,
+      score: null,
+      masteryScore: null,
+      applicationScore: null,
+      communicationScore: null,
+      recommendedAction: null,
+      feedbackTags: [],
+      feedback: ''
+    });
+    this.submissionsService
+      .getById(submissionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: submission => {
+          this.selectedSubmission.set(submission);
+          this.patchGradingForm(submission);
+          if (submission.StudentName) {
+            const updated = new Map(this.studentNames());
+            updated.set(submission.StudentId, submission.StudentName);
+            this.studentNames.set(updated);
+          } else {
+            this.ensureStudentNames([submission.StudentId]);
+          }
+          this.submissionDetailsLoading.set(false);
+        },
+        error: () => {
+          this.submissionDetailsLoading.set(false);
+          this.toastr.error('Nao foi possivel carregar os detalhes da submissao.');
+        }
+      });
+  }
+
+  saveGrading(): void {
+    const submission = this.selectedSubmission();
+    const instructor = this.authService.currentUser();
+
+    if (!submission) {
+      this.toastr.warning('Selecione uma submissao para corrigir.');
+      return;
+    }
+
+    if (!instructor) {
+      this.toastr.error('Usuario nao autenticado.');
+      return;
+    }
+
+    if (this.gradingForm.invalid) {
+      this.gradingForm.markAllAsTouched();
+      return;
+    }
+
+    const parsedScore = this.parseScore(this.gradingForm.controls.score.value);
+    if (parsedScore === null && this.gradingForm.controls.score.value) {
+      this.toastr.error('Informe um valor numerico valido para a nota.');
+      return;
+    }
+
+    const masteryScore = this.parseRubricScore(this.gradingForm.controls.masteryScore.value);
+    const applicationScore = this.parseRubricScore(this.gradingForm.controls.applicationScore.value);
+    const communicationScore = this.parseRubricScore(this.gradingForm.controls.communicationScore.value);
+    if (
+      (masteryScore === null && this.gradingForm.controls.masteryScore.value) ||
+      (applicationScore === null && this.gradingForm.controls.applicationScore.value) ||
+      (communicationScore === null && this.gradingForm.controls.communicationScore.value)
+    ) {
+      this.toastr.error('As notas dos criterios devem estar entre 1 e 5.');
+      return;
+    }
+
+    const payload = {
+      Status: this.gradingForm.controls.status.value ?? 3,
+      Score: parsedScore ?? undefined,
+      GradedById: instructor.id,
+      MasteryScore: masteryScore ?? undefined,
+      ApplicationScore: applicationScore ?? undefined,
+      CommunicationScore: communicationScore ?? undefined,
+      FeedbackTags: this.joinFeedbackTags(this.gradingForm.controls.feedbackTags.value),
+      RecommendedAction: this.gradingForm.controls.recommendedAction.value?.trim() || undefined,
+      Feedback: this.gradingForm.controls.feedback.value?.trim() || undefined,
+      TextAnswer: submission.TextAnswer,
+      Attachments: (submission.Attachments ?? []).map(attachment => ({
+        MediaResourceId: attachment.MediaResourceId,
+        IsPrimary: attachment.IsPrimary,
+        IsVideo: attachment.IsVideo
+      }))
+    };
+
+    this.submissionDetailsLoading.set(true);
+    this.submissionsService
+      .updateSubmission(submission.Id, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: updated => {
+          this.toastr.success('Correcao salva com sucesso.');
+          this.selectedSubmission.set(updated);
+          this.patchGradingForm(updated);
+          this.submissionDetailsLoading.set(false);
+          const group = this.selectedGroup();
+          if (group) {
+            this.loadSubmissions(group.activityId, group.classGroupId);
+          }
+        },
+        error: () => {
+          this.submissionDetailsLoading.set(false);
+          this.toastr.error('Nao foi possivel salvar a correcao.');
+        }
+      });
+  }
+
+  submissionStatusLabel(status: number): string {
+    return this.submissionStatusLabels[status] ?? 'Desconhecido';
+  }
+
+  submissionStudentName(submission: ActivitySubmissionDto): string {
+    return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
+  }
+
+  downloadSubmissionAttachment(attachmentId: string, fileName?: string): void {
+    if (!attachmentId || this.downloadingAttachment() === attachmentId) {
+      return;
+    }
+
+    this.downloadingAttachment.set(attachmentId);
+    this.mediaService
+      .download(attachmentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = fileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloadingAttachment.set(null);
+        },
+        error: () => {
+          this.downloadingAttachment.set(null);
+          this.toastr.error('Nao foi possivel baixar o anexo.');
+        }
+      });
+  }
+
+  isVideoAttachment(attachment: ActivitySubmissionDto['Attachments'][number]): boolean {
+    if (attachment.IsVideo) {
+      return true;
+    }
+
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(attachmentId: string): string | null {
+    return this.videoUrls()[attachmentId] ?? null;
+  }
+
+  videoIsLoading(attachmentId: string): boolean {
+    return Boolean(this.videoLoading()[attachmentId]);
+  }
+
+  loadVideo(attachment: ActivitySubmissionDto['Attachments'][number]): void {
+    if (!attachment?.MediaResourceId || this.videoIsLoading(attachment.MediaResourceId)) {
+      return;
+    }
+
+    if (this.videoUrlFor(attachment.MediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
+
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video.');
+        }
+      });
+  }
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+
+  private loadSubmissions(activityId: string, classGroupId: string): void {
+    this.submissionsLoading.set(true);
+    this.submissionsError.set(null);
+    this.submissionsService
+      .getSubmissions({ ActivityId: activityId, ClassGroupId: classGroupId, PageSize: 100 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: response => {
+          this.submissions.set(response.items);
+          this.ensureStudentNames(response.items.map(item => item.StudentId));
+          this.submissionsLoading.set(false);
+          if (response.items.length) {
+            this.selectSubmission(response.items[0].Id);
+          } else {
+            this.selectedSubmission.set(null);
+          }
+        },
+        error: () => {
+          this.submissionsLoading.set(false);
+          this.submissionsError.set('Nao foi possivel carregar as submissões desta atividade.');
+          this.submissions.set([]);
+          this.selectedSubmission.set(null);
+        }
+      });
+  }
+
+  private patchGradingForm(submission: ActivitySubmissionDto): void {
+    this.gradingForm.patchValue({
+      status: submission.Status ?? 2,
+      score: submission.Score != null ? String(submission.Score) : null,
+      masteryScore: submission.MasteryScore != null ? String(submission.MasteryScore) : null,
+      applicationScore: submission.ApplicationScore != null ? String(submission.ApplicationScore) : null,
+      communicationScore: submission.CommunicationScore != null ? String(submission.CommunicationScore) : null,
+      recommendedAction: submission.RecommendedAction ?? null,
+      feedbackTags: this.parseFeedbackTags(submission.FeedbackTags),
+      feedback: submission.Feedback ?? ''
+    });
+  }
+
+  private parseScore(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private parseRubricScore(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private parseFeedbackTags(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+
+  private joinFeedbackTags(tags: string[]): string | undefined {
+    if (!tags?.length) {
+      return undefined;
+    }
+    return tags.join(',');
+  }
+
+  toggleTagsDropdown(): void {
+    this.isTagsDropdownOpen.update(value => !value);
+  }
+
+  closeTagsDropdown(): void {
+    this.isTagsDropdownOpen.set(false);
+  }
+
+  isTagSelected(tag: string): boolean {
+    return this.gradingForm.controls.feedbackTags.value.includes(tag);
+  }
+
+  toggleFeedbackTag(tag: string, checked: boolean): void {
+    const current = this.gradingForm.controls.feedbackTags.value;
+    if (checked) {
+      if (!current.includes(tag)) {
+        this.gradingForm.controls.feedbackTags.setValue([...current, tag]);
+      }
+      return;
+    }
+
+    this.gradingForm.controls.feedbackTags.setValue(current.filter(item => item !== tag));
+  }
+
+  selectedTagsLabel(): string {
+    const selected = this.gradingForm.controls.feedbackTags.value;
+    if (!selected.length) {
+      return 'Selecione as tags';
+    }
+
+    return this.feedbackTagOptions
+      .filter(option => selected.includes(option.value))
+      .map(option => option.label)
+      .join(', ');
+  }
+
+  private ensureStudentNames(studentIds: string[]): void {
+    const cache = this.studentNames();
+    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
+    if (!pending.length) {
+      return;
+    }
+
+    forkJoin(
+      pending.map(id =>
+        this.usersService.getById(id).pipe(catchError(() => of(null)))
+      )
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(users => {
+        const updated = new Map(this.studentNames());
+        users.forEach(user => {
+          if (user) {
+            updated.set(user.Id, user.FullName || user.Email || 'Aluno');
+          }
+        });
+        this.studentNames.set(updated);
+      });
+  }
+
+  private buildCorrectionGroups(current: ActivityListItem, activities: ActivityListItem[]): CorrectionGroup[] {
+    const signature = this.activitySignature(current);
+    const groups = activities
+      .filter(item => this.activitySignature(item) === signature)
+      .map(item => ({
+        activityId: item.id,
+        classGroupId: item.classGroupId,
+        classGroupName: item.classGroupName || 'Turma nao informada'
+      }));
+
+    if (groups.length) {
+      return groups;
+    }
+
+    return [
+      {
+        activityId: current.id,
+        classGroupId: current.classGroupId,
+        classGroupName: current.classGroupName || 'Turma nao informada'
+      }
+    ];
+  }
+
+  private activitySignature(activity: ActivityListItem): string {
+    return [
+      activity.courseId,
+      activity.title,
+      activity.dueDateLabel,
+      String(activity.allowLate),
+      String(activity.attachments)
+    ].join('|');
+  }
+
+  private resetVideoUrls(): void {
+    this.cleanupVideoUrls();
+    this.videoUrls.set({});
+    this.videoLoading.set({});
+  }
+
+  private cleanupVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
   }
 }
 ````
@@ -21608,6 +21810,41 @@ public class Activity : AuditableEntity
 }
 ````
 
+## File: src/ProjetoFinal.Domain/Entities/ActivitySubmission.cs
+````csharp
+using System;
+using System.Collections.Generic;
+using ProjetoFinal.Domain.Enums;
+
+namespace ProjetoFinal.Domain.Entities;
+
+public class ActivitySubmission : AuditableEntity
+{
+    public Guid ActivityId { get; set; }
+    public Guid StudentId { get; set; }
+    public Guid? ClassGroupId { get; set; }
+    public SubmissionStatus Status { get; set; } = SubmissionStatus.Submitted;
+    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? GradedAt { get; set; }
+    public Guid? GradedById { get; set; }
+    public decimal? Score { get; set; }
+    public string? Feedback { get; set; }
+    public int? MasteryScore { get; set; }
+    public int? ApplicationScore { get; set; }
+    public int? CommunicationScore { get; set; }
+    public string? FeedbackTags { get; set; }
+    public string? RecommendedAction { get; set; }
+    public string? TextAnswer { get; set; }
+
+    public Activity? Activity { get; set; }
+    public ClassGroup? ClassGroup { get; set; }
+    public User? Student { get; set; }
+    public User? GradedBy { get; set; }
+    public ICollection<SubmissionAttachment> Attachments { get; set; } = new List<SubmissionAttachment>();
+    public ICollection<VideoAnnotation> VideoAnnotations { get; set; } = new List<VideoAnnotation>();
+}
+````
+
 ## File: src/ProjetoFinal.Domain/Entities/ClassGroup.cs
 ````csharp
 using System;
@@ -22059,6 +22296,79 @@ public class ActivityMap : IContextEntityMap<Activity>
         builder.HasMany(p => p.Submissions)
             .WithOne(p => p.Activity)
             .HasForeignKey(p => p.ActivityId);
+    }
+}
+````
+
+## File: src/ProjetoFinal.Infra.Data/Configurations/ActivitySubmissionMap.cs
+````csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Infra.Data.Interfaces;
+
+namespace ProjetoFinal.Infra.Data.Configurations;
+
+public class ActivitySubmissionMap : IContextEntityMap<ActivitySubmission>
+{
+    public void Configure(EntityTypeBuilder<ActivitySubmission> builder)
+    {
+        builder.ToTable("ActivitySubmissions");
+
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Id).ValueGeneratedNever();
+
+        builder.Property(p => p.Status)
+            .HasConversion<int>()
+            .IsRequired();
+
+        builder.Property(p => p.Score)
+            .HasPrecision(10, 2);
+
+        builder.Property(p => p.Feedback)
+            .HasMaxLength(2000);
+
+        builder.Property(p => p.FeedbackTags)
+            .HasMaxLength(500);
+
+        builder.Property(p => p.RecommendedAction)
+            .HasMaxLength(120);
+
+        builder.Property(p => p.TextAnswer)
+            .HasMaxLength(4000);
+
+        builder.Property(p => p.SubmittedAt)
+            .HasDefaultValueSql("GETUTCDATE()");
+
+        builder.HasIndex(p => new { p.ActivityId, p.StudentId }).IsUnique();
+
+        builder.HasOne(p => p.Activity)
+            .WithMany(p => p.Submissions)
+            .HasForeignKey(p => p.ActivityId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.ClassGroup)
+            .WithMany()
+            .HasForeignKey(p => p.ClassGroupId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.Student)
+            .WithMany()
+            .HasForeignKey(p => p.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.GradedBy)
+            .WithMany()
+            .HasForeignKey(p => p.GradedById)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(p => p.Attachments)
+            .WithOne(p => p.Submission)
+            .HasForeignKey(p => p.SubmissionId);
+
+        builder.HasMany(p => p.VideoAnnotations)
+            .WithOne(p => p.Submission)
+            .HasForeignKey(p => p.SubmissionId);
     }
 }
 ````
@@ -22647,6 +22957,60 @@ await DataSeeder.SeedAsync(app);
 app.Run();
 ````
 
+## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionDto.cs
+````csharp
+using System;
+using System.Collections.Generic;
+using ProjetoFinal.Application.Contracts.Dto.Media;
+using ProjetoFinal.Domain.Enums;
+
+namespace ProjetoFinal.Application.Contracts.Dto.Activities;
+
+public class ActivitySubmissionDto
+{
+    public Guid Id { get; set; }
+    public Guid ActivityId { get; set; }
+    public Guid StudentId { get; set; }
+    public string? StudentName { get; set; }
+    public Guid? ClassGroupId { get; set; }
+    public SubmissionStatus Status { get; set; }
+    public DateTime SubmittedAt { get; set; }
+    public DateTime? GradedAt { get; set; }
+    public Guid? GradedById { get; set; }
+    public decimal? Score { get; set; }
+    public string? Feedback { get; set; }
+    public int? MasteryScore { get; set; }
+    public int? ApplicationScore { get; set; }
+    public int? CommunicationScore { get; set; }
+    public string? FeedbackTags { get; set; }
+    public string? RecommendedAction { get; set; }
+    public string? TextAnswer { get; set; }
+
+    public IList<SubmissionAttachmentDto> Attachments { get; set; } = new List<SubmissionAttachmentDto>();
+    public IList<VideoAnnotationDto> VideoAnnotations { get; set; } = new List<VideoAnnotationDto>();
+}
+
+public class SubmissionAttachmentDto
+{
+    public Guid Id { get; set; }
+    public Guid MediaResourceId { get; set; }
+    public bool IsPrimary { get; set; }
+    public bool IsVideo { get; set; }
+    public MediaResourceDto? Media { get; set; }
+}
+
+public class VideoAnnotationDto
+{
+    public Guid Id { get; set; }
+    public Guid SubmissionId { get; set; }
+    public Guid AttachmentId { get; set; }
+    public Guid CreatedById { get; set; }
+    public double TimeMarkerSeconds { get; set; }
+    public string Comment { get; set; } = string.Empty;
+    public DateTime? EditedAt { get; set; }
+}
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/core/api/activities.api.ts
 ````typescript
 import { ApiPagedResponse, normalizePagedResponse } from './api.types';
@@ -22971,725 +23335,6 @@ footer button.secondary {
 .state--error {
   background: rgba(248, 113, 113, 0.18);
   color: #b91c1c;
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/class-group-manage/class-group-manage.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ToastrService } from 'ngx-toastr';
-import { forkJoin, of } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
-
-import { ClassGroupsService } from '../../core/services/class-groups.service';
-import { CoursesService } from '../../core/services/courses.service';
-import { ForumService } from '../../core/services/forum.service';
-import { AuthService } from '../../core/services/auth.service';
-import { ClassGroupDto, ClassEnrollmentDto, CourseDto } from '../../core/api/courses.api';
-import { ForumThreadCreatePayload, ForumThreadListItem } from '../../core/api/forum.api';
-import { ActivitiesService } from '../../core/services/activities.service';
-import { ActivityListItem } from '../../core/api/activities.api';
-import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
-import { ActivitySubmissionDto } from '../../core/api/activity-submissions.api';
-import { MediaService } from '../../core/services/media.service';
-import { UsersService } from '../../core/services/users.service';
-
-@Component({
-  selector: 'app-class-group-manage',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './class-group-manage.component.html',
-  styleUrl: './class-group-manage.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ClassGroupManageComponent {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly fb = inject(FormBuilder);
-  private readonly classGroupsService = inject(ClassGroupsService);
-  private readonly coursesService = inject(CoursesService);
-  private readonly forumService = inject(ForumService);
-  private readonly authService = inject(AuthService);
-  private readonly toastr = inject(ToastrService);
-  private readonly activitiesService = inject(ActivitiesService);
-  private readonly submissionsService = inject(ActivitySubmissionsService);
-  private readonly mediaService = inject(MediaService);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly usersService = inject(UsersService);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly threadsLoading = signal(false);
-  readonly classGroup = signal<ClassGroupDto | null>(null);
-  readonly course = signal<CourseDto | null>(null);
-  readonly threads = signal<ForumThreadListItem[]>([]);
-  readonly isThreadFormVisible = signal(false);
-  readonly isThreadSubmitting = signal(false);
-  readonly activitiesLoading = signal(false);
-  readonly activities = signal<ActivityListItem[]>([]);
-  readonly selectedActivityId = signal<string | null>(null);
-  readonly submissionsLoading = signal(false);
-  readonly submissionsError = signal<string | null>(null);
-  readonly submissions = signal<ActivitySubmissionDto[]>([]);
-  readonly selectedSubmission = signal<ActivitySubmissionDto | null>(null);
-  readonly submissionDetailsLoading = signal(false);
-  readonly downloadingAttachment = signal<string | null>(null);
-  readonly studentNames = signal<Map<string, string>>(new Map());
-  readonly videoUrls = signal<Record<string, string>>({});
-  readonly videoLoading = signal<Record<string, boolean>>({});
-
-  readonly capacity = computed(() => this.classGroup()?.Capacity ?? 0);
-  readonly approved = computed(() => this.classGroup()?.ApprovedEnrollments ?? 0);
-  readonly pending = computed(() => this.classGroup()?.PendingEnrollments ?? 0);
-  readonly available = computed(() => {
-    const cap = this.capacity();
-    const approved = this.approved();
-    return Math.max(cap - approved, 0);
-  });
-  readonly occupancyPercent = computed(() => {
-    const cap = this.capacity();
-    const approved = this.approved();
-    if (!cap) {
-      return 0;
-    }
-    return Math.min(100, Math.round((approved / cap) * 100));
-  });
-  readonly enrollments = computed<ClassEnrollmentDto[]>(() => this.classGroup()?.Enrollments ?? []);
-  readonly selectedActivity = computed(() => {
-    const activityId = this.selectedActivityId();
-    return this.activities().find(activity => activity.id === activityId) ?? null;
-  });
-
-  readonly threadForm = this.fb.group({
-    title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(180)]),
-    description: this.fb.control<string | null>('', [Validators.maxLength(1200)]),
-    isPinned: this.fb.nonNullable.control(false)
-  });
-  readonly gradingForm = this.fb.group({
-    status: this.fb.control<number | null>(null, { validators: [Validators.required] }),
-    score: this.fb.control<string | null>(null),
-    masteryScore: this.fb.control<string | null>(null),
-    applicationScore: this.fb.control<string | null>(null),
-    communicationScore: this.fb.control<string | null>(null),
-    recommendedAction: this.fb.control<string | null>(null),
-    feedbackTags: this.fb.nonNullable.control<string[]>([]),
-    feedback: this.fb.control<string | null>(''),
-  });
-
-  private readonly enrollmentStatusLabels: Record<number, string> = {
-    1: 'Pendente',
-    2: 'Aprovada',
-    3: 'Recusada',
-    4: 'Cancelada'
-  };
-  readonly submissionStatusOptions = [
-    { value: 2, label: 'Submetida' },
-    { value: 3, label: 'Corrigida' },
-    { value: 4, label: 'Devolvida' }
-  ];
-  private readonly submissionStatusLabels: Record<number, string> = {
-    1: 'Rascunho',
-    2: 'Submetida',
-    3: 'Corrigida',
-    4: 'Devolvida'
-  };
-  readonly feedbackTagOptions = [
-    { value: 'dificuldade_conceitual', label: 'Dificuldade conceitual' },
-    { value: 'erro_interpretacao', label: 'Erro de interpretacao' },
-    { value: 'faltou_referencia', label: 'Faltou referencia' },
-    { value: 'excelente_argumentacao', label: 'Excelente argumentacao' },
-    { value: 'boa_organizacao', label: 'Boa organizacao' }
-  ];
-  readonly recommendedActionOptions = [
-    { value: 'reforco', label: 'Reforco de conteudo' },
-    { value: 'refazer_atividade', label: 'Refazer atividade' },
-    { value: 'monitoria', label: 'Encaminhar para monitoria' },
-    { value: 'proximo_modulo', label: 'Liberar proximo modulo' }
-  ];
-  readonly isTagsDropdownOpen = signal(false);
-  private readonly initialActivityId = signal<string | null>(null);
-  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
-
-  constructor() {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
-        this.initialActivityId.set(params.get('activityId'));
-      });
-
-    this.route.paramMap
-      .pipe(
-        map(params => params.get('classGroupId')),
-        filter((classGroupId): classGroupId is string => Boolean(classGroupId)),
-        switchMap(classGroupId =>
-          this.classGroupsService.getClassGroupById(classGroupId).pipe(
-            switchMap(group =>
-              forkJoin({
-                group: of(group),
-                course: this.coursesService.getCourseById(group.CourseId)
-              })
-            ),
-            map(result => ({ ...result, classGroupId }))
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: ({ classGroupId, group, course }) => {
-          this.classGroup.set(group);
-          this.course.set(course);
-          this.hydrateStudentNamesFromEnrollments(group.Enrollments ?? []);
-          this.error.set(null);
-          this.loading.set(false);
-          this.reloadThreads();
-          this.loadActivities(group.Id);
-        },
-        error: () => {
-          this.classGroup.set(null);
-          this.course.set(null);
-          this.error.set('Nao foi possivel carregar os dados da turma.');
-          this.loading.set(false);
-        }
-      });
-
-    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
-  }
-
-  openThreadForm(): void {
-    this.isThreadFormVisible.set(true);
-    this.threadForm.reset({ title: '', description: '', isPinned: false });
-  }
-
-  cancelThreadCreation(): void {
-    this.threadForm.reset({ title: '', description: '', isPinned: false });
-    this.isThreadFormVisible.set(false);
-  }
-
-  statusLabel(status: number): string {
-    return this.enrollmentStatusLabels[status] ?? 'Desconhecido';
-  }
-
-  statusBadgeClass(status: number): string {
-    switch (status) {
-      case 1:
-        return 'badge--warning';
-      case 2:
-        return 'badge--success';
-      case 3:
-        return 'badge--danger';
-      case 4:
-        return 'badge--neutral';
-      default:
-        return 'badge--neutral';
-    }
-  }
-
-  submitThread(): void {
-    if (this.threadForm.invalid) {
-      this.threadForm.markAllAsTouched();
-      return;
-    }
-
-    const group = this.classGroup();
-    const currentUser = this.authService.currentUser();
-
-    if (!group) {
-      this.toastr.error('Carregue os dados da turma antes de criar um topico.');
-      return;
-    }
-
-    if (!currentUser) {
-      this.toastr.error('Usuario nao autenticado.');
-      return;
-    }
-
-    const raw = this.threadForm.getRawValue();
-    const title = raw.title.trim();
-    if (!title) {
-      this.threadForm.controls.title.setErrors({ required: true });
-      this.threadForm.controls.title.markAsTouched();
-      return;
-    }
-
-    const payload: ForumThreadCreatePayload = {
-      ClassGroupId: group.Id,
-      CreatedById: currentUser.id,
-      Title: title,
-      Description: raw.description?.trim() || undefined,
-      IsPinned: raw.isPinned
-    };
-
-    this.isThreadSubmitting.set(true);
-
-    this.forumService
-      .createThread(payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.toastr.success('Topico criado com sucesso.');
-          this.isThreadSubmitting.set(false);
-          this.isThreadFormVisible.set(false);
-          this.threadForm.reset({ title: '', description: '', isPinned: false });
-          this.reloadThreads();
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel criar o topico.');
-          this.isThreadSubmitting.set(false);
-        }
-      });
-  }
-
-  navigateBack(): void {
-    this.router.navigate(['/class-groups']);
-  }
-
-  private reloadThreads(): void {
-    const group = this.classGroup();
-    const course = this.course();
-
-    if (!group || !course) {
-      return;
-    }
-
-    const lookup = new Map<string, string>([[course.Id, course.Title]]);
-    this.threadsLoading.set(true);
-
-    this.forumService
-      .getThreadsByClassGroup(lookup, group.Id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: threads => {
-          this.threads.set(threads);
-          this.threadsLoading.set(false);
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel carregar os topicos da turma.');
-          this.threads.set([]);
-          this.threadsLoading.set(false);
-        }
-      });
-  }
-
-  trackByThread(_: number, item: ForumThreadListItem): string {
-    return item.id;
-  }
-
-  trackByActivity(_: number, item: ActivityListItem): string {
-    return item.id;
-  }
-
-  trackBySubmission(_: number, item: ActivitySubmissionDto): string {
-    return item.Id;
-  }
-
-  private loadActivities(classGroupId: string): void {
-    this.activitiesLoading.set(true);
-    this.activitiesService
-      .getActivities({ ClassGroupId: classGroupId })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: items => {
-          this.activities.set(items);
-          this.activitiesLoading.set(false);
-          if (items.length) {
-            const preferredId = this.initialActivityId();
-            const target = preferredId && items.some(item => item.id === preferredId) ? preferredId : items[0].id;
-            this.selectActivity(target);
-          } else {
-            this.selectedActivityId.set(null);
-            this.submissions.set([]);
-            this.selectedSubmission.set(null);
-          }
-          this.initialActivityId.set(null);
-        },
-        error: () => {
-          this.activitiesLoading.set(false);
-          this.toastr.error('Nao foi possivel carregar as atividades desta turma.');
-        }
-      });
-  }
-
-  selectActivity(activityId: string): void {
-    if (this.selectedActivityId() === activityId) {
-      return;
-    }
-    this.selectedActivityId.set(activityId);
-    this.selectedSubmission.set(null);
-    const group = this.classGroup();
-    if (!group) {
-      return;
-    }
-    this.loadSubmissions(activityId, group.Id);
-  }
-
-  private loadSubmissions(activityId: string, classGroupId: string): void {
-    this.submissionsLoading.set(true);
-    this.submissionsError.set(null);
-    this.submissionsService
-      .getSubmissions({ ActivityId: activityId, ClassGroupId: classGroupId, PageSize: 100 })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: response => {
-          this.submissions.set(response.items);
-          this.ensureStudentNames(response.items.map(item => item.StudentId));
-          this.submissionsLoading.set(false);
-          if (response.items.length) {
-            this.selectSubmission(response.items[0].Id);
-          } else {
-            this.selectedSubmission.set(null);
-          }
-        },
-        error: () => {
-          this.submissionsLoading.set(false);
-          this.submissionsError.set('Nao foi possivel carregar as submissões desta atividade.');
-          this.submissions.set([]);
-          this.selectedSubmission.set(null);
-        }
-      });
-  }
-
-  selectSubmission(submissionId: string): void {
-    if (!submissionId) {
-      return;
-    }
-    this.resetVideoUrls();
-    this.submissionDetailsLoading.set(true);
-    this.gradingForm.reset({
-      status: null,
-      score: null,
-      masteryScore: null,
-      applicationScore: null,
-      communicationScore: null,
-      recommendedAction: null,
-      feedbackTags: [],
-      feedback: ''
-    });
-    this.submissionsService
-      .getById(submissionId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: submission => {
-          this.selectedSubmission.set(submission);
-          this.patchGradingForm(submission);
-          if (submission.StudentName) {
-            const updated = new Map(this.studentNames());
-            updated.set(submission.StudentId, submission.StudentName);
-            this.studentNames.set(updated);
-          } else {
-            this.ensureStudentNames([submission.StudentId]);
-          }
-          this.submissionDetailsLoading.set(false);
-        },
-        error: () => {
-          this.submissionDetailsLoading.set(false);
-          this.toastr.error('Nao foi possivel carregar os detalhes da submissao.');
-        }
-      });
-  }
-
-  private patchGradingForm(submission: ActivitySubmissionDto): void {
-    this.gradingForm.patchValue({
-      status: submission.Status ?? 2,
-      score: submission.Score != null ? String(submission.Score) : null,
-      masteryScore: submission.MasteryScore != null ? String(submission.MasteryScore) : null,
-      applicationScore: submission.ApplicationScore != null ? String(submission.ApplicationScore) : null,
-      communicationScore: submission.CommunicationScore != null ? String(submission.CommunicationScore) : null,
-      recommendedAction: submission.RecommendedAction ?? null,
-      feedbackTags: this.parseFeedbackTags(submission.FeedbackTags),
-      feedback: submission.Feedback ?? ''
-    });
-  }
-
-  submissionStatusLabel(status: number): string {
-    return this.submissionStatusLabels[status] ?? 'Desconhecido';
-  }
-
-  safeHtml(content?: string | null): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
-  }
-
-  downloadSubmissionAttachment(attachmentId: string, fileName?: string): void {
-    if (!attachmentId || this.downloadingAttachment() === attachmentId) {
-      return;
-    }
-
-    this.downloadingAttachment.set(attachmentId);
-    this.mediaService
-      .download(attachmentId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = fileName || 'anexo';
-          anchor.click();
-          URL.revokeObjectURL(url);
-          this.downloadingAttachment.set(null);
-        },
-        error: () => {
-          this.downloadingAttachment.set(null);
-          this.toastr.error('Nao foi possivel baixar o anexo.');
-        }
-      });
-  }
-
-  isVideoAttachment(attachment: ActivitySubmissionDto['Attachments'][number]): boolean {
-    if (attachment.IsVideo) {
-      return true;
-    }
-
-    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
-    if (contentType.startsWith('video/')) {
-      return true;
-    }
-
-    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
-    const extension = fileName.split('.').pop() ?? '';
-    return this.videoExtensions.includes(extension);
-  }
-
-  videoUrlFor(attachmentId: string): string | null {
-    return this.videoUrls()[attachmentId] ?? null;
-  }
-
-  videoIsLoading(attachmentId: string): boolean {
-    return Boolean(this.videoLoading()[attachmentId]);
-  }
-
-  loadVideo(attachment: ActivitySubmissionDto['Attachments'][number]): void {
-    if (!attachment?.MediaResourceId || this.videoIsLoading(attachment.MediaResourceId)) {
-      return;
-    }
-
-    if (this.videoUrlFor(attachment.MediaResourceId)) {
-      return;
-    }
-
-    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
-
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        },
-        error: () => {
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-          this.toastr.error('Nao foi possivel carregar o video.');
-        }
-      });
-  }
-
-  saveGrading(): void {
-    const submission = this.selectedSubmission();
-    const instructor = this.authService.currentUser();
-
-    if (!submission) {
-      this.toastr.warning('Selecione uma submissao para corrigir.');
-      return;
-    }
-
-    if (!instructor) {
-      this.toastr.error('Usuario nao autenticado.');
-      return;
-    }
-
-    if (this.gradingForm.invalid) {
-      this.gradingForm.markAllAsTouched();
-      return;
-    }
-
-    const parsedScore = this.parseScore(this.gradingForm.controls.score.value);
-    if (parsedScore === null && this.gradingForm.controls.score.value) {
-      this.toastr.error('Informe um valor numerico valido para a nota.');
-      return;
-    }
-
-    const masteryScore = this.parseRubricScore(this.gradingForm.controls.masteryScore.value);
-    const applicationScore = this.parseRubricScore(this.gradingForm.controls.applicationScore.value);
-    const communicationScore = this.parseRubricScore(this.gradingForm.controls.communicationScore.value);
-    if (
-      (masteryScore === null && this.gradingForm.controls.masteryScore.value) ||
-      (applicationScore === null && this.gradingForm.controls.applicationScore.value) ||
-      (communicationScore === null && this.gradingForm.controls.communicationScore.value)
-    ) {
-      this.toastr.error('As notas dos criterios devem estar entre 1 e 5.');
-      return;
-    }
-
-    const payload = {
-      Status: this.gradingForm.controls.status.value ?? 3,
-      Score: parsedScore ?? undefined,
-      GradedById: instructor.id,
-      MasteryScore: masteryScore ?? undefined,
-      ApplicationScore: applicationScore ?? undefined,
-      CommunicationScore: communicationScore ?? undefined,
-      FeedbackTags: this.joinFeedbackTags(this.gradingForm.controls.feedbackTags.value),
-      RecommendedAction: this.gradingForm.controls.recommendedAction.value?.trim() || undefined,
-      Feedback: this.gradingForm.controls.feedback.value?.trim() || undefined,
-      TextAnswer: submission.TextAnswer,
-      Attachments: (submission.Attachments ?? []).map(attachment => ({
-        MediaResourceId: attachment.MediaResourceId,
-        IsPrimary: attachment.IsPrimary,
-        IsVideo: attachment.IsVideo
-      }))
-    };
-
-    this.submissionDetailsLoading.set(true);
-    this.submissionsService
-      .updateSubmission(submission.Id, payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: updated => {
-          this.toastr.success('Correcao salva com sucesso.');
-          this.selectedSubmission.set(updated);
-          this.patchGradingForm(updated);
-          this.submissionDetailsLoading.set(false);
-          const activityId = this.selectedActivityId();
-          const group = this.classGroup();
-          if (activityId && group) {
-            this.loadSubmissions(activityId, group.Id);
-          }
-        },
-        error: () => {
-          this.submissionDetailsLoading.set(false);
-          this.toastr.error('Nao foi possivel salvar a correcao.');
-        }
-      });
-  }
-
-  private parseScore(value: string | null): number | null {
-    if (!value) {
-      return null;
-    }
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      return null;
-    }
-    return parsed;
-  }
-
-  private parseRubricScore(value: string | null): number | null {
-    if (!value) {
-      return null;
-    }
-    const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
-      return null;
-    }
-    return parsed;
-  }
-
-  private parseFeedbackTags(value?: string): string[] {
-    if (!value) {
-      return [];
-    }
-    return value
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
-  }
-
-  private joinFeedbackTags(tags: string[]): string | undefined {
-    if (!tags?.length) {
-      return undefined;
-    }
-    return tags.join(',');
-  }
-
-  toggleTagsDropdown(): void {
-    this.isTagsDropdownOpen.update(value => !value);
-  }
-
-  isTagSelected(tag: string): boolean {
-    return this.gradingForm.controls.feedbackTags.value.includes(tag);
-  }
-
-  toggleFeedbackTag(tag: string, checked: boolean): void {
-    const current = this.gradingForm.controls.feedbackTags.value;
-    if (checked) {
-      if (!current.includes(tag)) {
-        this.gradingForm.controls.feedbackTags.setValue([...current, tag]);
-      }
-      return;
-    }
-
-    this.gradingForm.controls.feedbackTags.setValue(current.filter(item => item !== tag));
-  }
-
-  selectedTagsLabel(): string {
-    const selected = this.gradingForm.controls.feedbackTags.value;
-    if (!selected.length) {
-      return 'Selecione as tags';
-    }
-
-    return this.feedbackTagOptions
-      .filter(option => selected.includes(option.value))
-      .map(option => option.label)
-      .join(', ');
-  }
-
-  submissionStudentName(submission: ActivitySubmissionDto): string {
-    return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
-  }
-
-  private hydrateStudentNamesFromEnrollments(enrollments: ClassEnrollmentDto[]): void {
-    if (!enrollments?.length) {
-      return;
-    }
-    const current = new Map(this.studentNames());
-    enrollments.forEach(enrollment => {
-      current.set(enrollment.StudentId, enrollment.StudentName);
-    });
-    this.studentNames.set(current);
-  }
-
-  private ensureStudentNames(studentIds: string[]): void {
-    const cache = this.studentNames();
-    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
-    if (!pending.length) {
-      return;
-    }
-
-    forkJoin(
-      pending.map(id =>
-        this.usersService.getById(id).pipe(
-          catchError(() => of(null))
-        )
-      )
-    )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(users => {
-        const updated = new Map(this.studentNames());
-        users.forEach(user => {
-          if (user) {
-            updated.set(user.Id, user.FullName || user.Email || 'Aluno');
-          }
-        });
-        this.studentNames.set(updated);
-      });
-  }
-
-  private resetVideoUrls(): void {
-    this.cleanupVideoUrls();
-    this.videoUrls.set({});
-    this.videoLoading.set({});
-  }
-
-  private cleanupVideoUrls(): void {
-    const urls = Object.values(this.videoUrls());
-    urls.forEach(url => URL.revokeObjectURL(url));
-  }
 }
 ````
 
@@ -25739,6 +25384,3507 @@ public class ActivityFilter : Filter
 }
 ````
 
+## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ActivityRepository.cs
+````csharp
+using System;
+using System.Linq;
+using LinqKit;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Infra.Data.Contexts;
+using System.Linq.Expressions;
+
+namespace ProjetoFinal.Infra.Data.Repositories.Entities;
+
+public class ActivityRepository(AppDbContext context)
+    : DefaultRepository<Activity, ActivityFilter, Guid>(context), IActivityRepository
+{
+    protected override IQueryable<Activity> ApplyIncludes(IQueryable<Activity> query)
+    {
+        return query
+            .Include(activity => activity.Course)
+            .Include(activity => activity.ClassGroup)
+            .Include(activity => activity.Audiences)
+                .ThenInclude(audience => audience.ClassGroup)
+            .Include(activity => activity.Attachments);
+    }
+
+    protected override IQueryable<Activity> ApplyIncludesList(IQueryable<Activity> query)
+    {
+        return ApplyIncludes(query);
+    }
+
+    protected override Expression<Func<Activity, bool>> GetFilters(ActivityFilter filter)
+    {
+        var predicate = base.GetFilters(filter);
+
+        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
+        {
+            var instructorId = filter.InstructorId.Value;
+            predicate = predicate.And(activity =>
+                activity.Course != null && activity.Course.InstructorId == instructorId);
+        }
+
+        return predicate;
+    }
+}
+````
+
+## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/CourseRepository.cs
+````csharp
+using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Infra.Data.Contexts;
+
+namespace ProjetoFinal.Infra.Data.Repositories.Entities;
+
+public class CourseRepository : DefaultRepository<Course, CourseFilter, Guid>, ICourseRepository
+{
+    private readonly AppDbContext _context;
+
+    public CourseRepository(AppDbContext context) : base(context)
+    {
+        _context = context;
+    }
+
+    public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        return _context.Courses.AnyAsync(p => p.Slug == slug, cancellationToken);
+    }
+
+    protected override IQueryable<Course> ApplyIncludes(IQueryable<Course> query)
+    {
+        return query
+            .AsSplitQuery()
+            .Include(course => course.Instructor)
+            .Include(course => course.ClassGroups)
+                .ThenInclude(group => group.Enrollments);
+    }
+
+    protected override IQueryable<Course> ApplyIncludesList(IQueryable<Course> query)
+    {
+        return ApplyIncludes(query);
+    }
+
+    protected override IQueryable<Course> ApplyOrderBy(IQueryable<Course> query)
+    {
+        return query
+            .OrderByDescending(course => course.CreatedAt)
+            .ThenBy(course => course.Id);
+    }
+}
+````
+
+## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumPostRepository.cs
+````csharp
+using System;
+using System.Linq;
+using LinqKit;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Infra.Data.Contexts;
+using System.Linq.Expressions;
+
+namespace ProjetoFinal.Infra.Data.Repositories.Entities;
+
+public class ForumPostRepository(AppDbContext context)
+    : DefaultRepository<ForumPost, ForumPostFilter, Guid>(context), IForumPostRepository
+{
+    protected override IQueryable<ForumPost> ApplyIncludes(IQueryable<ForumPost> query)
+    {
+        return query
+            .Include(post => post.Author)
+            .Include(post => post.Thread!)
+                .ThenInclude(thread => thread.Course)
+            .Include(post => post.Attachments)
+                .ThenInclude(attachment => attachment.MediaResource);
+    }
+
+    protected override IQueryable<ForumPost> ApplyIncludesList(IQueryable<ForumPost> query)
+    {
+        return ApplyIncludes(query);
+    }
+
+    protected override Expression<Func<ForumPost, bool>> GetFilters(ForumPostFilter filter)
+    {
+        var predicate = base.GetFilters(filter);
+
+        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
+        {
+            var instructorId = filter.InstructorId.Value;
+            predicate = predicate.And(post =>
+                post.Thread != null &&
+                post.Thread.Course != null &&
+                post.Thread.Course.InstructorId == instructorId);
+        }
+
+        return predicate;
+    }
+}
+````
+
+## File: src/ProjetoFinal.Api/Controllers/ClassGroupsController.cs
+````csharp
+using Microsoft.AspNetCore.Mvc;
+using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
+namespace ProjetoFinal.Api.Controllers;
+
+[Route("api/class-groups")]
+[Route("api/v1/class-groups")]
+public class ClassGroupsController : BaseController<
+    ClassGroupDto,
+    ClassGroupCreateDto,
+    ClassGroupUpdateDto,
+    ClassGroupFilter,
+    Guid,
+    IClassGroupAppService>
+{
+    private readonly ICourseAppService _courseService;
+    private readonly IClassGroupRepository _classGroupRepository;
+    private readonly IClassEnrollmentRepository _classEnrollmentRepository;
+
+    public ClassGroupsController(
+        IClassGroupAppService service,
+        ICourseAppService courseService,
+        IClassGroupRepository classGroupRepository,
+        IClassEnrollmentRepository classEnrollmentRepository) : base(service)
+    {
+        _courseService = courseService;
+        _classGroupRepository = classGroupRepository;
+        _classEnrollmentRepository = classEnrollmentRepository;
+    }
+
+    [HttpGet]
+    public override async Task<PagedResultDto<ClassGroupDto>> GetAllAsync(
+        [FromQuery] ClassGroupFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return await base.GetAllAsync(filter, cancellationToken);
+        }
+
+        if (filter.CourseId is null || filter.CourseId == Guid.Empty)
+        {
+            return new PagedResultDto<ClassGroupDto>
+            {
+                Dados = new List<ClassGroupDto>(),
+                PageInfo = new PageInfoDto
+                {
+                    PageNumber = filter.PageNumber == 0 ? 1 : filter.PageNumber,
+                    PageSize = filter.PageSize == 0 ? 0 : filter.PageSize,
+                    TotalPages = 0,
+                    TotalItens = 0
+                }
+            };
+        }
+
+        await EnsureInstructorOwnsCourseAsync(filter.CourseId.Value, cancellationToken);
+        return await base.GetAllAsync(filter, cancellationToken);
+    }
+
+    [HttpGet("{id}")]
+    public override async Task<ClassGroupDto> GetByIdAsync(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
+        return await base.GetByIdAsync(id, cancellationToken);
+    }
+
+    [HttpPost]
+    public override async Task<ClassGroupDto> AddAsync(
+        [FromBody] ClassGroupCreateDto createDto,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsCourseAsync(createDto.CourseId, cancellationToken);
+        return await base.AddAsync(createDto, cancellationToken);
+    }
+
+    [HttpPut("{id}")]
+    public override async Task<IActionResult> UpdateAsync(
+        [FromRoute] Guid id,
+        [FromBody] ClassGroupUpdateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
+        return await base.UpdateAsync(id, dto, cancellationToken);
+    }
+
+    [HttpDelete("{id}")]
+    public override async Task<ClassGroupDto> DeleteAsync(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
+        return await base.DeleteAsync(id, cancellationToken);
+    }
+
+    [HttpPost("{classGroupId:guid}/enrollments")]
+    public async Task<ActionResult<ClassEnrollmentDto>> RequestEnrollmentAsync(
+        [FromRoute] Guid classGroupId,
+        [FromBody] ClassEnrollmentRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        if (dto is null)
+        {
+            return BadRequest("Dados de inscricao nao informados.");
+        }
+
+        if (dto.ClassGroupId == Guid.Empty)
+        {
+            dto.ClassGroupId = classGroupId;
+        }
+        else if (dto.ClassGroupId != classGroupId)
+        {
+            return BadRequest("ClassGroupId divergente do valor na rota.");
+        }
+
+        var studentId = ResolveCurrentUserId();
+        if (studentId == Guid.Empty)
+        {
+            throw new BusinessException("Aluno nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        dto.StudentId = studentId;
+
+        var enrollment = await Service.RequestEnrollmentAsync(dto, cancellationToken);
+        return Ok(enrollment);
+    }
+
+    [HttpPost("enrollments/decision")]
+    public async Task<ClassEnrollmentDto> DecideEnrollmentAsync(
+        [FromBody] ClassEnrollmentDecisionDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsEnrollmentAsync(dto.EnrollmentId, cancellationToken);
+        return await Service.DecideEnrollmentAsync(dto, cancellationToken);
+    }
+
+    [HttpDelete("enrollments/{enrollmentId:guid}")]
+    public async Task<IActionResult> RemoveEnrollmentAsync(
+        [FromRoute] Guid enrollmentId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsEnrollmentAsync(enrollmentId, cancellationToken);
+        await Service.RemoveEnrollmentAsync(enrollmentId, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet("{classGroupId:guid}/availability")]
+    public async Task<ActionResult<AvailabilityResponse>> HasAvailableSeatsAsync(
+        [FromRoute] Guid classGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        var hasSeats = await Service.HasAvailableSeatsAsync(classGroupId, cancellationToken);
+        return Ok(new AvailabilityResponse(hasSeats));
+    }
+
+    private Guid ResolveCurrentUserId()
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
+    }
+
+    private bool IsInstructor()
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        return string.Equals(role, nameof(UserRole.Instructor), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsAdministrator()
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        return string.Equals(role, nameof(UserRole.Administrator), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
+        if (course.InstructorId != instructorId)
+        {
+            throw new BusinessException("Acesso nao permitido a turma.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task EnsureInstructorOwnsClassGroupAsync(Guid classGroupId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var group = await _classGroupRepository.FindAsync(classGroupId, cancellationToken);
+        if (group is null)
+        {
+            throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        await EnsureInstructorOwnsCourseAsync(group.CourseId, cancellationToken);
+    }
+
+    private async Task EnsureInstructorOwnsEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var enrollment = await _classEnrollmentRepository.FindAsync(enrollmentId, cancellationToken);
+        if (enrollment is null)
+        {
+            throw new BusinessException("Inscricao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        await EnsureInstructorOwnsClassGroupAsync(enrollment.ClassGroupId, cancellationToken);
+    }
+
+    public record AvailabilityResponse(bool HasSeats);
+}
+````
+
+## File: src/ProjetoFinal.Api/Controllers/ForumPostsController.cs
+````csharp
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Dto.Forum;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+
+namespace ProjetoFinal.Api.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/forum/posts")]
+[Route("api/v1/forum/posts")]
+public class ForumPostsController : ControllerBase
+{
+    private readonly IForumAppService _service;
+    private readonly ICourseAppService _courseService;
+    private readonly IForumPostRepository _postRepository;
+    private readonly IForumThreadRepository _threadRepository;
+
+    public ForumPostsController(
+        IForumAppService service,
+        ICourseAppService courseService,
+        IForumPostRepository postRepository,
+        IForumThreadRepository threadRepository)
+    {
+        _service = service;
+        _courseService = courseService;
+        _postRepository = postRepository;
+        _threadRepository = threadRepository;
+    }
+
+    [HttpPost]
+    public Task<ForumPostDto> CreateAsync(
+        [FromBody] ForumPostCreateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = ResolveCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        dto.AuthorId = userId;
+        return CreatePostInternalAsync(dto, cancellationToken);
+    }
+
+    [HttpPut("{postId:guid}")]
+    public async Task<IActionResult> UpdateAsync(
+        [FromRoute] Guid postId,
+        [FromBody] ForumPostUpdateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsPostAsync(postId, cancellationToken);
+        await _service.UpdatePostAsync(postId, dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{postId:guid}")]
+    public async Task<IActionResult> DeleteAsync(
+        [FromRoute] Guid postId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsPostAsync(postId, cancellationToken);
+        await _service.DeletePostAsync(postId, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet]
+    public Task<PagedResultDto<ForumPostDto>> GetAllAsync(
+        [FromQuery] ForumPostFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var instructorId = ResolveCurrentUserId();
+            if (instructorId == Guid.Empty)
+            {
+                throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+            }
+
+            filter.InstructorId = instructorId;
+        }
+
+        return _service.GetPostsAsync(filter, cancellationToken);
+    }
+
+    private Guid ResolveCurrentUserId()
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
+    }
+
+    private bool IsInstructor()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Instructor;
+        }
+
+        if (int.TryParse(roleValue, out var numericRole))
+        {
+            return numericRole == (int)UserRole.Instructor;
+        }
+
+        return false;
+    }
+
+    private bool IsAdministrator()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Administrator;
+        }
+
+        if (int.TryParse(roleValue, out var numericRole))
+        {
+            return numericRole == (int)UserRole.Administrator;
+        }
+
+        return false;
+    }
+
+    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
+        if (course.InstructorId != instructorId)
+        {
+            throw new BusinessException("Acesso nao permitido ao topico.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task EnsureInstructorOwnsPostAsync(Guid postId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var post = await _postRepository.FindAsync(postId, cancellationToken);
+        if (post is null)
+        {
+            throw new BusinessException("Mensagem nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        var thread = await _threadRepository.FindAsync(post.ThreadId, cancellationToken);
+        if (thread is null)
+        {
+            throw new BusinessException("Topico nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+    }
+
+    private async Task<ForumPostDto> CreatePostInternalAsync(ForumPostCreateDto dto, CancellationToken cancellationToken)
+    {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var thread = await _threadRepository.FindAsync(dto.ThreadId, cancellationToken);
+            if (thread is null)
+            {
+                throw new BusinessException("Topico nao encontrado.", ECodigo.NaoEncontrado);
+            }
+
+            await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+        }
+
+        return await _service.CreatePostAsync(dto, cancellationToken);
+    }
+}
+````
+
+## File: src/ProjetoFinal.Api/Controllers/ForumThreadsController.cs
+````csharp
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Dto.Forum;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+
+namespace ProjetoFinal.Api.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/forum/threads")]
+[Route("api/v1/forum/threads")]
+public class ForumThreadsController : ControllerBase
+{
+    private readonly IForumAppService _service;
+    private readonly ICourseAppService _courseService;
+    private readonly IClassGroupRepository _classGroupRepository;
+
+    public ForumThreadsController(
+        IForumAppService service,
+        ICourseAppService courseService,
+        IClassGroupRepository classGroupRepository)
+    {
+        _service = service;
+        _courseService = courseService;
+        _classGroupRepository = classGroupRepository;
+    }
+
+    [HttpPost]
+    public Task<ForumThreadDto> CreateAsync(
+        [FromBody] ForumThreadCreateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = ResolveCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        if (!IsInstructor())
+        {
+            throw new BusinessException("Apenas instrutores podem criar topicos.", ECodigo.NaoPermitido);
+        }
+
+        dto.CreatedById = userId;
+        return CreateThreadInternalAsync(dto, cancellationToken);
+    }
+
+    [HttpPut("{threadId:guid}")]
+    public async Task<IActionResult> UpdateAsync(
+        [FromRoute] Guid threadId,
+        [FromBody] ForumThreadUpdateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
+        await _service.UpdateThreadAsync(threadId, dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{threadId:guid}")]
+    public async Task<IActionResult> DeleteAsync(
+        [FromRoute] Guid threadId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
+        await _service.DeleteThreadAsync(threadId, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet("{threadId:guid}")]
+    public Task<ForumThreadDto> GetByIdAsync(
+        [FromRoute] Guid threadId,
+        CancellationToken cancellationToken = default)
+    {
+        return GetThreadInternalAsync(threadId, cancellationToken);
+    }
+
+    [HttpGet]
+    public Task<PagedResultDto<ForumThreadDto>> GetAllAsync(
+        [FromQuery] ForumThreadFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var instructorId = ResolveCurrentUserId();
+            if (instructorId == Guid.Empty)
+            {
+                throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+            }
+
+            filter.InstructorId = instructorId;
+        }
+
+        return _service.GetThreadsAsync(filter, cancellationToken);
+    }
+
+    private Guid ResolveCurrentUserId()
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
+    }
+
+    private bool IsInstructor()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Instructor;
+        }
+
+        if (int.TryParse(roleValue, out var numericRole))
+        {
+            return numericRole == (int)UserRole.Instructor;
+        }
+
+        return false;
+    }
+
+    private bool IsAdministrator()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Administrator;
+        }
+
+        if (int.TryParse(roleValue, out var numericRole))
+        {
+            return numericRole == (int)UserRole.Administrator;
+        }
+
+        return false;
+    }
+
+    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
+        if (course.InstructorId != instructorId)
+        {
+            throw new BusinessException("Acesso nao permitido ao topico.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task EnsureInstructorOwnsThreadAsync(Guid threadId, CancellationToken cancellationToken)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            return;
+        }
+
+        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
+        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+    }
+
+    private async Task<ForumThreadDto> GetThreadInternalAsync(Guid threadId, CancellationToken cancellationToken)
+    {
+        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
+        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
+        return thread;
+    }
+
+    private async Task<ForumThreadDto> CreateThreadInternalAsync(ForumThreadCreateDto dto, CancellationToken cancellationToken)
+    {
+        if (IsInstructor() && !IsAdministrator())
+        {
+            var classGroup = await _classGroupRepository.FindAsync(dto.ClassGroupId, cancellationToken);
+            if (classGroup is null)
+            {
+                throw new BusinessException("Turma nao encontrada para criar o topico.", ECodigo.NaoEncontrado);
+            }
+
+            await EnsureInstructorOwnsCourseAsync(classGroup.CourseId, cancellationToken);
+        }
+
+        return await _service.CreateThreadAsync(dto, cancellationToken);
+    }
+}
+````
+
+## File: src/ProjetoFinal.Api/Properties/launchSettings.json
+````json
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:13852",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "development_http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "development_http_api": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "production_http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "production_http_api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
+````
+
+## File: src/ProjetoFinal.Application.Contracts/Dto/Forum/ForumThreadDto.cs
+````csharp
+using System;
+using System.Collections.Generic;
+using ProjetoFinal.Application.Contracts.Dto.Media;
+
+namespace ProjetoFinal.Application.Contracts.Dto.Forum;
+
+public class ForumThreadDto
+{
+    public Guid Id { get; set; }
+    public Guid CourseId { get; set; }
+    public Guid ClassGroupId { get; set; }
+    public string ClassGroupName { get; set; } = string.Empty;
+    public Guid CreatedById { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsLocked { get; set; }
+    public bool IsPinned { get; set; }
+    public DateTime LastActivityAt { get; set; }
+
+    public IList<ForumPostDto> Posts { get; set; } = new List<ForumPostDto>();
+}
+
+public class ForumPostDto
+{
+    public Guid Id { get; set; }
+    public Guid ThreadId { get; set; }
+    public Guid AuthorId { get; set; }
+    public string AuthorName { get; set; } = string.Empty;
+    public Guid? ParentPostId { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? EditedAt { get; set; }
+
+    public IList<ForumPostAttachmentDto> Attachments { get; set; } = new List<ForumPostAttachmentDto>();
+    public IList<ForumPostDto> Replies { get; set; } = new List<ForumPostDto>();
+}
+
+public class ForumPostAttachmentDto
+{
+    public Guid Id { get; set; }
+    public Guid MediaResourceId { get; set; }
+    public string? Caption { get; set; }
+    public MediaResourceDto? Media { get; set; }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/api/forum.api.ts
+````typescript
+import { ApiPagedResponse, normalizePagedResponse } from './api.types';
+import { formatRelativeHours } from '../utils/date.util';
+
+export interface ForumThreadDto {
+  Id: string;
+  CourseId: string;
+  ClassGroupId: string;
+  ClassGroupName: string;
+  CreatedById: string;
+  CreatedByName: string;
+  Title: string;
+  Description?: string;
+  IsLocked: boolean;
+  IsPinned: boolean;
+  LastActivityAt: string;
+  Posts: ForumPostDto[];
+}
+
+export interface ForumPostDto {
+  Id: string;
+  ThreadId: string;
+  AuthorId: string;
+  AuthorName: string;
+  ParentPostId?: string;
+  Message: string;
+  CreatedAt: string;
+  EditedAt?: string;
+  Replies: ForumPostDto[];
+}
+
+export interface ForumThreadListItem {
+  id: string;
+  title: string;
+  courseTitle: string;
+  classGroupName: string;
+  replies: number;
+  lastActivityLabel: string;
+  authorId: string;
+  authorName: string;
+  isPinned: boolean;
+  isLocked: boolean;
+}
+
+export interface ForumThreadFilter {
+  CourseId?: string;
+  ClassGroupId?: string;
+  Title?: string;
+  IsPinned?: boolean;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export interface ForumThreadCreatePayload {
+  ClassGroupId: string;
+  CreatedById: string;
+  Title: string;
+  Description?: string;
+  IsPinned: boolean;
+}
+
+export interface ForumPostFilter {
+  ThreadId?: string;
+  AuthorId?: string;
+  ParentPostId?: string;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export interface ForumPostCreatePayload {
+  ThreadId: string;
+  AuthorId: string;
+  ParentPostId?: string;
+  Message: string;
+}
+
+export function mapForumThreadsResponse(
+  response: ApiPagedResponse<ForumThreadDto>,
+  courseLookup: Map<string, string>
+): ForumThreadListItem[] {
+  const { items } = normalizePagedResponse(response);
+
+  return items.map(thread => ({
+    id: thread.Id,
+    title: thread.Title,
+    courseTitle: courseLookup.get(thread.CourseId) ?? 'Curso desconhecido',
+    classGroupName: thread.ClassGroupName || 'Turma nao informada',
+    replies: countReplies(thread.Posts ?? []),
+    lastActivityLabel: formatRelativeHours(thread.LastActivityAt),
+    authorId: thread.CreatedById,
+    authorName: thread.CreatedByName || 'Usuario desconhecido',
+    isPinned: thread.IsPinned,
+    isLocked: thread.IsLocked
+  }));
+}
+
+function countReplies(posts: ForumPostDto[]): number {
+  let total = posts.length;
+  posts.forEach(post => {
+    total += countReplies(post.Replies ?? []);
+  });
+  return total;
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/services/forum.service.ts
+````typescript
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { catchError, map, of, throwError } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
+import {
+  ForumThreadCreatePayload,
+  ForumThreadDto,
+  ForumThreadFilter,
+  ForumThreadListItem,
+  mapForumThreadsResponse
+} from '../api/forum.api';
+import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
+import { toHttpParams } from '../utils/http-params.util';
+
+@Injectable({ providedIn: 'root' })
+export class ForumService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.baseUrl;
+
+  getThreads(courseLookup: Map<string, string>, filter: ForumThreadFilter = {}) {
+    const params = toHttpParams({ PageSize: 20, PageNumber: 1, ...filter });
+
+    return this.http
+      .get<ApiPagedResponse<ForumThreadDto>>(`${this.baseUrl}/forum/threads`, { params })
+      .pipe(
+        catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
+        map(response => mapForumThreadsResponse(response, courseLookup))
+      );
+  }
+
+  getThreadsRaw(filter: ForumThreadFilter = {}) {
+    const params = toHttpParams({ PageSize: 50, PageNumber: 1, ...filter });
+
+    return this.http
+      .get<ApiPagedResponse<ForumThreadDto>>(`${this.baseUrl}/forum/threads`, { params })
+      .pipe(
+        catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
+        map(response => normalizePagedResponse(response).items)
+      );
+  }
+
+  getThreadsByClassGroup(courseLookup: Map<string, string>, classGroupId: string) {
+    return this.getThreads(courseLookup, { ClassGroupId: classGroupId });
+  }
+
+  getThreadById(threadId: string) {
+    return this.http
+      .get<ForumThreadDto>(`${this.baseUrl}/forum/threads/${threadId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
+  createThread(payload: ForumThreadCreatePayload) {
+    return this.http
+      .post<ForumThreadDto>(`${this.baseUrl}/forum/threads`, payload)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/class-group-manage/class-group-manage.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastrService } from 'ngx-toastr';
+import { forkJoin, of } from 'rxjs';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
+
+import { ClassGroupsService } from '../../core/services/class-groups.service';
+import { CoursesService } from '../../core/services/courses.service';
+import { ForumService } from '../../core/services/forum.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ClassGroupDto, ClassEnrollmentDto, CourseDto } from '../../core/api/courses.api';
+import { ForumThreadCreatePayload, ForumThreadListItem } from '../../core/api/forum.api';
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityListItem } from '../../core/api/activities.api';
+import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
+import { ActivitySubmissionDto } from '../../core/api/activity-submissions.api';
+import { MediaService } from '../../core/services/media.service';
+import { UsersService } from '../../core/services/users.service';
+
+@Component({
+  selector: 'app-class-group-manage',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './class-group-manage.component.html',
+  styleUrl: './class-group-manage.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ClassGroupManageComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly classGroupsService = inject(ClassGroupsService);
+  private readonly coursesService = inject(CoursesService);
+  private readonly forumService = inject(ForumService);
+  private readonly authService = inject(AuthService);
+  private readonly toastr = inject(ToastrService);
+  private readonly activitiesService = inject(ActivitiesService);
+  private readonly submissionsService = inject(ActivitySubmissionsService);
+  private readonly mediaService = inject(MediaService);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly usersService = inject(UsersService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly threadsLoading = signal(false);
+  readonly classGroup = signal<ClassGroupDto | null>(null);
+  readonly course = signal<CourseDto | null>(null);
+  readonly threads = signal<ForumThreadListItem[]>([]);
+  readonly isThreadFormVisible = signal(false);
+  readonly isThreadSubmitting = signal(false);
+  readonly activitiesLoading = signal(false);
+  readonly activities = signal<ActivityListItem[]>([]);
+  readonly selectedActivityId = signal<string | null>(null);
+  readonly submissionsLoading = signal(false);
+  readonly submissionsError = signal<string | null>(null);
+  readonly submissions = signal<ActivitySubmissionDto[]>([]);
+  readonly selectedSubmission = signal<ActivitySubmissionDto | null>(null);
+  readonly submissionDetailsLoading = signal(false);
+  readonly downloadingAttachment = signal<string | null>(null);
+  readonly studentNames = signal<Map<string, string>>(new Map());
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
+
+  readonly capacity = computed(() => this.classGroup()?.Capacity ?? 0);
+  readonly approved = computed(() => this.classGroup()?.ApprovedEnrollments ?? 0);
+  readonly pending = computed(() => this.classGroup()?.PendingEnrollments ?? 0);
+  readonly available = computed(() => {
+    const cap = this.capacity();
+    const approved = this.approved();
+    return Math.max(cap - approved, 0);
+  });
+  readonly occupancyPercent = computed(() => {
+    const cap = this.capacity();
+    const approved = this.approved();
+    if (!cap) {
+      return 0;
+    }
+    return Math.min(100, Math.round((approved / cap) * 100));
+  });
+  readonly enrollments = computed<ClassEnrollmentDto[]>(() => this.classGroup()?.Enrollments ?? []);
+  readonly selectedActivity = computed(() => {
+    const activityId = this.selectedActivityId();
+    return this.activities().find(activity => activity.id === activityId) ?? null;
+  });
+
+  readonly threadForm = this.fb.group({
+    title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(180)]),
+    description: this.fb.control<string | null>('', [Validators.maxLength(1200)]),
+    isPinned: this.fb.nonNullable.control(false)
+  });
+  readonly gradingForm = this.fb.group({
+    status: this.fb.control<number | null>(null, { validators: [Validators.required] }),
+    score: this.fb.control<string | null>(null),
+    masteryScore: this.fb.control<string | null>(null),
+    applicationScore: this.fb.control<string | null>(null),
+    communicationScore: this.fb.control<string | null>(null),
+    recommendedAction: this.fb.control<string | null>(null),
+    feedbackTags: this.fb.nonNullable.control<string[]>([]),
+    feedback: this.fb.control<string | null>(''),
+  });
+
+  private readonly enrollmentStatusLabels: Record<number, string> = {
+    1: 'Pendente',
+    2: 'Aprovada',
+    3: 'Recusada',
+    4: 'Cancelada'
+  };
+  readonly submissionStatusOptions = [
+    { value: 2, label: 'Submetida' },
+    { value: 3, label: 'Corrigida' },
+    { value: 4, label: 'Devolvida' }
+  ];
+  private readonly submissionStatusLabels: Record<number, string> = {
+    1: 'Rascunho',
+    2: 'Submetida',
+    3: 'Corrigida',
+    4: 'Devolvida'
+  };
+  readonly feedbackTagOptions = [
+    { value: 'dificuldade_conceitual', label: 'Dificuldade conceitual' },
+    { value: 'erro_interpretacao', label: 'Erro de interpretacao' },
+    { value: 'faltou_referencia', label: 'Faltou referencia' },
+    { value: 'excelente_argumentacao', label: 'Excelente argumentacao' },
+    { value: 'boa_organizacao', label: 'Boa organizacao' }
+  ];
+  readonly recommendedActionOptions = [
+    { value: 'reforco', label: 'Reforco de conteudo' },
+    { value: 'refazer_atividade', label: 'Refazer atividade' },
+    { value: 'monitoria', label: 'Encaminhar para monitoria' },
+    { value: 'proximo_modulo', label: 'Liberar proximo modulo' }
+  ];
+  readonly isTagsDropdownOpen = signal(false);
+  private readonly initialActivityId = signal<string | null>(null);
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
+
+  constructor() {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.initialActivityId.set(params.get('activityId'));
+      });
+
+    this.route.paramMap
+      .pipe(
+        map(params => params.get('classGroupId')),
+        filter((classGroupId): classGroupId is string => Boolean(classGroupId)),
+        switchMap(classGroupId =>
+          this.classGroupsService.getClassGroupById(classGroupId).pipe(
+            switchMap(group =>
+              forkJoin({
+                group: of(group),
+                course: this.coursesService.getCourseById(group.CourseId)
+              })
+            ),
+            map(result => ({ ...result, classGroupId }))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ classGroupId, group, course }) => {
+          this.classGroup.set(group);
+          this.course.set(course);
+          this.hydrateStudentNamesFromEnrollments(group.Enrollments ?? []);
+          this.error.set(null);
+          this.loading.set(false);
+          this.reloadThreads();
+          this.loadActivities(group.Id);
+        },
+        error: () => {
+          this.classGroup.set(null);
+          this.course.set(null);
+          this.error.set('Nao foi possivel carregar os dados da turma.');
+          this.loading.set(false);
+        }
+      });
+
+    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
+  }
+
+  openThreadForm(): void {
+    this.isThreadFormVisible.set(true);
+    this.threadForm.reset({ title: '', description: '', isPinned: false });
+  }
+
+  cancelThreadCreation(): void {
+    this.threadForm.reset({ title: '', description: '', isPinned: false });
+    this.isThreadFormVisible.set(false);
+  }
+
+  statusLabel(status: number): string {
+    return this.enrollmentStatusLabels[status] ?? 'Desconhecido';
+  }
+
+  statusBadgeClass(status: number): string {
+    switch (status) {
+      case 1:
+        return 'badge--warning';
+      case 2:
+        return 'badge--success';
+      case 3:
+        return 'badge--danger';
+      case 4:
+        return 'badge--neutral';
+      default:
+        return 'badge--neutral';
+    }
+  }
+
+  submitThread(): void {
+    if (this.threadForm.invalid) {
+      this.threadForm.markAllAsTouched();
+      return;
+    }
+
+    const group = this.classGroup();
+    const currentUser = this.authService.currentUser();
+
+    if (!group) {
+      this.toastr.error('Carregue os dados da turma antes de criar um topico.');
+      return;
+    }
+
+    if (!currentUser) {
+      this.toastr.error('Usuario nao autenticado.');
+      return;
+    }
+
+    const raw = this.threadForm.getRawValue();
+    const title = raw.title.trim();
+    if (!title) {
+      this.threadForm.controls.title.setErrors({ required: true });
+      this.threadForm.controls.title.markAsTouched();
+      return;
+    }
+
+    const payload: ForumThreadCreatePayload = {
+      ClassGroupId: group.Id,
+      CreatedById: currentUser.id,
+      Title: title,
+      Description: raw.description?.trim() || undefined,
+      IsPinned: raw.isPinned
+    };
+
+    this.isThreadSubmitting.set(true);
+
+    this.forumService
+      .createThread(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Topico criado com sucesso.');
+          this.isThreadSubmitting.set(false);
+          this.isThreadFormVisible.set(false);
+          this.threadForm.reset({ title: '', description: '', isPinned: false });
+          this.reloadThreads();
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel criar o topico.');
+          this.isThreadSubmitting.set(false);
+        }
+      });
+  }
+
+  navigateBack(): void {
+    this.router.navigate(['/class-groups']);
+  }
+
+  private reloadThreads(): void {
+    const group = this.classGroup();
+    const course = this.course();
+
+    if (!group || !course) {
+      return;
+    }
+
+    const lookup = new Map<string, string>([[course.Id, course.Title]]);
+    this.threadsLoading.set(true);
+
+    this.forumService
+      .getThreadsByClassGroup(lookup, group.Id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: threads => {
+          this.threads.set(threads);
+          this.threadsLoading.set(false);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel carregar os topicos da turma.');
+          this.threads.set([]);
+          this.threadsLoading.set(false);
+        }
+      });
+  }
+
+  trackByThread(_: number, item: ForumThreadListItem): string {
+    return item.id;
+  }
+
+  trackByActivity(_: number, item: ActivityListItem): string {
+    return item.id;
+  }
+
+  trackBySubmission(_: number, item: ActivitySubmissionDto): string {
+    return item.Id;
+  }
+
+  private loadActivities(classGroupId: string): void {
+    this.activitiesLoading.set(true);
+    this.activitiesService
+      .getActivities({ ClassGroupId: classGroupId })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => {
+          this.activities.set(items);
+          this.activitiesLoading.set(false);
+          if (items.length) {
+            const preferredId = this.initialActivityId();
+            const target = preferredId && items.some(item => item.id === preferredId) ? preferredId : items[0].id;
+            this.selectActivity(target);
+          } else {
+            this.selectedActivityId.set(null);
+            this.submissions.set([]);
+            this.selectedSubmission.set(null);
+          }
+          this.initialActivityId.set(null);
+        },
+        error: () => {
+          this.activitiesLoading.set(false);
+          this.toastr.error('Nao foi possivel carregar as atividades desta turma.');
+        }
+      });
+  }
+
+  selectActivity(activityId: string): void {
+    if (this.selectedActivityId() === activityId) {
+      return;
+    }
+    this.selectedActivityId.set(activityId);
+    this.selectedSubmission.set(null);
+    const group = this.classGroup();
+    if (!group) {
+      return;
+    }
+    this.loadSubmissions(activityId, group.Id);
+  }
+
+  private loadSubmissions(activityId: string, classGroupId: string): void {
+    this.submissionsLoading.set(true);
+    this.submissionsError.set(null);
+    this.submissionsService
+      .getSubmissions({ ActivityId: activityId, ClassGroupId: classGroupId, PageSize: 100 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: response => {
+          this.submissions.set(response.items);
+          this.ensureStudentNames(response.items.map(item => item.StudentId));
+          this.submissionsLoading.set(false);
+          if (response.items.length) {
+            this.selectSubmission(response.items[0].Id);
+          } else {
+            this.selectedSubmission.set(null);
+          }
+        },
+        error: () => {
+          this.submissionsLoading.set(false);
+          this.submissionsError.set('Nao foi possivel carregar as submissões desta atividade.');
+          this.submissions.set([]);
+          this.selectedSubmission.set(null);
+        }
+      });
+  }
+
+  selectSubmission(submissionId: string): void {
+    if (!submissionId) {
+      return;
+    }
+    this.resetVideoUrls();
+    this.submissionDetailsLoading.set(true);
+    this.gradingForm.reset({
+      status: null,
+      score: null,
+      masteryScore: null,
+      applicationScore: null,
+      communicationScore: null,
+      recommendedAction: null,
+      feedbackTags: [],
+      feedback: ''
+    });
+    this.submissionsService
+      .getById(submissionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: submission => {
+          this.selectedSubmission.set(submission);
+          this.patchGradingForm(submission);
+          if (submission.StudentName) {
+            const updated = new Map(this.studentNames());
+            updated.set(submission.StudentId, submission.StudentName);
+            this.studentNames.set(updated);
+          } else {
+            this.ensureStudentNames([submission.StudentId]);
+          }
+          this.submissionDetailsLoading.set(false);
+        },
+        error: () => {
+          this.submissionDetailsLoading.set(false);
+          this.toastr.error('Nao foi possivel carregar os detalhes da submissao.');
+        }
+      });
+  }
+
+  private patchGradingForm(submission: ActivitySubmissionDto): void {
+    this.gradingForm.patchValue({
+      status: submission.Status ?? 2,
+      score: submission.Score != null ? String(submission.Score) : null,
+      masteryScore: submission.MasteryScore != null ? String(submission.MasteryScore) : null,
+      applicationScore: submission.ApplicationScore != null ? String(submission.ApplicationScore) : null,
+      communicationScore: submission.CommunicationScore != null ? String(submission.CommunicationScore) : null,
+      recommendedAction: submission.RecommendedAction ?? null,
+      feedbackTags: this.parseFeedbackTags(submission.FeedbackTags),
+      feedback: submission.Feedback ?? ''
+    });
+  }
+
+  submissionStatusLabel(status: number): string {
+    return this.submissionStatusLabels[status] ?? 'Desconhecido';
+  }
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+
+  downloadSubmissionAttachment(attachmentId: string, fileName?: string): void {
+    if (!attachmentId || this.downloadingAttachment() === attachmentId) {
+      return;
+    }
+
+    this.downloadingAttachment.set(attachmentId);
+    this.mediaService
+      .download(attachmentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = fileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloadingAttachment.set(null);
+        },
+        error: () => {
+          this.downloadingAttachment.set(null);
+          this.toastr.error('Nao foi possivel baixar o anexo.');
+        }
+      });
+  }
+
+  isVideoAttachment(attachment: ActivitySubmissionDto['Attachments'][number]): boolean {
+    if (attachment.IsVideo) {
+      return true;
+    }
+
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(attachmentId: string): string | null {
+    return this.videoUrls()[attachmentId] ?? null;
+  }
+
+  videoIsLoading(attachmentId: string): boolean {
+    return Boolean(this.videoLoading()[attachmentId]);
+  }
+
+  loadVideo(attachment: ActivitySubmissionDto['Attachments'][number]): void {
+    if (!attachment?.MediaResourceId || this.videoIsLoading(attachment.MediaResourceId)) {
+      return;
+    }
+
+    if (this.videoUrlFor(attachment.MediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
+
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video.');
+        }
+      });
+  }
+
+  saveGrading(): void {
+    const submission = this.selectedSubmission();
+    const instructor = this.authService.currentUser();
+
+    if (!submission) {
+      this.toastr.warning('Selecione uma submissao para corrigir.');
+      return;
+    }
+
+    if (!instructor) {
+      this.toastr.error('Usuario nao autenticado.');
+      return;
+    }
+
+    if (this.gradingForm.invalid) {
+      this.gradingForm.markAllAsTouched();
+      return;
+    }
+
+    const parsedScore = this.parseScore(this.gradingForm.controls.score.value);
+    if (parsedScore === null && this.gradingForm.controls.score.value) {
+      this.toastr.error('Informe um valor numerico valido para a nota.');
+      return;
+    }
+
+    const masteryScore = this.parseRubricScore(this.gradingForm.controls.masteryScore.value);
+    const applicationScore = this.parseRubricScore(this.gradingForm.controls.applicationScore.value);
+    const communicationScore = this.parseRubricScore(this.gradingForm.controls.communicationScore.value);
+    if (
+      (masteryScore === null && this.gradingForm.controls.masteryScore.value) ||
+      (applicationScore === null && this.gradingForm.controls.applicationScore.value) ||
+      (communicationScore === null && this.gradingForm.controls.communicationScore.value)
+    ) {
+      this.toastr.error('As notas dos criterios devem estar entre 1 e 5.');
+      return;
+    }
+
+    const payload = {
+      Status: this.gradingForm.controls.status.value ?? 3,
+      Score: parsedScore ?? undefined,
+      GradedById: instructor.id,
+      MasteryScore: masteryScore ?? undefined,
+      ApplicationScore: applicationScore ?? undefined,
+      CommunicationScore: communicationScore ?? undefined,
+      FeedbackTags: this.joinFeedbackTags(this.gradingForm.controls.feedbackTags.value),
+      RecommendedAction: this.gradingForm.controls.recommendedAction.value?.trim() || undefined,
+      Feedback: this.gradingForm.controls.feedback.value?.trim() || undefined,
+      TextAnswer: submission.TextAnswer,
+      Attachments: (submission.Attachments ?? []).map(attachment => ({
+        MediaResourceId: attachment.MediaResourceId,
+        IsPrimary: attachment.IsPrimary,
+        IsVideo: attachment.IsVideo
+      }))
+    };
+
+    this.submissionDetailsLoading.set(true);
+    this.submissionsService
+      .updateSubmission(submission.Id, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: updated => {
+          this.toastr.success('Correcao salva com sucesso.');
+          this.selectedSubmission.set(updated);
+          this.patchGradingForm(updated);
+          this.submissionDetailsLoading.set(false);
+          const activityId = this.selectedActivityId();
+          const group = this.classGroup();
+          if (activityId && group) {
+            this.loadSubmissions(activityId, group.Id);
+          }
+        },
+        error: () => {
+          this.submissionDetailsLoading.set(false);
+          this.toastr.error('Nao foi possivel salvar a correcao.');
+        }
+      });
+  }
+
+  private parseScore(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private parseRubricScore(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private parseFeedbackTags(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+
+  private joinFeedbackTags(tags: string[]): string | undefined {
+    if (!tags?.length) {
+      return undefined;
+    }
+    return tags.join(',');
+  }
+
+  toggleTagsDropdown(): void {
+    this.isTagsDropdownOpen.update(value => !value);
+  }
+
+  isTagSelected(tag: string): boolean {
+    return this.gradingForm.controls.feedbackTags.value.includes(tag);
+  }
+
+  toggleFeedbackTag(tag: string, checked: boolean): void {
+    const current = this.gradingForm.controls.feedbackTags.value;
+    if (checked) {
+      if (!current.includes(tag)) {
+        this.gradingForm.controls.feedbackTags.setValue([...current, tag]);
+      }
+      return;
+    }
+
+    this.gradingForm.controls.feedbackTags.setValue(current.filter(item => item !== tag));
+  }
+
+  selectedTagsLabel(): string {
+    const selected = this.gradingForm.controls.feedbackTags.value;
+    if (!selected.length) {
+      return 'Selecione as tags';
+    }
+
+    return this.feedbackTagOptions
+      .filter(option => selected.includes(option.value))
+      .map(option => option.label)
+      .join(', ');
+  }
+
+  submissionStudentName(submission: ActivitySubmissionDto): string {
+    return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
+  }
+
+  private hydrateStudentNamesFromEnrollments(enrollments: ClassEnrollmentDto[]): void {
+    if (!enrollments?.length) {
+      return;
+    }
+    const current = new Map(this.studentNames());
+    enrollments.forEach(enrollment => {
+      current.set(enrollment.StudentId, enrollment.StudentName);
+    });
+    this.studentNames.set(current);
+  }
+
+  private ensureStudentNames(studentIds: string[]): void {
+    const cache = this.studentNames();
+    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
+    if (!pending.length) {
+      return;
+    }
+
+    forkJoin(
+      pending.map(id =>
+        this.usersService.getById(id).pipe(
+          catchError(() => of(null))
+        )
+      )
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(users => {
+        const updated = new Map(this.studentNames());
+        users.forEach(user => {
+          if (user) {
+            updated.set(user.Id, user.FullName || user.Email || 'Aluno');
+          }
+        });
+        this.studentNames.set(updated);
+      });
+  }
+
+  private resetVideoUrls(): void {
+    this.cleanupVideoUrls();
+    this.videoUrls.set({});
+    this.videoLoading.set({});
+  }
+
+  private cleanupVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/class-groups/class-groups.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+
+import { CoursesService } from '../../core/services/courses.service';
+import { ClassGroupListItem } from '../../core/api/courses.api';
+
+@Component({
+  selector: 'app-class-groups',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './class-groups.component.html',
+  styleUrl: './class-groups.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ClassGroupsComponent {
+  private readonly service = inject(CoursesService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly classGroups = signal<ClassGroupListItem[]>([]);
+
+  constructor() {
+    this.service
+      .getClassGroupRows(true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (groups: ClassGroupListItem[]) => {
+          this.classGroups.set(groups);
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar as turmas.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  trackByGroupId(_: number, item: ClassGroupListItem): string {
+    return item.id;
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/class-groups/create']);
+  }
+
+  navigateToManage(groupId: string): void {
+    this.router.navigate(['/class-groups', groupId, 'manage']);
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.css
+````css
+.activity-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.activity-viewer__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.back-link {
+  align-self: flex-start;
+  color: var(--accent-600);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-600);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.activity-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #fff;
+}
+
+.rich-content {
+  line-height: 1.6;
+  color: var(--surface-700);
+}
+
+.rich-content :where(p, ul, ol) {
+  margin: 0 0 0.75rem;
+}
+
+.rich-content ul,
+.rich-content ol {
+  padding-left: 1.25rem;
+}
+
+.attachments-section {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.attachments-section header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attachments-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachments-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+}
+
+.muted {
+  color: var(--surface-500);
+  margin: 0;
+}
+
+.button {
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.state {
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(148, 163, 184, 0.2);
+  text-align: center;
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.2);
+  color: #b91c1c;
+}
+
+.submission-module {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submission-module__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.badge--accent {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-600);
+}
+
+.submission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submission-form label {
+  font-weight: 600;
+  color: var(--surface-700);
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--surface-500);
+}
+
+.submission-form__attachments {
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.submission-form__attachments-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.upload-button {
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: var(--accent-600);
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-button input {
+  display: none;
+}
+
+.attachment-drafts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachment-drafts li {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.attachment-error {
+  color: #b91c1c;
+}
+
+.loading-dots::after {
+  content: '...';
+  display: inline-block;
+  margin-left: 4px;
+  animation: loadingDots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.primary-button {
+  border-radius: 999px;
+  border: 0;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  background: var(--accent-600);
+  color: #fff;
+  cursor: pointer;
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submission-summary {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submission-summary header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submission-summary h5 {
+  margin: 0 0 0.5rem;
+  color: var(--surface-600);
+}
+
+.submission-summary__grading dl {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.submission-summary__grading dt {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.submission-summary__grading dd {
+  margin: 0.2rem 0 0;
+  color: var(--surface-800);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+}
+
+.status-badge[data-status='enviado'] {
+  background: rgba(34, 197, 94, 0.2);
+  color: #15803d;
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.html
+````html
+<section class="content-viewer">
+  <div class="content-viewer__header">
+    <a class="back-link" [routerLink]="['/courses', courseId() ?? '' , 'manage']">
+      ← Voltar para o curso
+    </a>
+
+    <h2>{{ pageTitle() }}</h2>
+    <span class="status-badge" [attr.data-status]="statusLabel()">{{ statusLabel() }}</span>
+
+    <p class="summary" *ngIf="content()?.Summary">{{ content()?.Summary }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <article class="content-card" *ngIf="content() as current">
+        <section class="content-body">
+          <h3>Descricao</h3>
+          <div
+            class="rich-content"
+            *ngIf="current.Body; else noBody"
+            [innerHTML]="safeHtml(current.Body)"
+          ></div>
+          <ng-template #noBody>
+            <p class="muted">Nenhuma descricao detalhada informada.</p>
+          </ng-template>
+        </section>
+
+        <section class="attachments-section">
+          <header>
+            <h3>Anexos</h3>
+            <span>{{ current.Attachments.length }} arquivo(s)</span>
+          </header>
+
+          <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of current.Attachments">
+                <div>
+                  <strong>{{ attachment.Caption || 'Arquivo sem descricao' }}</strong>
+                  <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
+                  <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
+                </div>
+
+                <ng-container *ngIf="isVideoAttachment(attachment); else downloadBlock">
+                  <div class="video-container">
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      *ngIf="!isVideoLoaded(attachment.MediaResourceId)"
+                      (click)="loadVideo(attachment)"
+                      [disabled]="videoIsLoading(attachment.MediaResourceId)"
+                    >
+                      {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : 'Carregar vídeo' }}
+                    </button>
+
+                    <div class="video-frame" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
+                      <video #videoPlayer controls [src]="videoUrl"></video>
+
+                      <div class="annotation-panel">
+                        <h4>Anotações</h4>
+                        <div class="annotation-form">
+                          <input
+                            type="text"
+                            placeholder="Mensagem"
+                            [value]="annotationDraft(attachment.Id)"
+                            (input)="updateAnnotationDraft(attachment.Id, ($any($event.target).value || ''))"
+                          />
+                          <button
+                            type="button"
+                            class="button button--ghost"
+                            (click)="addAnnotation(attachment.Id, videoPlayer.currentTime)"
+                          >
+                            Adicionar ({{ formatTime(videoPlayer.currentTime) }})
+                          </button>
+                        </div>
+
+                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.Id).length; else noAnnotations">
+                          <li
+                            *ngFor="let annotation of annotationsFor(attachment.Id)"
+                            (click)="seekTo(videoPlayer, annotation.time)"
+                          >
+                            <span>{{ formatTime(annotation.time) }}</span>
+                            <p>{{ annotation.text }}</p>
+                          </li>
+                        </ul>
+                        <ng-template #noAnnotations>
+                          <p class="muted">Nenhuma anotação criada ainda.</p>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-template #downloadBlock>
+                  <button
+                    class="button button--ghost"
+                    type="button"
+                    (click)="downloadAttachment(attachment)"
+                    [disabled]="downloading() === attachment.MediaResourceId"
+                  >
+                    {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                  </button>
+                </ng-template>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noAttachments>
+            <p class="muted">Nenhum arquivo foi anexado a este conteudo.</p>
+          </ng-template>
+        </section>
+      </article>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando conteudo...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+import { CourseContentsService } from '../../core/services/course-contents.service';
+import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
+import { MediaService } from '../../core/services/media.service';
+import { ToastrService } from 'ngx-toastr';
+import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
+
+interface LocalVideoAnnotation {
+  id: string;
+  time: number;
+  text: string;
+}
+
+@Component({
+  selector: 'app-course-content-viewer',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './course-content-viewer.component.html',
+  styleUrl: './course-content-viewer.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CourseContentViewerComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly service = inject(CourseContentsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly mediaService = inject(MediaService);
+  private readonly toastr = inject(ToastrService);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly annotationsService = inject(ContentAnnotationsService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly content = signal<CourseContentDto | null>(null);
+  readonly courseId = signal<string | null>(null);
+  readonly downloading = signal<string | null>(null);
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
+  readonly annotationDrafts = signal<Record<string, string>>({});
+  readonly annotationsState = signal<Record<string, LocalVideoAnnotation[]>>({});
+
+  readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
+  readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
+
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(params => {
+          const courseId = params.get('courseId');
+          const contentId = params.get('contentId');
+          this.courseId.set(courseId);
+          if (!contentId) {
+            throw new Error('Conteudo nao encontrado.');
+          }
+          this.loading.set(true);
+          return this.service.getContentById(contentId);
+        })
+      )
+      .subscribe({
+        next: content => {
+          this.content.set(content);
+          this.loadPersistedAnnotations(content.Attachments ?? []);
+          this.loading.set(false);
+          this.error.set(null);
+        },
+        error: () => {
+          this.content.set(null);
+          this.error.set('Nao foi possivel carregar o conteudo selecionado.');
+          this.loading.set(false);
+        }
+      });
+
+    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
+  }
+
+  downloadAttachment(attachment: ContentAttachmentDto): void {
+    if (!attachment?.MediaResourceId) {
+      return;
+    }
+
+    this.downloading.set(attachment.MediaResourceId);
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = attachment.Media?.OriginalFileName || attachment.Media?.FileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloading.set(null);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel baixar o arquivo.');
+          this.downloading.set(null);
+        }
+      });
+  }
+
+  isVideoAttachment(attachment: ContentAttachmentDto): boolean {
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(attachmentId: string): string | null {
+    return this.videoUrls()[attachmentId] ?? null;
+  }
+
+  annotationDraft(attachmentId: string): string {
+    return this.annotationDrafts()[attachmentId] ?? '';
+  }
+
+  annotationsFor(attachmentId: string): LocalVideoAnnotation[] {
+    return this.annotationsState()[attachmentId] ?? [];
+  }
+
+  loadVideo(attachment: ContentAttachmentDto): void {
+    if (!attachment.MediaResourceId || this.videoLoading()[attachment.MediaResourceId]) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
+
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel carregar o video.');
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        }
+      });
+  }
+
+  updateAnnotationDraft(attachmentId: string, value: string): void {
+    this.annotationDrafts.update(state => ({ ...state, [attachmentId]: value }));
+  }
+
+  addAnnotation(attachmentId: string, currentTime: number): void {
+    const text = (this.annotationDrafts()[attachmentId] ?? '').trim();
+    if (!text) {
+      this.toastr.info('Digite uma anotacao antes de salvar.');
+      return;
+    }
+
+    this.annotationsService
+      .addAnnotation({
+        ContentAttachmentId: attachmentId,
+        TimeMarkerSeconds: currentTime,
+        Comment: text
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: saved => {
+          const annotation: LocalVideoAnnotation = {
+            id: saved.Id,
+            time: saved.TimeMarkerSeconds,
+            text: saved.Comment
+          };
+          this.annotationsState.update(state => {
+            const list = state[attachmentId] ?? [];
+            return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
+          });
+          this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel salvar a anotacao.');
+        }
+      });
+  }
+
+  seekTo(video: HTMLVideoElement, time: number): void {
+    if (Number.isFinite(time) && video) {
+      video.currentTime = time;
+      video.focus();
+    }
+  }
+
+  formatTime(time: number): string {
+    if (!Number.isFinite(time)) {
+      return '00:00';
+    }
+    const minutes = Math.floor(time / 60)
+      .toString()
+      .padStart(2, '0');
+    const seconds = Math.floor(time % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  }
+
+  isVideoLoaded(attachmentId: string): boolean {
+    return Boolean(this.videoUrls()[attachmentId]);
+  }
+
+  videoIsLoading(attachmentId: string): boolean {
+    return Boolean(this.videoLoading()[attachmentId]);
+  }
+
+  private cleanupVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
+  }
+
+  private loadPersistedAnnotations(attachments: ContentAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoAttachment(attachment))
+      .forEach(attachment => {
+        this.annotationsService
+          .getAnnotations({ ContentAttachmentId: attachment.Id })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: response => {
+              const annotations = response.items
+                .map(item => ({
+                  id: item.Id,
+                  time: item.TimeMarkerSeconds,
+                  text: item.Comment
+                }))
+                .sort((a, b) => a.time - b.time);
+              this.annotationsState.update(state => ({ ...state, [attachment.Id]: annotations }));
+            },
+            error: () => {
+              this.toastr.error('Nao foi possivel carregar as anotacoes do video.');
+            }
+          });
+      });
+  }
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-activities.component.html
+````html
+<section class="course-activities" *ngIf="selectedCourse(); else noCourseSelected">
+  <header class="course-activities__header">
+    <div>
+      <h3>Atividades do curso</h3>
+      <p>Cadastre atividades para as turmas interativas e acompanhe o status em tempo real.</p>
+    </div>
+    <button
+      type="button"
+      class="button button--primary"
+      (click)="toggleForm()"
+      [disabled]="!hasAvailableGroups()"
+    >
+      {{ formVisible() ? 'Fechar formulário' : 'Nova atividade' }}
+    </button>
+  </header>
+
+  <div class="state state--info" *ngIf="!hasAvailableGroups()">
+    Cadastre ao menos uma turma interativa para liberar o registro de atividades.
+  </div>
+
+  <form
+    class="activity-form"
+    *ngIf="formVisible()"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="activity-form__grid">
+      <label class="form-control">
+        <span>Turma</span>
+        <select formControlName="classGroupId" [disabled]="!hasAvailableGroups()">
+          <option value="" disabled>Selecione uma turma</option>
+          <option [value]="allGroupsOption">Todas as turmas interativas</option>
+          <option *ngFor="let group of availableGroups()" [value]="group.Id">
+            {{ group.Name }}
+          </option>
+        </select>
+      </label>
+
+      <label class="form-control">
+        <span>Título</span>
+        <input type="text" formControlName="title" placeholder="Nome da atividade" />
+      </label>
+
+      <label class="form-control">
+        <span>Nota máxima (opcional)</span>
+        <input type="number" min="0" step="0.5" formControlName="maxScore" placeholder="0,0" />
+      </label>
+    </div>
+
+    <label class="form-control">
+      <span>Descrição</span>
+      <app-rich-text-editor
+        formControlName="description"
+        placeholder="Detalhes e orientações para os alunos"
+      ></app-rich-text-editor>
+    </label>
+
+    <div class="activity-form__grid">
+      <label class="form-control">
+        <span>Disponível a partir de</span>
+        <input type="datetime-local" formControlName="availableAt" />
+      </label>
+
+      <label class="form-control">
+        <span>Entrega até</span>
+        <input type="datetime-local" formControlName="dueDate" />
+      </label>
+
+      <label class="form-control">
+        <span>Penalidade por atraso (%)</span>
+        <input
+          type="number"
+          min="0"
+          max="100"
+          formControlName="latePenaltyPercentage"
+          placeholder="0 a 100"
+        />
+      </label>
+    </div>
+
+    <div class="form-switches">
+      <label class="checkbox-row">
+        <input type="checkbox" formControlName="allowLateSubmissions" />
+        <span>Aceitar entregas em atraso</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" formControlName="visibleToStudents" />
+        <span>Visível para estudantes</span>
+      </label>
+    </div>
+
+    <div class="attachments">
+      <div class="attachments__header">
+        <h4>Anexos</h4>
+        <label class="upload-input">
+          <input type="file" multiple (change)="handleFiles($event)" [disabled]="isSubmitting()" />
+          <i class="bi bi-paperclip"></i>
+          <span>Adicionar arquivos</span>
+        </label>
+      </div>
+      <p class="helper-text">Os anexos ficam disponíveis para os alunos após a publicação da atividade.</p>
+
+      <div class="attachments__list" *ngIf="attachments().length; else noAttachments">
+        <article
+          class="attachment-card"
+          *ngFor="let attachment of attachments(); trackBy: trackByAttachment"
+          [attr.data-status]="attachment.status"
+        >
+          <div class="attachment-card__header">
+            <div>
+              <strong>{{ attachment.fileName }}</strong>
+              <small *ngIf="attachment.media?.ContentType">{{ attachment.media?.ContentType }}</small>
+              <small *ngIf="attachment.status === 'uploading'">Enviando...</small>
+              <small *ngIf="attachment.status === 'error'">Falha no upload</small>
+            </div>
+            <button type="button" class="button button--ghost" (click)="removeAttachment(attachment.id)">
+              Remover
+            </button>
+          </div>
+          <input
+            type="text"
+            class="caption-input"
+            placeholder="Descrição opcional"
+            [value]="attachment.caption"
+            (input)="updateCaption(attachment.id, ($any($event.target).value || ''))"
+            [disabled]="attachment.status !== 'ready'"
+          />
+        </article>
+      </div>
+    </div>
+
+    <footer class="activity-form__actions">
+      <button
+        type="submit"
+        class="button button--primary"
+        [disabled]="isSubmitting() || !hasAvailableGroups()"
+      >
+        {{ isSubmitting() ? 'Salvando...' : 'Salvar atividade' }}
+      </button>
+      <button type="button" class="button button--ghost" (click)="toggleForm()">
+        Cancelar
+      </button>
+    </footer>
+
+    <ng-template #noAttachments>
+      <p class="helper-text">Nenhum anexo foi adicionado.</p>
+    </ng-template>
+  </form>
+
+  <section class="activities-list">
+    <header>
+      <div>
+        <h4>Atividades cadastradas</h4>
+        <p>Resumo das atividades vinculadas ao curso.</p>
+      </div>
+      <span>{{ activities().length }} registro(s)</span>
+    </header>
+
+    <ng-container *ngIf="!activitiesLoading(); else loadingActivities">
+      <ng-container *ngIf="activityGroups().length; else emptyActivities">
+        <div class="activities-list__grid">
+          <article
+            class="activity-card"
+            *ngFor="let activity of activityGroups(); trackBy: trackByGroup"
+          >
+            <header>
+              <h5>{{ activity.title }}</h5>
+              <span class="chip">{{ activity.classGroupLabel }}</span>
+            </header>
+            <p class="due-date">{{ activity.dueDateLabel }}</p>
+            <ul>
+              <li>{{ activity.allowLate ? 'Aceita atrasos' : 'Sem atrasos' }}</li>
+              <li>{{ activity.attachments }} anexo(s)</li>
+            </ul>
+            <button type="button" class="button button--ghost" (click)="viewActivity(activity)">
+              Visualizar
+            </button>
+          </article>
+        </div>
+      </ng-container>
+    </ng-container>
+  </section>
+</section>
+
+<ng-template #loadingActivities>
+  <div class="state state--info">Carregando atividades...</div>
+</ng-template>
+
+<ng-template #emptyActivities>
+  <div class="state state--info">Nenhuma atividade registrada para este curso.</div>
+</ng-template>
+
+<ng-template #noCourseSelected>
+  <div class="state state--info">Selecione um curso para visualizar as atividades.</div>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-activities.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  Input,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityListItem, ActivityCreatePayload } from '../../core/api/activities.api';
+import { AuthService } from '../../core/services/auth.service';
+import { CourseDto } from '../../core/api/courses.api';
+import { MediaResource } from '../../core/api/media.api';
+import { MediaService } from '../../core/services/media.service';
+import { Router } from '@angular/router';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
+
+type AttachmentStatus = 'uploading' | 'ready' | 'error';
+
+interface AttachmentDraft {
+  id: string;
+  fileName: string;
+  status: AttachmentStatus;
+  caption: string;
+  media?: MediaResource;
+}
+
+interface ActivityGroup {
+  id: string;
+  courseId: string;
+  title: string;
+  dueDateLabel: string;
+  allowLate: boolean;
+  attachments: number;
+  classGroupLabel: string;
+}
+
+@Component({
+  selector: 'app-course-activities',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
+  templateUrl: './course-activities.component.html',
+  styleUrl: './course-activities.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CourseActivitiesComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly activitiesService = inject(ActivitiesService);
+  private readonly mediaService = inject(MediaService);
+  private readonly authService = inject(AuthService);
+  private readonly toastr = inject(ToastrService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+
+  private readonly courseState = signal<CourseDto | null>(null);
+  private currentCourseId: string | null = null;
+
+  readonly selectedCourse = computed(() => this.courseState());
+  readonly activities = signal<ActivityListItem[]>([]);
+  readonly activitiesLoading = signal(false);
+  readonly formVisible = signal(false);
+  readonly isSubmitting = signal(false);
+  readonly attachments = signal<AttachmentDraft[]>([]);
+  readonly allGroupsOption = '__all__';
+
+  readonly availableGroups = computed(() => {
+    const course = this.courseState();
+    if (!course) {
+      return [];
+    }
+    return (course.ClassGroups ?? []).filter(group => !group.IsMaterialsDistribution);
+  });
+
+  readonly hasAvailableGroups = computed(() => this.availableGroups().length > 0);
+  readonly hasUploadingAttachments = computed(() =>
+    this.attachments().some(item => item.status === 'uploading')
+  );
+  readonly activityGroups = computed<ActivityGroup[]>(() => {
+    const items = this.activities();
+    if (!items.length) {
+      return [];
+    }
+
+    const groupCount = this.availableGroups().length;
+    const groups = new Map<string, { activity: ActivityListItem; classGroups: Set<string> }>();
+
+    items.forEach(activity => {
+      const key = [
+        activity.courseId,
+        activity.title,
+        activity.dueDateLabel,
+        String(activity.allowLate),
+        String(activity.attachments)
+      ].join('|');
+
+      const entry = groups.get(key);
+      if (entry) {
+        entry.classGroups.add(activity.classGroupName || 'Turma nao informada');
+      } else {
+        groups.set(key, {
+          activity,
+          classGroups: new Set([activity.classGroupName || 'Turma nao informada'])
+        });
+      }
+    });
+
+    return Array.from(groups.values()).map(({ activity, classGroups }) => {
+      const names = Array.from(classGroups);
+      const label =
+        groupCount > 0 && classGroups.size >= groupCount
+          ? 'Todas as turmas'
+          : names.join(', ');
+
+      return {
+        id: activity.id,
+        courseId: activity.courseId,
+        title: activity.title,
+        dueDateLabel: activity.dueDateLabel,
+        allowLate: activity.allowLate,
+        attachments: activity.attachments,
+        classGroupLabel: label
+      };
+    });
+  });
+
+  readonly form = this.fb.group({
+    classGroupId: this.fb.control('', { validators: [Validators.required] }),
+    title: this.fb.control('', { validators: [Validators.required, Validators.maxLength(180)] }),
+    description: this.fb.control('', { validators: [Validators.required, Validators.maxLength(4000)] }),
+    availableAt: this.fb.control<string | null>(null),
+    dueDate: this.fb.control<string | null>(null),
+    maxScore: this.fb.control<string | null>(null),
+    allowLateSubmissions: this.fb.control(false),
+    latePenaltyPercentage: this.fb.control<string | null>({ value: null, disabled: true }),
+    visibleToStudents: this.fb.control(true)
+  });
+
+  @Input({ required: true })
+  set course(value: CourseDto | null) {
+    this.courseState.set(value);
+    this.onCourseChanged(value);
+  }
+
+  constructor() {
+    this.form.controls.allowLateSubmissions.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => this.syncLatePenaltyControl(Boolean(value)));
+  }
+
+  toggleForm(): void {
+    const visible = !this.formVisible();
+    this.formVisible.set(visible);
+    if (visible) {
+      this.resetForm();
+    }
+  }
+
+  handleFiles(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files?.length) {
+      return;
+    }
+
+    Array.from(files).forEach(file => this.uploadFile(file));
+    input.value = '';
+  }
+
+  removeAttachment(id: string): void {
+    this.attachments.update(list => list.filter(item => item.id !== id));
+  }
+
+  updateCaption(id: string, value: string): void {
+    this.attachments.update(list =>
+      list.map(item => (item.id === id ? { ...item, caption: value } : item))
+    );
+  }
+
+  trackByActivity(_: number, item: ActivityListItem): string {
+    return item.id;
+  }
+
+  trackByGroup(_: number, item: ActivityGroup): string {
+    return item.id;
+  }
+
+  trackByAttachment(_: number, item: AttachmentDraft): string {
+    return item.id;
+  }
+
+  viewActivity(activity: ActivityGroup): void {
+    this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
+  }
+
+  submit(): void {
+    const course = this.courseState();
+    const currentUser = this.authService.currentUser();
+    if (!course || !currentUser) {
+      this.toastr.error('Usuario nao autenticado ou curso invalido.');
+      return;
+    }
+
+    if (!this.hasAvailableGroups()) {
+      this.toastr.warning('Cadastre uma turma interativa antes de criar atividades.');
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (this.hasUploadingAttachments()) {
+      this.toastr.info('Aguarde o envio dos anexos antes de salvar.');
+      return;
+    }
+
+    const selectedGroupId = this.form.controls.classGroupId.value ?? '';
+    const targetGroups =
+      selectedGroupId === this.allGroupsOption
+        ? this.availableGroups()
+        : this.availableGroups().filter(group => group.Id === selectedGroupId);
+
+    if (!targetGroups.length) {
+      this.toastr.error('Selecione ao menos uma turma para vincular a atividade.');
+      return;
+    }
+
+    const allowLate = Boolean(this.form.controls.allowLateSubmissions.value);
+    const attachments = this.attachments()
+      .filter(item => item.status === 'ready' && item.media)
+      .map(item => ({
+        MediaResourceId: item.media!.Id,
+        Caption: item.caption?.trim() || undefined
+      }));
+
+    const basePayload = {
+      CourseId: course.Id,
+      CreatedById: currentUser.id,
+      Title: (this.form.controls.title.value ?? '').trim(),
+      Description: (this.form.controls.description.value ?? '').trim(),
+      AvailableAt: this.toIsoString(this.form.controls.availableAt.value),
+      DueDate: this.toIsoString(this.form.controls.dueDate.value),
+      MaxScore: this.parseDecimal(this.form.controls.maxScore.value),
+      AllowLateSubmissions: allowLate,
+      LatePenaltyPercentage: allowLate ? this.parseInteger(this.form.controls.latePenaltyPercentage.value) : undefined,
+      VisibleToStudents: Boolean(this.form.controls.visibleToStudents.value),
+      Attachments: attachments
+    };
+
+    const requests = targetGroups.map(group =>
+      this.activitiesService.createActivity({
+        ...basePayload,
+        ClassGroupId: group.Id
+      } satisfies ActivityCreatePayload)
+    );
+
+    this.isSubmitting.set(true);
+    forkJoin(requests)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isSubmitting.set(false))
+      )
+      .subscribe({
+        next: () => {
+          const message =
+            targetGroups.length > 1
+              ? `Atividade registrada para ${targetGroups.length} turmas.`
+              : 'Atividade registrada com sucesso.';
+          this.toastr.success(message);
+          this.resetForm();
+          if (this.currentCourseId) {
+            this.loadActivities(this.currentCourseId);
+          }
+        },
+        error: () => this.toastr.error('Nao foi possivel registrar a atividade.')
+      });
+  }
+
+  private onCourseChanged(course: CourseDto | null): void {
+    const newId = course?.Id ?? null;
+    this.prefillClassGroup(course);
+
+    if (newId === this.currentCourseId) {
+      return;
+    }
+
+    this.currentCourseId = newId;
+
+    if (!newId) {
+      this.activities.set([]);
+      return;
+    }
+
+    this.loadActivities(newId);
+  }
+
+  private prefillClassGroup(course: CourseDto | null): void {
+    const firstGroup = course ? (course.ClassGroups ?? []).find(group => !group.IsMaterialsDistribution) : null;
+    const control = this.form.controls.classGroupId;
+    const currentValue = control.value ?? '';
+
+    if (!firstGroup) {
+      control.setValue('', { emitEvent: false });
+      return;
+    }
+
+    const stillValid = Boolean(course?.ClassGroups?.some(group => group.Id === currentValue));
+    if (!currentValue || !stillValid) {
+      control.setValue(firstGroup.Id, { emitEvent: false });
+    }
+  }
+
+  private resetForm(): void {
+    const defaultGroup = this.availableGroups()[0]?.Id ?? '';
+    this.form.reset({
+      classGroupId: defaultGroup,
+      title: '',
+      description: '',
+      availableAt: null,
+      dueDate: null,
+      maxScore: null,
+      allowLateSubmissions: false,
+      latePenaltyPercentage: null,
+      visibleToStudents: true
+    });
+    this.form.controls.latePenaltyPercentage.disable({ emitEvent: false });
+    this.attachments.set([]);
+  }
+
+  private uploadFile(file: File): void {
+    const draft: AttachmentDraft = {
+      id: this.generateId(),
+      fileName: file.name,
+      status: 'uploading',
+      caption: ''
+    };
+    this.attachments.update(list => [...list, draft]);
+
+    this.mediaService
+      .upload(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: media => {
+          this.attachments.update(list =>
+            list.map(item => (item.id === draft.id ? { ...item, media, status: 'ready' } : item))
+          );
+          this.toastr.success(`${file.name} enviado.`);
+        },
+        error: () => {
+          this.attachments.update(list =>
+            list.map(item => (item.id === draft.id ? { ...item, status: 'error' } : item))
+          );
+          this.toastr.error(`Falha ao enviar ${file.name}.`);
+        }
+      });
+  }
+
+  private loadActivities(courseId: string): void {
+    this.activitiesLoading.set(true);
+    this.activitiesService
+      .getActivities({ CourseId: courseId })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => {
+          this.activities.set(items);
+          this.activitiesLoading.set(false);
+        },
+        error: () => {
+          this.activitiesLoading.set(false);
+          this.toastr.error('Nao foi possivel carregar as atividades.');
+        }
+      });
+  }
+
+  private syncLatePenaltyControl(enabled: boolean): void {
+    const control = this.form.controls.latePenaltyPercentage;
+    if (enabled) {
+      control.enable({ emitEvent: false });
+    } else {
+      control.disable({ emitEvent: false });
+      control.reset(null, { emitEvent: false });
+    }
+  }
+
+  private toIsoString(value: string | null | undefined): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  }
+
+  private parseDecimal(value: string | null | undefined): number | undefined {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  private parseInteger(value: string | null | undefined): number | undefined {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : undefined;
+  }
+
+  private generateId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return Math.random().toString(36).slice(2, 11);
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.css
+````css
+.forum {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.forum header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.forum h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--surface-900);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ghost-button,
+.primary-button {
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.ghost-button {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.ghost-button--danger {
+  color: #b91c1c;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.primary-button {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.primary-button:disabled,
+.ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.create-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.field input,
+.field textarea,
+.field select {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  background: var(--color-background);
+  color: inherit;
+}
+
+.field__error {
+  font-size: 0.78rem;
+  color: #b91c1c;
+}
+
+.field__hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.forum__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.thread {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
+  display: grid;
+  gap: 1rem;
+}
+
+.thread--locked {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.thread__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tag--course {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--surface-600);
+}
+
+.tag--class {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.tag--locked {
+  background: rgba(248, 113, 113, 0.12);
+  color: #b91c1c;
+}
+
+.author {
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.thread h3 {
+  margin: 0;
+  color: var(--surface-900);
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.thread footer {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.thread footer button {
+  margin-left: auto;
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--accent-600);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .thread footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .thread footer button {
+    margin: 0;
+  }
+}
+
+.forum .description {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+  font-size: 0.95rem;
+}
+
+.state {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--surface-600);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+````
+
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
+````json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "UploadsConfiguration" : {
+    "PathDir": "Uploads"
+  },
+  "Minio": {
+    "Endpoint": "https://minio.dadyilha.com.br",
+    "AccessKey": "admin",
+    "SecretKey": "admin123",
+    "Region": "us-east-1",
+    "BucketName": "meajudaai"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=127.0.0.1;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+  },
+  "Jwt": {
+    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
+    "Issuer": "ProjetoFinal.Api",
+    "Audience": "ProjetoFinal.Client",
+    "ExpiresInMinutes": 1202
+  },
+  "RhbkConfiguration": {
+    "Realm": "",
+    "ClientId": "",
+    "ClientSecret": "",
+    "KeycloakBaseUrl": "",
+    "RedirectUri": ""
+  }
+}
+````
+
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.json
+````json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "UploadsConfiguration": {
+    "PathDir": "Uploads"
+  },
+  "Minio": {
+    "Endpoint": "https://minio.dadyilha.com.br",
+    "AccessKey": "admin",
+    "SecretKey": "admin123",
+    "Region": "us-east-1",
+    "BucketName": "meajudaai"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+  },
+  "Jwt": {
+    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
+    "Issuer": "ProjetoFinal.Api",
+    "Audience": "ProjetoFinal.Client",
+    "ExpiresInMinutes": 120
+  },
+  "RhbkConfiguration": {
+    "Realm": "",
+    "ClientId": "",
+    "ClientSecret": "",
+    "KeycloakBaseUrl": "",
+    "RedirectUri": ""
+  }
+}
+````
+
 ## File: src/ProjetoFinal.Infra.Data/Migrations/AppDbContextModelSnapshot.cs
 ````csharp
 // <auto-generated />
@@ -27466,7 +30612,7 @@ namespace ProjetoFinal.Infra.Data.Migrations
 }
 ````
 
-## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ActivityRepository.cs
+## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumThreadRepository.cs
 ````csharp
 using System;
 using System.Linq;
@@ -27480,33 +30626,31 @@ using System.Linq.Expressions;
 
 namespace ProjetoFinal.Infra.Data.Repositories.Entities;
 
-public class ActivityRepository(AppDbContext context)
-    : DefaultRepository<Activity, ActivityFilter, Guid>(context), IActivityRepository
+public class ForumThreadRepository(AppDbContext context)
+    : DefaultRepository<ForumThread, ForumThreadFilter, Guid>(context), IForumThreadRepository
 {
-    protected override IQueryable<Activity> ApplyIncludes(IQueryable<Activity> query)
+    protected override IQueryable<ForumThread> ApplyIncludes(IQueryable<ForumThread> query)
     {
         return query
-            .Include(activity => activity.Course)
-            .Include(activity => activity.ClassGroup)
-            .Include(activity => activity.Audiences)
-                .ThenInclude(audience => audience.ClassGroup)
-            .Include(activity => activity.Attachments);
+            .Include(thread => thread.Course)
+            .Include(thread => thread.ClassGroup)
+            .Include(thread => thread.CreatedBy);
     }
 
-    protected override IQueryable<Activity> ApplyIncludesList(IQueryable<Activity> query)
+    protected override IQueryable<ForumThread> ApplyIncludesList(IQueryable<ForumThread> query)
     {
         return ApplyIncludes(query);
     }
 
-    protected override Expression<Func<Activity, bool>> GetFilters(ActivityFilter filter)
+    protected override Expression<Func<ForumThread, bool>> GetFilters(ForumThreadFilter filter)
     {
         var predicate = base.GetFilters(filter);
 
         if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
         {
             var instructorId = filter.InstructorId.Value;
-            predicate = predicate.And(activity =>
-                activity.Course != null && activity.Course.InstructorId == instructorId);
+            predicate = predicate.And(thread =>
+                thread.Course != null && thread.Course.InstructorId == instructorId);
         }
 
         return predicate;
@@ -27514,1038 +30658,362 @@ public class ActivityRepository(AppDbContext context)
 }
 ````
 
-## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/CourseRepository.cs
-````csharp
-using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Infra.Data.Contexts;
-
-namespace ProjetoFinal.Infra.Data.Repositories.Entities;
-
-public class CourseRepository : DefaultRepository<Course, CourseFilter, Guid>, ICourseRepository
-{
-    private readonly AppDbContext _context;
-
-    public CourseRepository(AppDbContext context) : base(context)
-    {
-        _context = context;
-    }
-
-    public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default)
-    {
-        return _context.Courses.AnyAsync(p => p.Slug == slug, cancellationToken);
-    }
-
-    protected override IQueryable<Course> ApplyIncludes(IQueryable<Course> query)
-    {
-        return query
-            .AsSplitQuery()
-            .Include(course => course.Instructor)
-            .Include(course => course.ClassGroups)
-                .ThenInclude(group => group.Enrollments);
-    }
-
-    protected override IQueryable<Course> ApplyIncludesList(IQueryable<Course> query)
-    {
-        return ApplyIncludes(query);
-    }
-
-    protected override IQueryable<Course> ApplyOrderBy(IQueryable<Course> query)
-    {
-        return query
-            .OrderByDescending(course => course.CreatedAt)
-            .ThenBy(course => course.Id);
-    }
-}
+## File: ProjetoFinal.sln
+````
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Api", "src\ProjetoFinal.Api\ProjetoFinal.Api.csproj", "{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F39C-4898-996F-02BE379BAD86}"
+	ProjectSection(SolutionItems) = preProject
+		docs\commands.md = docs\commands.md
+		docs\memoria_projeto.md = docs\memoria_projeto.md
+		docs\propont.md = docs\propont.md
+		docs\transcription.md = docs\transcription.md
+		docs\especificacao.md = docs\especificacao.md
+		docs\relatorio.md = docs\relatorio.md
+		docs\context.md = docs\context.md
+		docs\documento_projeto_final_uerj.md = docs\documento_projeto_final_uerj.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Application.Contracts", "src\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj", "{DA6BE528-C8A4-41BF-B898-A3A801C24568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain.Shared", "src\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj", "{5C014F9F-F754-4311-BF57-054D52839DA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain", "src\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj", "{8788179F-83E2-442A-866D-DF9EF82640ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Aplication.Services", "src\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj", "{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.Data", "src\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj", "{3F42AFFE-0B0A-4775-81CD-C04C42927033}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{38C7D967-FAD5-4560-9AB7-6D71F48F7D27}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjetoFinal.ClientApp", "src\ProjetoFinal.ClientApp\ProjetoFinal.ClientApp.esproj", "{3823AD60-71EB-BD5F-F256-F30AE905FD7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.CrossCutting", "src\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj", "{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{5C014F9F-F754-4311-BF57-054D52839DA7} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{8788179F-83E2-442A-866D-DF9EF82640ED} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DBDCF9D2-9D03-4CEE-A8DB-1613AA739A63}
+	EndGlobalSection
+EndGlobal
 ````
 
-## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumPostRepository.cs
-````csharp
-using System;
-using System.Linq;
-using LinqKit;
-using Microsoft.EntityFrameworkCore;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Infra.Data.Contexts;
-using System.Linq.Expressions;
-
-namespace ProjetoFinal.Infra.Data.Repositories.Entities;
-
-public class ForumPostRepository(AppDbContext context)
-    : DefaultRepository<ForumPost, ForumPostFilter, Guid>(context), IForumPostRepository
-{
-    protected override IQueryable<ForumPost> ApplyIncludes(IQueryable<ForumPost> query)
-    {
-        return query
-            .Include(post => post.Author)
-            .Include(post => post.Thread!)
-                .ThenInclude(thread => thread.Course)
-            .Include(post => post.Attachments)
-                .ThenInclude(attachment => attachment.MediaResource);
-    }
-
-    protected override IQueryable<ForumPost> ApplyIncludesList(IQueryable<ForumPost> query)
-    {
-        return ApplyIncludes(query);
-    }
-
-    protected override Expression<Func<ForumPost, bool>> GetFilters(ForumPostFilter filter)
-    {
-        var predicate = base.GetFilters(filter);
-
-        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
-        {
-            var instructorId = filter.InstructorId.Value;
-            predicate = predicate.And(post =>
-                post.Thread != null &&
-                post.Thread.Course != null &&
-                post.Thread.Course.InstructorId == instructorId);
-        }
-
-        return predicate;
-    }
-}
-````
-
-## File: src/ProjetoFinal.Api/Controllers/ClassGroupsController.cs
-````csharp
-using Microsoft.AspNetCore.Mvc;
-using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-
-namespace ProjetoFinal.Api.Controllers;
-
-[Route("api/class-groups")]
-[Route("api/v1/class-groups")]
-public class ClassGroupsController : BaseController<
-    ClassGroupDto,
-    ClassGroupCreateDto,
-    ClassGroupUpdateDto,
-    ClassGroupFilter,
-    Guid,
-    IClassGroupAppService>
-{
-    private readonly ICourseAppService _courseService;
-    private readonly IClassGroupRepository _classGroupRepository;
-    private readonly IClassEnrollmentRepository _classEnrollmentRepository;
-
-    public ClassGroupsController(
-        IClassGroupAppService service,
-        ICourseAppService courseService,
-        IClassGroupRepository classGroupRepository,
-        IClassEnrollmentRepository classEnrollmentRepository) : base(service)
-    {
-        _courseService = courseService;
-        _classGroupRepository = classGroupRepository;
-        _classEnrollmentRepository = classEnrollmentRepository;
-    }
-
-    [HttpGet]
-    public override async Task<PagedResultDto<ClassGroupDto>> GetAllAsync(
-        [FromQuery] ClassGroupFilter filter,
-        CancellationToken cancellationToken = default)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return await base.GetAllAsync(filter, cancellationToken);
-        }
-
-        if (filter.CourseId is null || filter.CourseId == Guid.Empty)
-        {
-            return new PagedResultDto<ClassGroupDto>
-            {
-                Dados = new List<ClassGroupDto>(),
-                PageInfo = new PageInfoDto
-                {
-                    PageNumber = filter.PageNumber == 0 ? 1 : filter.PageNumber,
-                    PageSize = filter.PageSize == 0 ? 0 : filter.PageSize,
-                    TotalPages = 0,
-                    TotalItens = 0
-                }
-            };
-        }
-
-        await EnsureInstructorOwnsCourseAsync(filter.CourseId.Value, cancellationToken);
-        return await base.GetAllAsync(filter, cancellationToken);
-    }
-
-    [HttpGet("{id}")]
-    public override async Task<ClassGroupDto> GetByIdAsync(
-        [FromRoute] Guid id,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
-        return await base.GetByIdAsync(id, cancellationToken);
-    }
-
-    [HttpPost]
-    public override async Task<ClassGroupDto> AddAsync(
-        [FromBody] ClassGroupCreateDto createDto,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsCourseAsync(createDto.CourseId, cancellationToken);
-        return await base.AddAsync(createDto, cancellationToken);
-    }
-
-    [HttpPut("{id}")]
-    public override async Task<IActionResult> UpdateAsync(
-        [FromRoute] Guid id,
-        [FromBody] ClassGroupUpdateDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
-        return await base.UpdateAsync(id, dto, cancellationToken);
-    }
-
-    [HttpDelete("{id}")]
-    public override async Task<ClassGroupDto> DeleteAsync(
-        [FromRoute] Guid id,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsClassGroupAsync(id, cancellationToken);
-        return await base.DeleteAsync(id, cancellationToken);
-    }
-
-    [HttpPost("{classGroupId:guid}/enrollments")]
-    public async Task<ActionResult<ClassEnrollmentDto>> RequestEnrollmentAsync(
-        [FromRoute] Guid classGroupId,
-        [FromBody] ClassEnrollmentRequestDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        if (dto is null)
-        {
-            return BadRequest("Dados de inscricao nao informados.");
-        }
-
-        if (dto.ClassGroupId == Guid.Empty)
-        {
-            dto.ClassGroupId = classGroupId;
-        }
-        else if (dto.ClassGroupId != classGroupId)
-        {
-            return BadRequest("ClassGroupId divergente do valor na rota.");
-        }
-
-        var studentId = ResolveCurrentUserId();
-        if (studentId == Guid.Empty)
-        {
-            throw new BusinessException("Aluno nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        dto.StudentId = studentId;
-
-        var enrollment = await Service.RequestEnrollmentAsync(dto, cancellationToken);
-        return Ok(enrollment);
-    }
-
-    [HttpPost("enrollments/decision")]
-    public async Task<ClassEnrollmentDto> DecideEnrollmentAsync(
-        [FromBody] ClassEnrollmentDecisionDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsEnrollmentAsync(dto.EnrollmentId, cancellationToken);
-        return await Service.DecideEnrollmentAsync(dto, cancellationToken);
-    }
-
-    [HttpDelete("enrollments/{enrollmentId:guid}")]
-    public async Task<IActionResult> RemoveEnrollmentAsync(
-        [FromRoute] Guid enrollmentId,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsEnrollmentAsync(enrollmentId, cancellationToken);
-        await Service.RemoveEnrollmentAsync(enrollmentId, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpGet("{classGroupId:guid}/availability")]
-    public async Task<ActionResult<AvailabilityResponse>> HasAvailableSeatsAsync(
-        [FromRoute] Guid classGroupId,
-        CancellationToken cancellationToken = default)
-    {
-        var hasSeats = await Service.HasAvailableSeatsAsync(classGroupId, cancellationToken);
-        return Ok(new AvailabilityResponse(hasSeats));
-    }
-
-    private Guid ResolveCurrentUserId()
-    {
-        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
-    }
-
-    private bool IsInstructor()
-    {
-        var role = User.FindFirstValue(ClaimTypes.Role);
-        return string.Equals(role, nameof(UserRole.Instructor), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool IsAdministrator()
-    {
-        var role = User.FindFirstValue(ClaimTypes.Role);
-        return string.Equals(role, nameof(UserRole.Administrator), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var instructorId = ResolveCurrentUserId();
-        if (instructorId == Guid.Empty)
-        {
-            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
-        if (course.InstructorId != instructorId)
-        {
-            throw new BusinessException("Acesso nao permitido a turma.", ECodigo.NaoPermitido);
-        }
-    }
-
-    private async Task EnsureInstructorOwnsClassGroupAsync(Guid classGroupId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var group = await _classGroupRepository.FindAsync(classGroupId, cancellationToken);
-        if (group is null)
-        {
-            throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        await EnsureInstructorOwnsCourseAsync(group.CourseId, cancellationToken);
-    }
-
-    private async Task EnsureInstructorOwnsEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var enrollment = await _classEnrollmentRepository.FindAsync(enrollmentId, cancellationToken);
-        if (enrollment is null)
-        {
-            throw new BusinessException("Inscricao nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        await EnsureInstructorOwnsClassGroupAsync(enrollment.ClassGroupId, cancellationToken);
-    }
-
-    public record AvailabilityResponse(bool HasSeats);
-}
-````
-
-## File: src/ProjetoFinal.Api/Controllers/ForumPostsController.cs
-````csharp
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Dto.Forum;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-
-namespace ProjetoFinal.Api.Controllers;
-
-[ApiController]
-[Authorize]
-[Route("api/forum/posts")]
-[Route("api/v1/forum/posts")]
-public class ForumPostsController : ControllerBase
-{
-    private readonly IForumAppService _service;
-    private readonly ICourseAppService _courseService;
-    private readonly IForumPostRepository _postRepository;
-    private readonly IForumThreadRepository _threadRepository;
-
-    public ForumPostsController(
-        IForumAppService service,
-        ICourseAppService courseService,
-        IForumPostRepository postRepository,
-        IForumThreadRepository threadRepository)
-    {
-        _service = service;
-        _courseService = courseService;
-        _postRepository = postRepository;
-        _threadRepository = threadRepository;
-    }
-
-    [HttpPost]
-    public Task<ForumPostDto> CreateAsync(
-        [FromBody] ForumPostCreateDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = ResolveCurrentUserId();
-        if (userId == Guid.Empty)
-        {
-            throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        dto.AuthorId = userId;
-        return CreatePostInternalAsync(dto, cancellationToken);
-    }
-
-    [HttpPut("{postId:guid}")]
-    public async Task<IActionResult> UpdateAsync(
-        [FromRoute] Guid postId,
-        [FromBody] ForumPostUpdateDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsPostAsync(postId, cancellationToken);
-        await _service.UpdatePostAsync(postId, dto, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpDelete("{postId:guid}")]
-    public async Task<IActionResult> DeleteAsync(
-        [FromRoute] Guid postId,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsPostAsync(postId, cancellationToken);
-        await _service.DeletePostAsync(postId, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpGet]
-    public Task<PagedResultDto<ForumPostDto>> GetAllAsync(
-        [FromQuery] ForumPostFilter filter,
-        CancellationToken cancellationToken = default)
-    {
-        if (IsInstructor() && !IsAdministrator())
-        {
-            var instructorId = ResolveCurrentUserId();
-            if (instructorId == Guid.Empty)
-            {
-                throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-            }
-
-            filter.InstructorId = instructorId;
-        }
-
-        return _service.GetPostsAsync(filter, cancellationToken);
-    }
-
-    private Guid ResolveCurrentUserId()
-    {
-        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
-    }
-
-    private bool IsInstructor()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Instructor;
-        }
-
-        if (int.TryParse(roleValue, out var numericRole))
-        {
-            return numericRole == (int)UserRole.Instructor;
-        }
-
-        return false;
-    }
-
-    private bool IsAdministrator()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Administrator;
-        }
-
-        if (int.TryParse(roleValue, out var numericRole))
-        {
-            return numericRole == (int)UserRole.Administrator;
-        }
-
-        return false;
-    }
-
-    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var instructorId = ResolveCurrentUserId();
-        if (instructorId == Guid.Empty)
-        {
-            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
-        if (course.InstructorId != instructorId)
-        {
-            throw new BusinessException("Acesso nao permitido ao topico.", ECodigo.NaoPermitido);
-        }
-    }
-
-    private async Task EnsureInstructorOwnsPostAsync(Guid postId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var post = await _postRepository.FindAsync(postId, cancellationToken);
-        if (post is null)
-        {
-            throw new BusinessException("Mensagem nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        var thread = await _threadRepository.FindAsync(post.ThreadId, cancellationToken);
-        if (thread is null)
-        {
-            throw new BusinessException("Topico nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
-    }
-
-    private async Task<ForumPostDto> CreatePostInternalAsync(ForumPostCreateDto dto, CancellationToken cancellationToken)
-    {
-        if (IsInstructor() && !IsAdministrator())
-        {
-            var thread = await _threadRepository.FindAsync(dto.ThreadId, cancellationToken);
-            if (thread is null)
-            {
-                throw new BusinessException("Topico nao encontrado.", ECodigo.NaoEncontrado);
-            }
-
-            await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
-        }
-
-        return await _service.CreatePostAsync(dto, cancellationToken);
-    }
-}
-````
-
-## File: src/ProjetoFinal.Api/Controllers/ForumThreadsController.cs
-````csharp
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Dto.Forum;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-
-namespace ProjetoFinal.Api.Controllers;
-
-[ApiController]
-[Authorize]
-[Route("api/forum/threads")]
-[Route("api/v1/forum/threads")]
-public class ForumThreadsController : ControllerBase
-{
-    private readonly IForumAppService _service;
-    private readonly ICourseAppService _courseService;
-    private readonly IClassGroupRepository _classGroupRepository;
-
-    public ForumThreadsController(
-        IForumAppService service,
-        ICourseAppService courseService,
-        IClassGroupRepository classGroupRepository)
-    {
-        _service = service;
-        _courseService = courseService;
-        _classGroupRepository = classGroupRepository;
-    }
-
-    [HttpPost]
-    public Task<ForumThreadDto> CreateAsync(
-        [FromBody] ForumThreadCreateDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = ResolveCurrentUserId();
-        if (userId == Guid.Empty)
-        {
-            throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        if (!IsInstructor())
-        {
-            throw new BusinessException("Apenas instrutores podem criar topicos.", ECodigo.NaoPermitido);
-        }
-
-        dto.CreatedById = userId;
-        return CreateThreadInternalAsync(dto, cancellationToken);
-    }
-
-    [HttpPut("{threadId:guid}")]
-    public async Task<IActionResult> UpdateAsync(
-        [FromRoute] Guid threadId,
-        [FromBody] ForumThreadUpdateDto dto,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
-        await _service.UpdateThreadAsync(threadId, dto, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpDelete("{threadId:guid}")]
-    public async Task<IActionResult> DeleteAsync(
-        [FromRoute] Guid threadId,
-        CancellationToken cancellationToken = default)
-    {
-        await EnsureInstructorOwnsThreadAsync(threadId, cancellationToken);
-        await _service.DeleteThreadAsync(threadId, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpGet("{threadId:guid}")]
-    public Task<ForumThreadDto> GetByIdAsync(
-        [FromRoute] Guid threadId,
-        CancellationToken cancellationToken = default)
-    {
-        return GetThreadInternalAsync(threadId, cancellationToken);
-    }
-
-    [HttpGet]
-    public Task<PagedResultDto<ForumThreadDto>> GetAllAsync(
-        [FromQuery] ForumThreadFilter filter,
-        CancellationToken cancellationToken = default)
-    {
-        if (IsInstructor() && !IsAdministrator())
-        {
-            var instructorId = ResolveCurrentUserId();
-            if (instructorId == Guid.Empty)
-            {
-                throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-            }
-
-            filter.InstructorId = instructorId;
-        }
-
-        return _service.GetThreadsAsync(filter, cancellationToken);
-    }
-
-    private Guid ResolveCurrentUserId()
-    {
-        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
-    }
-
-    private bool IsInstructor()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Instructor;
-        }
-
-        if (int.TryParse(roleValue, out var numericRole))
-        {
-            return numericRole == (int)UserRole.Instructor;
-        }
-
-        return false;
-    }
-
-    private bool IsAdministrator()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Administrator;
-        }
-
-        if (int.TryParse(roleValue, out var numericRole))
-        {
-            return numericRole == (int)UserRole.Administrator;
-        }
-
-        return false;
-    }
-
-    private async Task EnsureInstructorOwnsCourseAsync(Guid courseId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var instructorId = ResolveCurrentUserId();
-        if (instructorId == Guid.Empty)
-        {
-            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        var course = await _courseService.GetByIdAsync(courseId, cancellationToken);
-        if (course.InstructorId != instructorId)
-        {
-            throw new BusinessException("Acesso nao permitido ao topico.", ECodigo.NaoPermitido);
-        }
-    }
-
-    private async Task EnsureInstructorOwnsThreadAsync(Guid threadId, CancellationToken cancellationToken)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            return;
-        }
-
-        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
-        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
-    }
-
-    private async Task<ForumThreadDto> GetThreadInternalAsync(Guid threadId, CancellationToken cancellationToken)
-    {
-        var thread = await _service.GetThreadByIdAsync(threadId, cancellationToken);
-        await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
-        return thread;
-    }
-
-    private async Task<ForumThreadDto> CreateThreadInternalAsync(ForumThreadCreateDto dto, CancellationToken cancellationToken)
-    {
-        if (IsInstructor() && !IsAdministrator())
-        {
-            var classGroup = await _classGroupRepository.FindAsync(dto.ClassGroupId, cancellationToken);
-            if (classGroup is null)
-            {
-                throw new BusinessException("Turma nao encontrada para criar o topico.", ECodigo.NaoEncontrado);
-            }
-
-            await EnsureInstructorOwnsCourseAsync(classGroup.CourseId, cancellationToken);
-        }
-
-        return await _service.CreateThreadAsync(dto, cancellationToken);
-    }
-}
-````
-
-## File: src/ProjetoFinal.Api/Properties/launchSettings.json
-````json
-{
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:13852",
-      "sslPort": 0
-    }
-  },
-  "profiles": {
-    "development_http": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "development_http_api": {
-      "commandName": "Project",
-      "launchBrowser": false,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "production_http": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "production_http_api": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    }
-  }
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Dto/Forum/ForumThreadDto.cs
-````csharp
-using System;
-using System.Collections.Generic;
-using ProjetoFinal.Application.Contracts.Dto.Media;
-
-namespace ProjetoFinal.Application.Contracts.Dto.Forum;
-
-public class ForumThreadDto
-{
-    public Guid Id { get; set; }
-    public Guid CourseId { get; set; }
-    public Guid ClassGroupId { get; set; }
-    public string ClassGroupName { get; set; } = string.Empty;
-    public Guid CreatedById { get; set; }
-    public string CreatedByName { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public bool IsLocked { get; set; }
-    public bool IsPinned { get; set; }
-    public DateTime LastActivityAt { get; set; }
-
-    public IList<ForumPostDto> Posts { get; set; } = new List<ForumPostDto>();
-}
-
-public class ForumPostDto
-{
-    public Guid Id { get; set; }
-    public Guid ThreadId { get; set; }
-    public Guid AuthorId { get; set; }
-    public string AuthorName { get; set; } = string.Empty;
-    public Guid? ParentPostId { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? EditedAt { get; set; }
-
-    public IList<ForumPostAttachmentDto> Attachments { get; set; } = new List<ForumPostAttachmentDto>();
-    public IList<ForumPostDto> Replies { get; set; } = new List<ForumPostDto>();
-}
-
-public class ForumPostAttachmentDto
-{
-    public Guid Id { get; set; }
-    public Guid MediaResourceId { get; set; }
-    public string? Caption { get; set; }
-    public MediaResourceDto? Media { get; set; }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/core/api/forum.api.ts
+## File: src/ProjetoFinal.ClientApp/src/app/pages/activities/activities.component.ts
 ````typescript
-import { ApiPagedResponse, normalizePagedResponse } from './api.types';
-import { formatRelativeHours } from '../utils/date.util';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
-export interface ForumThreadDto {
-  Id: string;
-  CourseId: string;
-  ClassGroupId: string;
-  ClassGroupName: string;
-  CreatedById: string;
-  CreatedByName: string;
-  Title: string;
-  Description?: string;
-  IsLocked: boolean;
-  IsPinned: boolean;
-  LastActivityAt: string;
-  Posts: ForumPostDto[];
-}
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityListItem } from '../../core/api/activities.api';
+import { CoursesService } from '../../core/services/courses.service';
+import { CourseDto } from '../../core/api/courses.api';
+import { AuthService } from '../../core/services/auth.service';
+import { CourseSubscriptionsService } from '../../core/services/course-subscriptions.service';
+import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
 
-export interface ForumPostDto {
-  Id: string;
-  ThreadId: string;
-  AuthorId: string;
-  AuthorName: string;
-  ParentPostId?: string;
-  Message: string;
-  CreatedAt: string;
-  EditedAt?: string;
-  Replies: ForumPostDto[];
-}
+@Component({
+  selector: 'app-activities',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './activities.component.html',
+  styleUrl: './activities.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ActivitiesComponent {
+  private readonly service = inject(ActivitiesService);
+  private readonly coursesService = inject(CoursesService);
+  private readonly subscriptionsService = inject(CourseSubscriptionsService);
+  private readonly submissionsService = inject(ActivitySubmissionsService);
+  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
-export interface ForumThreadListItem {
-  id: string;
-  title: string;
-  courseTitle: string;
-  classGroupName: string;
-  replies: number;
-  lastActivityLabel: string;
-  authorId: string;
-  authorName: string;
-  isPinned: boolean;
-  isLocked: boolean;
-}
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly activities = signal<ActivityListItem[]>([]);
+  readonly completedActivityIds = signal<Set<string>>(new Set());
+  readonly activityStatusFilter = signal<'all' | 'pending' | 'completed'>('all');
+  readonly filteredActivities = signal<ActivityListItem[]>([]);
+  readonly courses = signal<CourseDto[]>([]);
+  readonly isInstructor = computed(() => this.authService.isInstructorRole());
+  readonly isStudent = computed(() => this.authService.isStudentRole());
+  readonly displayedActivities = computed(() =>
+    this.isStudent() ? this.filteredActivities() : this.activities()
+  );
+  readonly activityGroupLabels = computed(() => {
+    const labels = new Map<string, string>();
+    const activities = this.activities();
+    const courses = this.courses();
 
-export interface ForumThreadFilter {
-  CourseId?: string;
-  ClassGroupId?: string;
-  Title?: string;
-  IsPinned?: boolean;
-  PageNumber?: number;
-  PageSize?: number;
-}
+    const groupCounts = new Map(
+      courses.map(course => [
+        course.Id,
+        (course.ClassGroups ?? []).filter(group => !group.IsMaterialsDistribution).length
+      ])
+    );
 
-export interface ForumThreadCreatePayload {
-  ClassGroupId: string;
-  CreatedById: string;
-  Title: string;
-  Description?: string;
-  IsPinned: boolean;
-}
+    const groupsByKey = new Map<string, Set<string>>();
+    activities.forEach(activity => {
+      const key = this.activitySignature(activity);
+      const set = groupsByKey.get(key) ?? new Set<string>();
+      set.add(activity.classGroupName || 'Turma nao informada');
+      groupsByKey.set(key, set);
+    });
 
-export interface ForumPostFilter {
-  ThreadId?: string;
-  AuthorId?: string;
-  ParentPostId?: string;
-  PageNumber?: number;
-  PageSize?: number;
-}
+    groupsByKey.forEach((groupSet, key) => {
+      const [courseId] = key.split('|');
+      const totalGroups = groupCounts.get(courseId) ?? 0;
+      const label = totalGroups > 0 && groupSet.size >= totalGroups
+        ? 'Todas as turmas'
+        : Array.from(groupSet).join(', ');
+      labels.set(key, label);
+    });
 
-export interface ForumPostCreatePayload {
-  ThreadId: string;
-  AuthorId: string;
-  ParentPostId?: string;
-  Message: string;
-}
-
-export function mapForumThreadsResponse(
-  response: ApiPagedResponse<ForumThreadDto>,
-  courseLookup: Map<string, string>
-): ForumThreadListItem[] {
-  const { items } = normalizePagedResponse(response);
-
-  return items.map(thread => ({
-    id: thread.Id,
-    title: thread.Title,
-    courseTitle: courseLookup.get(thread.CourseId) ?? 'Curso desconhecido',
-    classGroupName: thread.ClassGroupName || 'Turma nao informada',
-    replies: countReplies(thread.Posts ?? []),
-    lastActivityLabel: formatRelativeHours(thread.LastActivityAt),
-    authorId: thread.CreatedById,
-    authorName: thread.CreatedByName || 'Usuario desconhecido',
-    isPinned: thread.IsPinned,
-    isLocked: thread.IsLocked
-  }));
-}
-
-function countReplies(posts: ForumPostDto[]): number {
-  let total = posts.length;
-  posts.forEach(post => {
-    total += countReplies(post.Replies ?? []);
+    return labels;
   });
-  return total;
-}
-````
 
-## File: src/ProjetoFinal.ClientApp/src/app/core/services/forum.service.ts
-````typescript
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { catchError, map, of, throwError } from 'rxjs';
+  constructor() {
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.error.set('Usuario nao identificado.');
+      this.loading.set(false);
+      return;
+    }
 
-import { environment } from '../../../environments/environment';
-import {
-  ForumThreadCreatePayload,
-  ForumThreadDto,
-  ForumThreadFilter,
-  ForumThreadListItem,
-  mapForumThreadsResponse
-} from '../api/forum.api';
-import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
-import { toHttpParams } from '../utils/http-params.util';
+    if (this.authService.isInstructorRole()) {
+      forkJoin({
+        activities: this.service.getActivities(),
+        courses: this.coursesService.getCoursesDto()
+      })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: ({ activities, courses }) => {
+            this.activities.set(activities);
+            this.courses.set(courses);
+            this.completedActivityIds.set(new Set());
+            this.filteredActivities.set(activities);
+            this.error.set(null);
+            this.loading.set(false);
+          },
+          error: () => {
+            this.error.set('Nao foi possivel carregar as atividades.');
+            this.loading.set(false);
+          }
+        });
+      return;
+    }
 
-@Injectable({ providedIn: 'root' })
-export class ForumService {
-  private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.baseUrl;
-
-  getThreads(courseLookup: Map<string, string>, filter: ForumThreadFilter = {}) {
-    const params = toHttpParams({ PageSize: 20, PageNumber: 1, ...filter });
-
-    return this.http
-      .get<ApiPagedResponse<ForumThreadDto>>(`${this.baseUrl}/forum/threads`, { params })
+    forkJoin({
+      courses: this.coursesService.getCoursesDto(),
+      subscriptions: this.subscriptionsService.getByStudent(user.id)
+    })
       .pipe(
-        catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
-        map(response => mapForumThreadsResponse(response, courseLookup))
-      );
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(({ courses, subscriptions }) => {
+          this.courses.set(courses);
+          this.activityStatusFilter.set('all');
+
+          const allowedGroupIds = this.resolveStudentClassGroups(courses, user.id, subscriptions.map(item => item.CourseId));
+          if (allowedGroupIds.length === 0) {
+            return of({ activities: [] as ActivityListItem[], completedIds: new Set<string>() });
+          }
+
+          return forkJoin({
+            activities: this.loadActivitiesForGroups(allowedGroupIds),
+            submissions: this.loadSubmissionsForGroups(user.id, allowedGroupIds)
+          }).pipe(
+            map(({ activities, submissions }) => {
+              const completedIds = new Set(
+                submissions.filter(submission => submission.Status >= 2).map(submission => submission.ActivityId)
+              );
+              return { activities, completedIds };
+            })
+          );
+        })
+      )
+      .subscribe({
+        next: ({ activities, completedIds }) => {
+          this.activities.set(activities);
+          this.completedActivityIds.set(completedIds);
+          this.applyActivityFilter();
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar as atividades.');
+          this.loading.set(false);
+        }
+      });
   }
 
-  getThreadsRaw(filter: ForumThreadFilter = {}) {
-    const params = toHttpParams({ PageSize: 50, PageNumber: 1, ...filter });
-
-    return this.http
-      .get<ApiPagedResponse<ForumThreadDto>>(`${this.baseUrl}/forum/threads`, { params })
-      .pipe(
-        catchError(() => of<ApiPagedResponse<ForumThreadDto>>({ dados: [] })),
-        map(response => normalizePagedResponse(response).items)
-      );
+  trackByActivity(_: number, item: ActivityListItem): string {
+    return item.id;
   }
 
-  getThreadsByClassGroup(courseLookup: Map<string, string>, classGroupId: string) {
-    return this.getThreads(courseLookup, { ClassGroupId: classGroupId });
+  viewActivity(activity: ActivityListItem): void {
+    this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
   }
 
-  getThreadById(threadId: string) {
-    return this.http
-      .get<ForumThreadDto>(`${this.baseUrl}/forum/threads/${threadId}`)
-      .pipe(catchError(error => throwError(() => error)));
+  manageCorrections(activity: ActivityListItem): void {
+    if (!activity.id) {
+      return;
+    }
+    this.router.navigate(['/activities', activity.id, 'corrections']);
   }
 
-  createThread(payload: ForumThreadCreatePayload) {
-    return this.http
-      .post<ForumThreadDto>(`${this.baseUrl}/forum/threads`, payload)
-      .pipe(catchError(error => throwError(() => error)));
+  activityGroupLabel(activity: ActivityListItem): string {
+    return this.activityGroupLabels().get(this.activitySignature(activity)) ?? activity.classGroupName;
+  }
+
+  private activitySignature(activity: ActivityListItem): string {
+    return [
+      activity.courseId,
+      activity.title,
+      activity.dueDateLabel,
+      String(activity.allowLate),
+      String(activity.attachments)
+    ].join('|');
+  }
+
+  setActivityStatusFilter(filter: 'all' | 'pending' | 'completed'): void {
+    this.activityStatusFilter.set(filter);
+    this.applyActivityFilter();
+  }
+
+  private resolveStudentClassGroups(courses: CourseDto[], studentId: string, subscriptionCourseIds: string[]): string[] {
+    const allowed = new Set<string>();
+    const subscribedCourses = new Set(subscriptionCourseIds);
+    const allowedStatus = new Set([1, 2]);
+
+    courses.forEach(course => {
+      const groups = course.ClassGroups ?? [];
+      groups.forEach(group => {
+        if (group.IsMaterialsDistribution) {
+          if (subscribedCourses.has(course.Id)) {
+            allowed.add(group.Id);
+          }
+          return;
+        }
+
+        const enrollments = group.Enrollments ?? [];
+        const hasEnrollment = enrollments.some(
+          enrollment => enrollment.StudentId === studentId && allowedStatus.has(enrollment.Status)
+        );
+        if (hasEnrollment) {
+          allowed.add(group.Id);
+        }
+      });
+    });
+
+    return Array.from(allowed);
+  }
+
+  private loadActivitiesForGroups(classGroupIds: string[]) {
+    if (classGroupIds.length === 1) {
+      return this.service.getActivities({ ClassGroupId: classGroupIds[0], VisibleToStudents: true });
+    }
+
+    const requests = classGroupIds.map(classGroupId =>
+      this.service.getActivities({ ClassGroupId: classGroupId, VisibleToStudents: true })
+    );
+    return forkJoin(requests).pipe(map(items => items.flat()));
+  }
+
+  private loadSubmissionsForGroups(studentId: string, classGroupIds: string[]) {
+    const requests = classGroupIds.map(classGroupId =>
+      this.submissionsService.getSubmissions({ StudentId: studentId, ClassGroupId: classGroupId, PageSize: 200 })
+    );
+    return forkJoin(requests).pipe(map(results => results.flatMap(result => result.items)));
+  }
+
+  private applyActivityFilter(): void {
+    if (!this.authService.isStudentRole()) {
+      this.filteredActivities.set(this.activities());
+      return;
+    }
+
+    const filter = this.activityStatusFilter();
+    const completedIds = this.completedActivityIds();
+    const items = this.activities();
+
+    if (filter === 'all') {
+      this.filteredActivities.set(items);
+      return;
+    }
+
+    const filtered = items.filter(activity =>
+      filter === 'completed' ? completedIds.has(activity.id) : !completedIds.has(activity.id)
+    );
+    this.filteredActivities.set(filtered);
   }
 }
 ````
@@ -29083,376 +31551,6 @@ export class ForumService {
 </ng-template>
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/class-groups/class-groups.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
-
-import { CoursesService } from '../../core/services/courses.service';
-import { ClassGroupListItem } from '../../core/api/courses.api';
-
-@Component({
-  selector: 'app-class-groups',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './class-groups.component.html',
-  styleUrl: './class-groups.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ClassGroupsComponent {
-  private readonly service = inject(CoursesService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly classGroups = signal<ClassGroupListItem[]>([]);
-
-  constructor() {
-    this.service
-      .getClassGroupRows(true)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (groups: ClassGroupListItem[]) => {
-          this.classGroups.set(groups);
-          this.error.set(null);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('Nao foi possivel carregar as turmas.');
-          this.loading.set(false);
-        }
-      });
-  }
-
-  trackByGroupId(_: number, item: ClassGroupListItem): string {
-    return item.id;
-  }
-
-  navigateToCreate(): void {
-    this.router.navigate(['/class-groups/create']);
-  }
-
-  navigateToManage(groupId: string): void {
-    this.router.navigate(['/class-groups', groupId, 'manage']);
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.css
-````css
-.activity-viewer {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.activity-viewer__header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.back-link {
-  align-self: flex-start;
-  color: var(--accent-600);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.badge {
-  align-self: flex-start;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--accent-600);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.5rem;
-  padding: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 16px;
-  background: rgba(248, 250, 252, 0.8);
-}
-
-.activity-card {
-  padding: 1.25rem;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: #fff;
-}
-
-.rich-content {
-  line-height: 1.6;
-  color: var(--surface-700);
-}
-
-.rich-content :where(p, ul, ol) {
-  margin: 0 0 0.75rem;
-}
-
-.rich-content ul,
-.rich-content ol {
-  padding-left: 1.25rem;
-}
-
-.attachments-section {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 16px;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.attachments-section header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.attachments-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.attachments-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-}
-
-.muted {
-  color: var(--surface-500);
-  margin: 0;
-}
-
-.button {
-  border-radius: 999px;
-  padding: 0.4rem 1.2rem;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: transparent;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.state {
-  padding: 1rem;
-  border-radius: 16px;
-  background: rgba(148, 163, 184, 0.2);
-  text-align: center;
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.2);
-  color: #b91c1c;
-}
-
-.submission-module {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 16px;
-  padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.95);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.submission-module__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.badge--accent {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--accent-600);
-}
-
-.submission-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.submission-form label {
-  font-weight: 600;
-  color: var(--surface-700);
-}
-
-.field-hint {
-  font-size: 0.8rem;
-  color: var(--surface-500);
-}
-
-.submission-form__attachments {
-  border: 1px dashed rgba(148, 163, 184, 0.4);
-  border-radius: 14px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.submission-form__attachments-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.upload-button {
-  border-radius: 999px;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: var(--accent-600);
-  padding: 0.4rem 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.upload-button input {
-  display: none;
-}
-
-.attachment-drafts {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.attachment-drafts li {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-}
-
-.attachment-error {
-  color: #b91c1c;
-}
-
-.loading-dots::after {
-  content: '...';
-  display: inline-block;
-  margin-left: 4px;
-  animation: loadingDots 1.2s steps(4, end) infinite;
-}
-
-@keyframes loadingDots {
-  0% {
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-.primary-button {
-  border-radius: 999px;
-  border: 0;
-  padding: 0.65rem 1.5rem;
-  font-weight: 600;
-  background: var(--accent-600);
-  color: #fff;
-  cursor: pointer;
-}
-
-.primary-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.submission-summary {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 14px;
-  padding: 1rem;
-  background: rgba(248, 250, 252, 0.8);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.submission-summary header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.submission-summary h5 {
-  margin: 0 0 0.5rem;
-  color: var(--surface-600);
-}
-
-.submission-summary__grading dl {
-  margin: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.submission-summary__grading dt {
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-}
-
-.submission-summary__grading dd {
-  margin: 0.2rem 0 0;
-  color: var(--surface-800);
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-}
-
-.status-badge[data-status='enviado'] {
-  background: rgba(34, 197, 94, 0.2);
-  color: #15803d;
-}
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.ts
 ````typescript
 import { CommonModule } from '@angular/common';
@@ -29839,2056 +31937,6 @@ export class CourseActivityViewerComponent {
       }));
   }
 }
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.html
-````html
-<section class="content-viewer">
-  <div class="content-viewer__header">
-    <a class="back-link" [routerLink]="['/courses', courseId() ?? '' , 'manage']">
-      ← Voltar para o curso
-    </a>
-
-    <h2>{{ pageTitle() }}</h2>
-    <span class="status-badge" [attr.data-status]="statusLabel()">{{ statusLabel() }}</span>
-
-    <p class="summary" *ngIf="content()?.Summary">{{ content()?.Summary }}</p>
-  </div>
-
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <article class="content-card" *ngIf="content() as current">
-        <section class="content-body">
-          <h3>Descricao</h3>
-          <div
-            class="rich-content"
-            *ngIf="current.Body; else noBody"
-            [innerHTML]="safeHtml(current.Body)"
-          ></div>
-          <ng-template #noBody>
-            <p class="muted">Nenhuma descricao detalhada informada.</p>
-          </ng-template>
-        </section>
-
-        <section class="attachments-section">
-          <header>
-            <h3>Anexos</h3>
-            <span>{{ current.Attachments.length }} arquivo(s)</span>
-          </header>
-
-          <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
-            <ul class="attachments-list">
-              <li *ngFor="let attachment of current.Attachments">
-                <div>
-                  <strong>{{ attachment.Caption || 'Arquivo sem descricao' }}</strong>
-                  <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
-                  <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
-                </div>
-
-                <ng-container *ngIf="isVideoAttachment(attachment); else downloadBlock">
-                  <div class="video-container">
-                    <button
-                      class="button button--primary"
-                      type="button"
-                      *ngIf="!isVideoLoaded(attachment.MediaResourceId)"
-                      (click)="loadVideo(attachment)"
-                      [disabled]="videoIsLoading(attachment.MediaResourceId)"
-                    >
-                      {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : 'Carregar vídeo' }}
-                    </button>
-
-                    <div class="video-frame" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
-                      <video #videoPlayer controls [src]="videoUrl"></video>
-
-                      <div class="annotation-panel">
-                        <h4>Anotações</h4>
-                        <div class="annotation-form">
-                          <input
-                            type="text"
-                            placeholder="Mensagem"
-                            [value]="annotationDraft(attachment.Id)"
-                            (input)="updateAnnotationDraft(attachment.Id, ($any($event.target).value || ''))"
-                          />
-                          <button
-                            type="button"
-                            class="button button--ghost"
-                            (click)="addAnnotation(attachment.Id, videoPlayer.currentTime)"
-                          >
-                            Adicionar ({{ formatTime(videoPlayer.currentTime) }})
-                          </button>
-                        </div>
-
-                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.Id).length; else noAnnotations">
-                          <li
-                            *ngFor="let annotation of annotationsFor(attachment.Id)"
-                            (click)="seekTo(videoPlayer, annotation.time)"
-                          >
-                            <span>{{ formatTime(annotation.time) }}</span>
-                            <p>{{ annotation.text }}</p>
-                          </li>
-                        </ul>
-                        <ng-template #noAnnotations>
-                          <p class="muted">Nenhuma anotação criada ainda.</p>
-                        </ng-template>
-                      </div>
-                    </div>
-                  </div>
-                </ng-container>
-
-                <ng-template #downloadBlock>
-                  <button
-                    class="button button--ghost"
-                    type="button"
-                    (click)="downloadAttachment(attachment)"
-                    [disabled]="downloading() === attachment.MediaResourceId"
-                  >
-                    {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                  </button>
-                </ng-template>
-              </li>
-            </ul>
-          </ng-container>
-          <ng-template #noAttachments>
-            <p class="muted">Nenhum arquivo foi anexado a este conteudo.</p>
-          </ng-template>
-        </section>
-      </article>
-    </ng-container>
-  </ng-container>
-</section>
-
-<ng-template #loadingState>
-  <div class="state state--info">Carregando conteudo...</div>
-</ng-template>
-
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
-import { CourseContentsService } from '../../core/services/course-contents.service';
-import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
-import { MediaService } from '../../core/services/media.service';
-import { ToastrService } from 'ngx-toastr';
-import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
-
-interface LocalVideoAnnotation {
-  id: string;
-  time: number;
-  text: string;
-}
-
-@Component({
-  selector: 'app-course-content-viewer',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './course-content-viewer.component.html',
-  styleUrl: './course-content-viewer.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CourseContentViewerComponent {
-  private readonly route = inject(ActivatedRoute);
-  private readonly service = inject(CourseContentsService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly mediaService = inject(MediaService);
-  private readonly toastr = inject(ToastrService);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly annotationsService = inject(ContentAnnotationsService);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly content = signal<CourseContentDto | null>(null);
-  readonly courseId = signal<string | null>(null);
-  readonly downloading = signal<string | null>(null);
-  readonly videoUrls = signal<Record<string, string>>({});
-  readonly videoLoading = signal<Record<string, boolean>>({});
-  readonly annotationDrafts = signal<Record<string, string>>({});
-  readonly annotationsState = signal<Record<string, LocalVideoAnnotation[]>>({});
-
-  readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
-  readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
-  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
-
-  constructor() {
-    this.route.paramMap
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(params => {
-          const courseId = params.get('courseId');
-          const contentId = params.get('contentId');
-          this.courseId.set(courseId);
-          if (!contentId) {
-            throw new Error('Conteudo nao encontrado.');
-          }
-          this.loading.set(true);
-          return this.service.getContentById(contentId);
-        })
-      )
-      .subscribe({
-        next: content => {
-          this.content.set(content);
-          this.loadPersistedAnnotations(content.Attachments ?? []);
-          this.loading.set(false);
-          this.error.set(null);
-        },
-        error: () => {
-          this.content.set(null);
-          this.error.set('Nao foi possivel carregar o conteudo selecionado.');
-          this.loading.set(false);
-        }
-      });
-
-    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
-  }
-
-  downloadAttachment(attachment: ContentAttachmentDto): void {
-    if (!attachment?.MediaResourceId) {
-      return;
-    }
-
-    this.downloading.set(attachment.MediaResourceId);
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = attachment.Media?.OriginalFileName || attachment.Media?.FileName || 'anexo';
-          anchor.click();
-          URL.revokeObjectURL(url);
-          this.downloading.set(null);
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel baixar o arquivo.');
-          this.downloading.set(null);
-        }
-      });
-  }
-
-  isVideoAttachment(attachment: ContentAttachmentDto): boolean {
-    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
-    if (contentType.startsWith('video/')) {
-      return true;
-    }
-
-    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
-    const extension = fileName.split('.').pop() ?? '';
-    return this.videoExtensions.includes(extension);
-  }
-
-  videoUrlFor(attachmentId: string): string | null {
-    return this.videoUrls()[attachmentId] ?? null;
-  }
-
-  annotationDraft(attachmentId: string): string {
-    return this.annotationDrafts()[attachmentId] ?? '';
-  }
-
-  annotationsFor(attachmentId: string): LocalVideoAnnotation[] {
-    return this.annotationsState()[attachmentId] ?? [];
-  }
-
-  loadVideo(attachment: ContentAttachmentDto): void {
-    if (!attachment.MediaResourceId || this.videoLoading()[attachment.MediaResourceId]) {
-      return;
-    }
-
-    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
-
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel carregar o video.');
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        }
-      });
-  }
-
-  updateAnnotationDraft(attachmentId: string, value: string): void {
-    this.annotationDrafts.update(state => ({ ...state, [attachmentId]: value }));
-  }
-
-  addAnnotation(attachmentId: string, currentTime: number): void {
-    const text = (this.annotationDrafts()[attachmentId] ?? '').trim();
-    if (!text) {
-      this.toastr.info('Digite uma anotacao antes de salvar.');
-      return;
-    }
-
-    this.annotationsService
-      .addAnnotation({
-        ContentAttachmentId: attachmentId,
-        TimeMarkerSeconds: currentTime,
-        Comment: text
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: saved => {
-          const annotation: LocalVideoAnnotation = {
-            id: saved.Id,
-            time: saved.TimeMarkerSeconds,
-            text: saved.Comment
-          };
-          this.annotationsState.update(state => {
-            const list = state[attachmentId] ?? [];
-            return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
-          });
-          this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel salvar a anotacao.');
-        }
-      });
-  }
-
-  seekTo(video: HTMLVideoElement, time: number): void {
-    if (Number.isFinite(time) && video) {
-      video.currentTime = time;
-      video.focus();
-    }
-  }
-
-  formatTime(time: number): string {
-    if (!Number.isFinite(time)) {
-      return '00:00';
-    }
-    const minutes = Math.floor(time / 60)
-      .toString()
-      .padStart(2, '0');
-    const seconds = Math.floor(time % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  }
-
-  isVideoLoaded(attachmentId: string): boolean {
-    return Boolean(this.videoUrls()[attachmentId]);
-  }
-
-  videoIsLoading(attachmentId: string): boolean {
-    return Boolean(this.videoLoading()[attachmentId]);
-  }
-
-  private cleanupVideoUrls(): void {
-    const urls = Object.values(this.videoUrls());
-    urls.forEach(url => URL.revokeObjectURL(url));
-  }
-
-  private loadPersistedAnnotations(attachments: ContentAttachmentDto[]): void {
-    attachments
-      .filter(attachment => this.isVideoAttachment(attachment))
-      .forEach(attachment => {
-        this.annotationsService
-          .getAnnotations({ ContentAttachmentId: attachment.Id })
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            next: response => {
-              const annotations = response.items
-                .map(item => ({
-                  id: item.Id,
-                  time: item.TimeMarkerSeconds,
-                  text: item.Comment
-                }))
-                .sort((a, b) => a.time - b.time);
-              this.annotationsState.update(state => ({ ...state, [attachment.Id]: annotations }));
-            },
-            error: () => {
-              this.toastr.error('Nao foi possivel carregar as anotacoes do video.');
-            }
-          });
-      });
-  }
-
-  safeHtml(content?: string | null): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-activities.component.html
-````html
-<section class="course-activities" *ngIf="selectedCourse(); else noCourseSelected">
-  <header class="course-activities__header">
-    <div>
-      <h3>Atividades do curso</h3>
-      <p>Cadastre atividades para as turmas interativas e acompanhe o status em tempo real.</p>
-    </div>
-    <button
-      type="button"
-      class="button button--primary"
-      (click)="toggleForm()"
-      [disabled]="!hasAvailableGroups()"
-    >
-      {{ formVisible() ? 'Fechar formulário' : 'Nova atividade' }}
-    </button>
-  </header>
-
-  <div class="state state--info" *ngIf="!hasAvailableGroups()">
-    Cadastre ao menos uma turma interativa para liberar o registro de atividades.
-  </div>
-
-  <form
-    class="activity-form"
-    *ngIf="formVisible()"
-    [formGroup]="form"
-    (ngSubmit)="submit()"
-  >
-    <div class="activity-form__grid">
-      <label class="form-control">
-        <span>Turma</span>
-        <select formControlName="classGroupId" [disabled]="!hasAvailableGroups()">
-          <option value="" disabled>Selecione uma turma</option>
-          <option [value]="allGroupsOption">Todas as turmas interativas</option>
-          <option *ngFor="let group of availableGroups()" [value]="group.Id">
-            {{ group.Name }}
-          </option>
-        </select>
-      </label>
-
-      <label class="form-control">
-        <span>Título</span>
-        <input type="text" formControlName="title" placeholder="Nome da atividade" />
-      </label>
-
-      <label class="form-control">
-        <span>Nota máxima (opcional)</span>
-        <input type="number" min="0" step="0.5" formControlName="maxScore" placeholder="0,0" />
-      </label>
-    </div>
-
-    <label class="form-control">
-      <span>Descrição</span>
-      <app-rich-text-editor
-        formControlName="description"
-        placeholder="Detalhes e orientações para os alunos"
-      ></app-rich-text-editor>
-    </label>
-
-    <div class="activity-form__grid">
-      <label class="form-control">
-        <span>Disponível a partir de</span>
-        <input type="datetime-local" formControlName="availableAt" />
-      </label>
-
-      <label class="form-control">
-        <span>Entrega até</span>
-        <input type="datetime-local" formControlName="dueDate" />
-      </label>
-
-      <label class="form-control">
-        <span>Penalidade por atraso (%)</span>
-        <input
-          type="number"
-          min="0"
-          max="100"
-          formControlName="latePenaltyPercentage"
-          placeholder="0 a 100"
-        />
-      </label>
-    </div>
-
-    <div class="form-switches">
-      <label class="checkbox-row">
-        <input type="checkbox" formControlName="allowLateSubmissions" />
-        <span>Aceitar entregas em atraso</span>
-      </label>
-      <label class="checkbox-row">
-        <input type="checkbox" formControlName="visibleToStudents" />
-        <span>Visível para estudantes</span>
-      </label>
-    </div>
-
-    <div class="attachments">
-      <div class="attachments__header">
-        <h4>Anexos</h4>
-        <label class="upload-input">
-          <input type="file" multiple (change)="handleFiles($event)" [disabled]="isSubmitting()" />
-          <i class="bi bi-paperclip"></i>
-          <span>Adicionar arquivos</span>
-        </label>
-      </div>
-      <p class="helper-text">Os anexos ficam disponíveis para os alunos após a publicação da atividade.</p>
-
-      <div class="attachments__list" *ngIf="attachments().length; else noAttachments">
-        <article
-          class="attachment-card"
-          *ngFor="let attachment of attachments(); trackBy: trackByAttachment"
-          [attr.data-status]="attachment.status"
-        >
-          <div class="attachment-card__header">
-            <div>
-              <strong>{{ attachment.fileName }}</strong>
-              <small *ngIf="attachment.media?.ContentType">{{ attachment.media?.ContentType }}</small>
-              <small *ngIf="attachment.status === 'uploading'">Enviando...</small>
-              <small *ngIf="attachment.status === 'error'">Falha no upload</small>
-            </div>
-            <button type="button" class="button button--ghost" (click)="removeAttachment(attachment.id)">
-              Remover
-            </button>
-          </div>
-          <input
-            type="text"
-            class="caption-input"
-            placeholder="Descrição opcional"
-            [value]="attachment.caption"
-            (input)="updateCaption(attachment.id, ($any($event.target).value || ''))"
-            [disabled]="attachment.status !== 'ready'"
-          />
-        </article>
-      </div>
-    </div>
-
-    <footer class="activity-form__actions">
-      <button
-        type="submit"
-        class="button button--primary"
-        [disabled]="isSubmitting() || !hasAvailableGroups()"
-      >
-        {{ isSubmitting() ? 'Salvando...' : 'Salvar atividade' }}
-      </button>
-      <button type="button" class="button button--ghost" (click)="toggleForm()">
-        Cancelar
-      </button>
-    </footer>
-
-    <ng-template #noAttachments>
-      <p class="helper-text">Nenhum anexo foi adicionado.</p>
-    </ng-template>
-  </form>
-
-  <section class="activities-list">
-    <header>
-      <div>
-        <h4>Atividades cadastradas</h4>
-        <p>Resumo das atividades vinculadas ao curso.</p>
-      </div>
-      <span>{{ activities().length }} registro(s)</span>
-    </header>
-
-    <ng-container *ngIf="!activitiesLoading(); else loadingActivities">
-      <ng-container *ngIf="activityGroups().length; else emptyActivities">
-        <div class="activities-list__grid">
-          <article
-            class="activity-card"
-            *ngFor="let activity of activityGroups(); trackBy: trackByGroup"
-          >
-            <header>
-              <h5>{{ activity.title }}</h5>
-              <span class="chip">{{ activity.classGroupLabel }}</span>
-            </header>
-            <p class="due-date">{{ activity.dueDateLabel }}</p>
-            <ul>
-              <li>{{ activity.allowLate ? 'Aceita atrasos' : 'Sem atrasos' }}</li>
-              <li>{{ activity.attachments }} anexo(s)</li>
-            </ul>
-            <button type="button" class="button button--ghost" (click)="viewActivity(activity)">
-              Visualizar
-            </button>
-          </article>
-        </div>
-      </ng-container>
-    </ng-container>
-  </section>
-</section>
-
-<ng-template #loadingActivities>
-  <div class="state state--info">Carregando atividades...</div>
-</ng-template>
-
-<ng-template #emptyActivities>
-  <div class="state state--info">Nenhuma atividade registrada para este curso.</div>
-</ng-template>
-
-<ng-template #noCourseSelected>
-  <div class="state state--info">Selecione um curso para visualizar as atividades.</div>
-</ng-template>
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-activities.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  Input,
-  computed,
-  inject,
-  signal
-} from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
-
-import { ActivitiesService } from '../../core/services/activities.service';
-import { ActivityListItem, ActivityCreatePayload } from '../../core/api/activities.api';
-import { AuthService } from '../../core/services/auth.service';
-import { CourseDto } from '../../core/api/courses.api';
-import { MediaResource } from '../../core/api/media.api';
-import { MediaService } from '../../core/services/media.service';
-import { Router } from '@angular/router';
-import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
-
-type AttachmentStatus = 'uploading' | 'ready' | 'error';
-
-interface AttachmentDraft {
-  id: string;
-  fileName: string;
-  status: AttachmentStatus;
-  caption: string;
-  media?: MediaResource;
-}
-
-interface ActivityGroup {
-  id: string;
-  courseId: string;
-  title: string;
-  dueDateLabel: string;
-  allowLate: boolean;
-  attachments: number;
-  classGroupLabel: string;
-}
-
-@Component({
-  selector: 'app-course-activities',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
-  templateUrl: './course-activities.component.html',
-  styleUrl: './course-activities.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CourseActivitiesComponent {
-  private readonly fb = inject(FormBuilder);
-  private readonly activitiesService = inject(ActivitiesService);
-  private readonly mediaService = inject(MediaService);
-  private readonly authService = inject(AuthService);
-  private readonly toastr = inject(ToastrService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
-
-  private readonly courseState = signal<CourseDto | null>(null);
-  private currentCourseId: string | null = null;
-
-  readonly selectedCourse = computed(() => this.courseState());
-  readonly activities = signal<ActivityListItem[]>([]);
-  readonly activitiesLoading = signal(false);
-  readonly formVisible = signal(false);
-  readonly isSubmitting = signal(false);
-  readonly attachments = signal<AttachmentDraft[]>([]);
-  readonly allGroupsOption = '__all__';
-
-  readonly availableGroups = computed(() => {
-    const course = this.courseState();
-    if (!course) {
-      return [];
-    }
-    return (course.ClassGroups ?? []).filter(group => !group.IsMaterialsDistribution);
-  });
-
-  readonly hasAvailableGroups = computed(() => this.availableGroups().length > 0);
-  readonly hasUploadingAttachments = computed(() =>
-    this.attachments().some(item => item.status === 'uploading')
-  );
-  readonly activityGroups = computed<ActivityGroup[]>(() => {
-    const items = this.activities();
-    if (!items.length) {
-      return [];
-    }
-
-    const groupCount = this.availableGroups().length;
-    const groups = new Map<string, { activity: ActivityListItem; classGroups: Set<string> }>();
-
-    items.forEach(activity => {
-      const key = [
-        activity.courseId,
-        activity.title,
-        activity.dueDateLabel,
-        String(activity.allowLate),
-        String(activity.attachments)
-      ].join('|');
-
-      const entry = groups.get(key);
-      if (entry) {
-        entry.classGroups.add(activity.classGroupName || 'Turma nao informada');
-      } else {
-        groups.set(key, {
-          activity,
-          classGroups: new Set([activity.classGroupName || 'Turma nao informada'])
-        });
-      }
-    });
-
-    return Array.from(groups.values()).map(({ activity, classGroups }) => {
-      const names = Array.from(classGroups);
-      const label =
-        groupCount > 0 && classGroups.size >= groupCount
-          ? 'Todas as turmas'
-          : names.join(', ');
-
-      return {
-        id: activity.id,
-        courseId: activity.courseId,
-        title: activity.title,
-        dueDateLabel: activity.dueDateLabel,
-        allowLate: activity.allowLate,
-        attachments: activity.attachments,
-        classGroupLabel: label
-      };
-    });
-  });
-
-  readonly form = this.fb.group({
-    classGroupId: this.fb.control('', { validators: [Validators.required] }),
-    title: this.fb.control('', { validators: [Validators.required, Validators.maxLength(180)] }),
-    description: this.fb.control('', { validators: [Validators.required, Validators.maxLength(4000)] }),
-    availableAt: this.fb.control<string | null>(null),
-    dueDate: this.fb.control<string | null>(null),
-    maxScore: this.fb.control<string | null>(null),
-    allowLateSubmissions: this.fb.control(false),
-    latePenaltyPercentage: this.fb.control<string | null>({ value: null, disabled: true }),
-    visibleToStudents: this.fb.control(true)
-  });
-
-  @Input({ required: true })
-  set course(value: CourseDto | null) {
-    this.courseState.set(value);
-    this.onCourseChanged(value);
-  }
-
-  constructor() {
-    this.form.controls.allowLateSubmissions.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(value => this.syncLatePenaltyControl(Boolean(value)));
-  }
-
-  toggleForm(): void {
-    const visible = !this.formVisible();
-    this.formVisible.set(visible);
-    if (visible) {
-      this.resetForm();
-    }
-  }
-
-  handleFiles(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (!files?.length) {
-      return;
-    }
-
-    Array.from(files).forEach(file => this.uploadFile(file));
-    input.value = '';
-  }
-
-  removeAttachment(id: string): void {
-    this.attachments.update(list => list.filter(item => item.id !== id));
-  }
-
-  updateCaption(id: string, value: string): void {
-    this.attachments.update(list =>
-      list.map(item => (item.id === id ? { ...item, caption: value } : item))
-    );
-  }
-
-  trackByActivity(_: number, item: ActivityListItem): string {
-    return item.id;
-  }
-
-  trackByGroup(_: number, item: ActivityGroup): string {
-    return item.id;
-  }
-
-  trackByAttachment(_: number, item: AttachmentDraft): string {
-    return item.id;
-  }
-
-  viewActivity(activity: ActivityGroup): void {
-    this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
-  }
-
-  submit(): void {
-    const course = this.courseState();
-    const currentUser = this.authService.currentUser();
-    if (!course || !currentUser) {
-      this.toastr.error('Usuario nao autenticado ou curso invalido.');
-      return;
-    }
-
-    if (!this.hasAvailableGroups()) {
-      this.toastr.warning('Cadastre uma turma interativa antes de criar atividades.');
-      return;
-    }
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    if (this.hasUploadingAttachments()) {
-      this.toastr.info('Aguarde o envio dos anexos antes de salvar.');
-      return;
-    }
-
-    const selectedGroupId = this.form.controls.classGroupId.value ?? '';
-    const targetGroups =
-      selectedGroupId === this.allGroupsOption
-        ? this.availableGroups()
-        : this.availableGroups().filter(group => group.Id === selectedGroupId);
-
-    if (!targetGroups.length) {
-      this.toastr.error('Selecione ao menos uma turma para vincular a atividade.');
-      return;
-    }
-
-    const allowLate = Boolean(this.form.controls.allowLateSubmissions.value);
-    const attachments = this.attachments()
-      .filter(item => item.status === 'ready' && item.media)
-      .map(item => ({
-        MediaResourceId: item.media!.Id,
-        Caption: item.caption?.trim() || undefined
-      }));
-
-    const basePayload = {
-      CourseId: course.Id,
-      CreatedById: currentUser.id,
-      Title: (this.form.controls.title.value ?? '').trim(),
-      Description: (this.form.controls.description.value ?? '').trim(),
-      AvailableAt: this.toIsoString(this.form.controls.availableAt.value),
-      DueDate: this.toIsoString(this.form.controls.dueDate.value),
-      MaxScore: this.parseDecimal(this.form.controls.maxScore.value),
-      AllowLateSubmissions: allowLate,
-      LatePenaltyPercentage: allowLate ? this.parseInteger(this.form.controls.latePenaltyPercentage.value) : undefined,
-      VisibleToStudents: Boolean(this.form.controls.visibleToStudents.value),
-      Attachments: attachments
-    };
-
-    const requests = targetGroups.map(group =>
-      this.activitiesService.createActivity({
-        ...basePayload,
-        ClassGroupId: group.Id
-      } satisfies ActivityCreatePayload)
-    );
-
-    this.isSubmitting.set(true);
-    forkJoin(requests)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isSubmitting.set(false))
-      )
-      .subscribe({
-        next: () => {
-          const message =
-            targetGroups.length > 1
-              ? `Atividade registrada para ${targetGroups.length} turmas.`
-              : 'Atividade registrada com sucesso.';
-          this.toastr.success(message);
-          this.resetForm();
-          if (this.currentCourseId) {
-            this.loadActivities(this.currentCourseId);
-          }
-        },
-        error: () => this.toastr.error('Nao foi possivel registrar a atividade.')
-      });
-  }
-
-  private onCourseChanged(course: CourseDto | null): void {
-    const newId = course?.Id ?? null;
-    this.prefillClassGroup(course);
-
-    if (newId === this.currentCourseId) {
-      return;
-    }
-
-    this.currentCourseId = newId;
-
-    if (!newId) {
-      this.activities.set([]);
-      return;
-    }
-
-    this.loadActivities(newId);
-  }
-
-  private prefillClassGroup(course: CourseDto | null): void {
-    const firstGroup = course ? (course.ClassGroups ?? []).find(group => !group.IsMaterialsDistribution) : null;
-    const control = this.form.controls.classGroupId;
-    const currentValue = control.value ?? '';
-
-    if (!firstGroup) {
-      control.setValue('', { emitEvent: false });
-      return;
-    }
-
-    const stillValid = Boolean(course?.ClassGroups?.some(group => group.Id === currentValue));
-    if (!currentValue || !stillValid) {
-      control.setValue(firstGroup.Id, { emitEvent: false });
-    }
-  }
-
-  private resetForm(): void {
-    const defaultGroup = this.availableGroups()[0]?.Id ?? '';
-    this.form.reset({
-      classGroupId: defaultGroup,
-      title: '',
-      description: '',
-      availableAt: null,
-      dueDate: null,
-      maxScore: null,
-      allowLateSubmissions: false,
-      latePenaltyPercentage: null,
-      visibleToStudents: true
-    });
-    this.form.controls.latePenaltyPercentage.disable({ emitEvent: false });
-    this.attachments.set([]);
-  }
-
-  private uploadFile(file: File): void {
-    const draft: AttachmentDraft = {
-      id: this.generateId(),
-      fileName: file.name,
-      status: 'uploading',
-      caption: ''
-    };
-    this.attachments.update(list => [...list, draft]);
-
-    this.mediaService
-      .upload(file)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: media => {
-          this.attachments.update(list =>
-            list.map(item => (item.id === draft.id ? { ...item, media, status: 'ready' } : item))
-          );
-          this.toastr.success(`${file.name} enviado.`);
-        },
-        error: () => {
-          this.attachments.update(list =>
-            list.map(item => (item.id === draft.id ? { ...item, status: 'error' } : item))
-          );
-          this.toastr.error(`Falha ao enviar ${file.name}.`);
-        }
-      });
-  }
-
-  private loadActivities(courseId: string): void {
-    this.activitiesLoading.set(true);
-    this.activitiesService
-      .getActivities({ CourseId: courseId })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: items => {
-          this.activities.set(items);
-          this.activitiesLoading.set(false);
-        },
-        error: () => {
-          this.activitiesLoading.set(false);
-          this.toastr.error('Nao foi possivel carregar as atividades.');
-        }
-      });
-  }
-
-  private syncLatePenaltyControl(enabled: boolean): void {
-    const control = this.form.controls.latePenaltyPercentage;
-    if (enabled) {
-      control.enable({ emitEvent: false });
-    } else {
-      control.disable({ emitEvent: false });
-      control.reset(null, { emitEvent: false });
-    }
-  }
-
-  private toIsoString(value: string | null | undefined): string | undefined {
-    if (!value) {
-      return undefined;
-    }
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
-  }
-
-  private parseDecimal(value: string | null | undefined): number | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  private parseInteger(value: string | null | undefined): number | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : undefined;
-  }
-
-  private generateId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return Math.random().toString(36).slice(2, 11);
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.css
-````css
-.forum {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.forum header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.forum h2 {
-  margin: 0;
-  font-size: 1.6rem;
-  color: var(--surface-900);
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.ghost-button,
-.primary-button {
-  border-radius: 999px;
-  padding: 0.55rem 1.25rem;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-}
-
-.ghost-button {
-  background: transparent;
-  color: var(--color-primary);
-  border-color: rgba(37, 99, 235, 0.28);
-}
-
-.ghost-button--danger {
-  color: #b91c1c;
-  border-color: rgba(248, 113, 113, 0.3);
-}
-
-.primary-button {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.primary-button:disabled,
-.ghost-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.create-card {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 18px;
-  padding: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
-}
-
-.create-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.field label {
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.field input,
-.field textarea,
-.field select {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 12px;
-  padding: 0.65rem 0.8rem;
-  font: inherit;
-  background: var(--color-background);
-  color: inherit;
-}
-
-.field__error {
-  font-size: 0.78rem;
-  color: #b91c1c;
-}
-
-.field__hint {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-}
-
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.forum__list {
-  display: grid;
-  gap: 1rem;
-}
-
-.thread {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 18px;
-  padding: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
-  display: grid;
-  gap: 1rem;
-}
-
-.thread--locked {
-  opacity: 0.75;
-  border-style: dashed;
-}
-
-.thread__meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.tags {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.tag {
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.tag--course {
-  background: rgba(15, 23, 42, 0.08);
-  color: var(--surface-600);
-}
-
-.tag--class {
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
-}
-
-.tag--locked {
-  background: rgba(248, 113, 113, 0.12);
-  color: #b91c1c;
-}
-
-.author {
-  color: var(--surface-500);
-  font-size: 0.9rem;
-}
-
-.thread h3 {
-  margin: 0;
-  color: var(--surface-900);
-  font-size: 1.2rem;
-  line-height: 1.4;
-}
-
-.thread footer {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  color: var(--surface-500);
-  font-size: 0.9rem;
-}
-
-.thread footer button {
-  margin-left: auto;
-  padding: 0.55rem 1.2rem;
-  border-radius: 10px;
-  border: none;
-  background: rgba(99, 102, 241, 0.16);
-  color: var(--accent-600);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-@media (max-width: 640px) {
-  .thread footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .thread footer button {
-    margin: 0;
-  }
-}
-
-.forum .description {
-  margin: 0.25rem 0 0;
-  color: var(--surface-500);
-  font-size: 0.95rem;
-}
-
-.state {
-  padding: 1.5rem;
-  border-radius: 16px;
-  text-align: center;
-  font-weight: 500;
-  background: rgba(148, 163, 184, 0.15);
-  color: var(--surface-600);
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.18);
-  color: #b91c1c;
-}
-````
-
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
-````json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "UploadsConfiguration" : {
-    "PathDir": "Uploads"
-  },
-  "Minio": {
-    "Endpoint": "https://minio.dadyilha.com.br",
-    "AccessKey": "admin",
-    "SecretKey": "admin123",
-    "Region": "us-east-1",
-    "BucketName": "meajudaai"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=127.0.0.1;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
-  },
-  "Jwt": {
-    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
-    "Issuer": "ProjetoFinal.Api",
-    "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 1202
-  },
-  "RhbkConfiguration": {
-    "Realm": "",
-    "ClientId": "",
-    "ClientSecret": "",
-    "KeycloakBaseUrl": "",
-    "RedirectUri": ""
-  }
-}
-````
-
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.json
-````json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "UploadsConfiguration": {
-    "PathDir": "Uploads"
-  },
-  "Minio": {
-    "Endpoint": "https://minio.dadyilha.com.br",
-    "AccessKey": "admin",
-    "SecretKey": "admin123",
-    "Region": "us-east-1",
-    "BucketName": "meajudaai"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
-  },
-  "Jwt": {
-    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
-    "Issuer": "ProjetoFinal.Api",
-    "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 120
-  },
-  "RhbkConfiguration": {
-    "Realm": "",
-    "ClientId": "",
-    "ClientSecret": "",
-    "KeycloakBaseUrl": "",
-    "RedirectUri": ""
-  }
-}
-````
-
-## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumThreadRepository.cs
-````csharp
-using System;
-using System.Linq;
-using LinqKit;
-using Microsoft.EntityFrameworkCore;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Infra.Data.Contexts;
-using System.Linq.Expressions;
-
-namespace ProjetoFinal.Infra.Data.Repositories.Entities;
-
-public class ForumThreadRepository(AppDbContext context)
-    : DefaultRepository<ForumThread, ForumThreadFilter, Guid>(context), IForumThreadRepository
-{
-    protected override IQueryable<ForumThread> ApplyIncludes(IQueryable<ForumThread> query)
-    {
-        return query
-            .Include(thread => thread.Course)
-            .Include(thread => thread.ClassGroup)
-            .Include(thread => thread.CreatedBy);
-    }
-
-    protected override IQueryable<ForumThread> ApplyIncludesList(IQueryable<ForumThread> query)
-    {
-        return ApplyIncludes(query);
-    }
-
-    protected override Expression<Func<ForumThread, bool>> GetFilters(ForumThreadFilter filter)
-    {
-        var predicate = base.GetFilters(filter);
-
-        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
-        {
-            var instructorId = filter.InstructorId.Value;
-            predicate = predicate.And(thread =>
-                thread.Course != null && thread.Course.InstructorId == instructorId);
-        }
-
-        return predicate;
-    }
-}
-````
-
-## File: ProjetoFinal.sln
-````
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Api", "src\ProjetoFinal.Api\ProjetoFinal.Api.csproj", "{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F39C-4898-996F-02BE379BAD86}"
-	ProjectSection(SolutionItems) = preProject
-		docs\commands.md = docs\commands.md
-		docs\memoria_projeto.md = docs\memoria_projeto.md
-		docs\propont.md = docs\propont.md
-		docs\transcription.md = docs\transcription.md
-		docs\especificacao.md = docs\especificacao.md
-		docs\relatorio.md = docs\relatorio.md
-		docs\context.md = docs\context.md
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Application.Contracts", "src\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj", "{DA6BE528-C8A4-41BF-B898-A3A801C24568}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain.Shared", "src\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj", "{5C014F9F-F754-4311-BF57-054D52839DA7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain", "src\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj", "{8788179F-83E2-442A-866D-DF9EF82640ED}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Aplication.Services", "src\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj", "{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.Data", "src\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj", "{3F42AFFE-0B0A-4775-81CD-C04C42927033}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{38C7D967-FAD5-4560-9AB7-6D71F48F7D27}"
-EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjetoFinal.ClientApp", "src\ProjetoFinal.ClientApp\ProjetoFinal.ClientApp.esproj", "{3823AD60-71EB-BD5F-F256-F30AE905FD7A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.CrossCutting", "src\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj", "{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{5C014F9F-F754-4311-BF57-054D52839DA7} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{8788179F-83E2-442A-866D-DF9EF82640ED} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DBDCF9D2-9D03-4CEE-A8DB-1613AA739A63}
-	EndGlobalSection
-EndGlobal
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/activities/activities.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-
-import { ActivitiesService } from '../../core/services/activities.service';
-import { ActivityListItem } from '../../core/api/activities.api';
-import { CoursesService } from '../../core/services/courses.service';
-import { CourseDto } from '../../core/api/courses.api';
-import { AuthService } from '../../core/services/auth.service';
-import { CourseSubscriptionsService } from '../../core/services/course-subscriptions.service';
-import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
-
-@Component({
-  selector: 'app-activities',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './activities.component.html',
-  styleUrl: './activities.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ActivitiesComponent {
-  private readonly service = inject(ActivitiesService);
-  private readonly coursesService = inject(CoursesService);
-  private readonly subscriptionsService = inject(CourseSubscriptionsService);
-  private readonly submissionsService = inject(ActivitySubmissionsService);
-  private readonly authService = inject(AuthService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly activities = signal<ActivityListItem[]>([]);
-  readonly completedActivityIds = signal<Set<string>>(new Set());
-  readonly activityStatusFilter = signal<'all' | 'pending' | 'completed'>('all');
-  readonly filteredActivities = signal<ActivityListItem[]>([]);
-  readonly courses = signal<CourseDto[]>([]);
-  readonly isInstructor = computed(() => this.authService.isInstructorRole());
-  readonly isStudent = computed(() => this.authService.isStudentRole());
-  readonly displayedActivities = computed(() =>
-    this.isStudent() ? this.filteredActivities() : this.activities()
-  );
-  readonly activityGroupLabels = computed(() => {
-    const labels = new Map<string, string>();
-    const activities = this.activities();
-    const courses = this.courses();
-
-    const groupCounts = new Map(
-      courses.map(course => [
-        course.Id,
-        (course.ClassGroups ?? []).filter(group => !group.IsMaterialsDistribution).length
-      ])
-    );
-
-    const groupsByKey = new Map<string, Set<string>>();
-    activities.forEach(activity => {
-      const key = this.activitySignature(activity);
-      const set = groupsByKey.get(key) ?? new Set<string>();
-      set.add(activity.classGroupName || 'Turma nao informada');
-      groupsByKey.set(key, set);
-    });
-
-    groupsByKey.forEach((groupSet, key) => {
-      const [courseId] = key.split('|');
-      const totalGroups = groupCounts.get(courseId) ?? 0;
-      const label = totalGroups > 0 && groupSet.size >= totalGroups
-        ? 'Todas as turmas'
-        : Array.from(groupSet).join(', ');
-      labels.set(key, label);
-    });
-
-    return labels;
-  });
-
-  constructor() {
-    const user = this.authService.currentUser();
-    if (!user) {
-      this.error.set('Usuario nao identificado.');
-      this.loading.set(false);
-      return;
-    }
-
-    if (this.authService.isInstructorRole()) {
-      forkJoin({
-        activities: this.service.getActivities(),
-        courses: this.coursesService.getCoursesDto()
-      })
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: ({ activities, courses }) => {
-            this.activities.set(activities);
-            this.courses.set(courses);
-            this.completedActivityIds.set(new Set());
-            this.filteredActivities.set(activities);
-            this.error.set(null);
-            this.loading.set(false);
-          },
-          error: () => {
-            this.error.set('Nao foi possivel carregar as atividades.');
-            this.loading.set(false);
-          }
-        });
-      return;
-    }
-
-    forkJoin({
-      courses: this.coursesService.getCoursesDto(),
-      subscriptions: this.subscriptionsService.getByStudent(user.id)
-    })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(({ courses, subscriptions }) => {
-          this.courses.set(courses);
-          this.activityStatusFilter.set('all');
-
-          const allowedGroupIds = this.resolveStudentClassGroups(courses, user.id, subscriptions.map(item => item.CourseId));
-          if (allowedGroupIds.length === 0) {
-            return of({ activities: [] as ActivityListItem[], completedIds: new Set<string>() });
-          }
-
-          return forkJoin({
-            activities: this.loadActivitiesForGroups(allowedGroupIds),
-            submissions: this.loadSubmissionsForGroups(user.id, allowedGroupIds)
-          }).pipe(
-            map(({ activities, submissions }) => {
-              const completedIds = new Set(
-                submissions.filter(submission => submission.Status >= 2).map(submission => submission.ActivityId)
-              );
-              return { activities, completedIds };
-            })
-          );
-        })
-      )
-      .subscribe({
-        next: ({ activities, completedIds }) => {
-          this.activities.set(activities);
-          this.completedActivityIds.set(completedIds);
-          this.applyActivityFilter();
-          this.error.set(null);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('Nao foi possivel carregar as atividades.');
-          this.loading.set(false);
-        }
-      });
-  }
-
-  trackByActivity(_: number, item: ActivityListItem): string {
-    return item.id;
-  }
-
-  viewActivity(activity: ActivityListItem): void {
-    this.router.navigate(['/courses', activity.courseId, 'activities', activity.id]);
-  }
-
-  manageCorrections(activity: ActivityListItem): void {
-    if (!activity.id) {
-      return;
-    }
-    this.router.navigate(['/activities', activity.id, 'corrections']);
-  }
-
-  activityGroupLabel(activity: ActivityListItem): string {
-    return this.activityGroupLabels().get(this.activitySignature(activity)) ?? activity.classGroupName;
-  }
-
-  private activitySignature(activity: ActivityListItem): string {
-    return [
-      activity.courseId,
-      activity.title,
-      activity.dueDateLabel,
-      String(activity.allowLate),
-      String(activity.attachments)
-    ].join('|');
-  }
-
-  setActivityStatusFilter(filter: 'all' | 'pending' | 'completed'): void {
-    this.activityStatusFilter.set(filter);
-    this.applyActivityFilter();
-  }
-
-  private resolveStudentClassGroups(courses: CourseDto[], studentId: string, subscriptionCourseIds: string[]): string[] {
-    const allowed = new Set<string>();
-    const subscribedCourses = new Set(subscriptionCourseIds);
-    const allowedStatus = new Set([1, 2]);
-
-    courses.forEach(course => {
-      const groups = course.ClassGroups ?? [];
-      groups.forEach(group => {
-        if (group.IsMaterialsDistribution) {
-          if (subscribedCourses.has(course.Id)) {
-            allowed.add(group.Id);
-          }
-          return;
-        }
-
-        const enrollments = group.Enrollments ?? [];
-        const hasEnrollment = enrollments.some(
-          enrollment => enrollment.StudentId === studentId && allowedStatus.has(enrollment.Status)
-        );
-        if (hasEnrollment) {
-          allowed.add(group.Id);
-        }
-      });
-    });
-
-    return Array.from(allowed);
-  }
-
-  private loadActivitiesForGroups(classGroupIds: string[]) {
-    if (classGroupIds.length === 1) {
-      return this.service.getActivities({ ClassGroupId: classGroupIds[0], VisibleToStudents: true });
-    }
-
-    const requests = classGroupIds.map(classGroupId =>
-      this.service.getActivities({ ClassGroupId: classGroupId, VisibleToStudents: true })
-    );
-    return forkJoin(requests).pipe(map(items => items.flat()));
-  }
-
-  private loadSubmissionsForGroups(studentId: string, classGroupIds: string[]) {
-    const requests = classGroupIds.map(classGroupId =>
-      this.submissionsService.getSubmissions({ StudentId: studentId, ClassGroupId: classGroupId, PageSize: 200 })
-    );
-    return forkJoin(requests).pipe(map(results => results.flatMap(result => result.items)));
-  }
-
-  private applyActivityFilter(): void {
-    if (!this.authService.isStudentRole()) {
-      this.filteredActivities.set(this.activities());
-      return;
-    }
-
-    const filter = this.activityStatusFilter();
-    const completedIds = this.completedActivityIds();
-    const items = this.activities();
-
-    if (filter === 'all') {
-      this.filteredActivities.set(items);
-      return;
-    }
-
-    const filtered = items.filter(activity =>
-      filter === 'completed' ? completedIds.has(activity.id) : !completedIds.has(activity.id)
-    );
-    this.filteredActivities.set(filtered);
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/class-group-manage/class-group-manage.component.css
-````css
-.class-group-manage{display:flex;flex-direction:column;gap:24px;padding:24px}
-.class-group-manage__header{display:flex;flex-direction:column;gap:12px}
-.breadcrumbs{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.back-link{border:none;background:none;padding:0;cursor:pointer;font-weight:600;color:var(--color-primary)}
-.back-link--muted{color:var(--color-text-muted);text-decoration:none}
-.header-content h2{margin:0;font-size:28px;color:var(--color-text-primary)}
-.subtitle{margin:4px 0 0;color:var(--color-text-muted)}
-.header-badges,.thread-labels{display:flex;flex-wrap:wrap;gap:8px}
-.badge,.status-badge,.enrollment-count,.thread-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font-size:.78rem;background:rgba(148,163,184,.18);color:var(--color-text-primary)}
-.badge--accent,.enrollment-count{background:rgba(13,110,253,.12);color:var(--color-primary)}
-.overview-cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-.overview-card,.card-block,.thread-card,.thread-form{background:var(--color-surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
-.overview-card h3,.card-block h3{margin:0;font-size:.95rem;color:var(--color-text-muted)}
-.overview-card strong{font-size:1.7rem;color:var(--color-text-primary)}
-.details-card{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.details-card dl,.schedule dl{margin:0;display:grid;gap:10px}
-dt{font-weight:600;color:var(--color-text-primary)}
-dd{margin:4px 0 0;color:var(--color-text-muted)}
-.progress{height:10px;border-radius:999px;background:rgba(148,163,184,.2);overflow:hidden}
-.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--color-primary)0%,#8b5cf6 100%)}
-.enrollments-card header,.forum-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.student-name{font-weight:600;color:var(--color-text-primary)}
-.enrollments-card table{width:100%;border-collapse:collapse;font-size:.9rem}
-.table-scroll{width:100%;overflow-x:auto}
-.table-scroll table{min-width:520px}
-.enrollments-card th,.enrollments-card td{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.16);text-align:left}
-.enrollments-card th{font-size:.78rem;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.05em}
-.forum-actions{display:flex;gap:10px}
-.forum-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
-.forum-actions .primary-button:disabled{opacity:.6;cursor:not-allowed}
-.ghost-button,.primary-button{border-radius:999px;padding:10px 22px;font-weight:600;cursor:pointer;border:1px solid transparent}
-.ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
-.ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
-.primary-button{background:var(--color-primary);color:#fff}
-.primary-button:disabled{opacity:.6;cursor:not-allowed}
-.button{border-radius:999px;padding:8px 18px;font-weight:600;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--color-primary)}
-.button--ghost{border-color:rgba(13,110,253,.28)}
-.button--ghost:hover{background:rgba(13,110,253,.08)}
-.button--ghost:disabled{opacity:.6;cursor:not-allowed}
-.field{display:flex;flex-direction:column;gap:6px}
-.field input,.field textarea{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
-.field__error{font-size:.75rem;color:#b91c1c}
-.toggle{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--color-text-primary)}
-.form-actions{display:flex;justify-content:flex-end;gap:10px}
-.form-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
-.form-actions .ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
-.form-actions .ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
-.threads-list{display:grid;gap:12px}
-.thread-link{color:inherit;text-decoration:none;display:flex;flex-direction:column;gap:12px}
-.thread-link:focus-visible{outline:2px solid rgba(13,110,253,.45);outline-offset:4px;border-radius:14px}
-.thread-link:hover .thread-title h4{text-decoration:underline}
-.thread-title{display:flex;justify-content:space-between;gap:8px}
-.thread-title h4{margin:0;font-size:1rem;color:var(--color-text-primary)}
-.thread-meta,.thread-card footer{color:var(--color-text-muted);font-size:.85rem}
-.thread-card footer{display:flex;flex-wrap:wrap;gap:10px}
-.state{padding:16px;border-radius:14px;text-align:center;font-weight:500;background:rgba(148,163,184,.16);color:var(--color-text-muted)}
-.state--info{background:rgba(59,130,246,.12);color:var(--color-primary)}
-.state--error{background:rgba(248,113,113,.16);color:#b91c1c}
-.activities-card{background:var(--color-surface);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px}
-.activities-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.activities-layout{display:grid;grid-template-columns:280px 1fr;gap:18px}
-.activities-list{display:flex;flex-direction:column;gap:10px}
-.activity-item{border-radius:16px;border:1px solid rgba(148,163,184,.25);background:transparent;padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px}
-.activity-item--active{background:rgba(59,130,246,.1);border-color:var(--color-primary)}
-.activity-item h4{margin:0;font-size:1rem;color:var(--color-text-primary)}
-.activity-item__meta{font-size:.85rem;color:var(--color-text-muted)}
-.activities-panel{display:grid;gap:18px}
-.submissions-card,.submission-detail{border:1px solid rgba(148,163,184,.18);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--color-surface)}
-.submissions-card header,.submission-detail header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.submissions-table{width:100%;border-collapse:collapse;font-size:.9rem}
-.submissions-table th,.submissions-table td{padding:10px;border-bottom:1px solid rgba(148,163,184,.15);text-align:left}
-.submissions-table tr{cursor:pointer}
-.submissions-table tr.is-active{background:rgba(59,130,246,.08)}
-.submission-detail__attachments ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
-.attachments-list li{display:flex;flex-direction:column;gap:10px}
-.attachment-row{display:flex;flex-direction:column;gap:4px}
-.attachment-actions{display:flex;gap:10px;flex-wrap:wrap}
-.attachment-video{background:rgba(148,163,184,.12);border-radius:12px;padding:10px}
-.attachment-video video{width:100%;max-height:320px;border-radius:10px;background:#000}
-.grading-form{display:grid;gap:12px}
-.grading-form .field select{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
-.grading-form textarea{min-height:100px}
-.field--rubric .rubric-grid{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:10px}
-.multi-select{position:relative}
-.multi-select__trigger{list-style:none;border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;background:var(--color-background);cursor:pointer}
-.multi-select__trigger::-webkit-details-marker{display:none}
-.multi-select__menu{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--color-surface);border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:8px;display:grid;gap:6px;max-height:220px;overflow-y:auto;box-shadow:0 10px 28px -20px rgba(15,23,42,.35)}
-.multi-select__item{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
-.multi-select__item:hover{background:rgba(148,163,184,.12)}
-@media(max-width:768px){.class-group-manage{padding:16px}.enrollments-card header,.forum-card header{flex-direction:column;align-items:flex-start}.forum-actions,.ghost-button,.primary-button{width:100%}.activities-layout{grid-template-columns:1fr}.field--rubric .rubric-grid{grid-template-columns:1fr}}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.html
-````html
-<section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
-  <header class="activity-viewer__header">
-    <a class="back-link" [routerLink]="backLink()">← Voltar</a>
-    <h2>{{ pageTitle() }}</h2>
-    <span class="badge">{{ current.ClassGroupName }}</span>
-  </header>
-
-  <div class="meta">
-    <p><strong>Entrega:</strong> {{ dueDateLabel() }}</p>
-    <p><strong>Visivel aos alunos:</strong> {{ current.VisibleToStudents ? 'Sim' : 'Nao' }}</p>
-    <p><strong>Atrasos:</strong> {{ current.AllowLateSubmissions ? 'Aceita' : 'Nao aceita' }}</p>
-    <p *ngIf="current.MaxScore"><strong>Nota máxima:</strong> {{ current.MaxScore }}</p>
-  </div>
-
-  <article class="activity-card">
-    <h3>Descricao</h3>
-    <div class="rich-content" [innerHTML]="safeHtml(current.Description)"></div>
-  </article>
-
-  <section class="attachments-section">
-    <header>
-      <h3>Anexos</h3>
-      <span>{{ current.Attachments.length }} arquivo(s)</span>
-    </header>
-
-    <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
-      <ul class="attachments-list">
-        <li *ngFor="let attachment of current.Attachments">
-          <div>
-            <strong>{{ attachment.Caption || 'Anexo' }}</strong>
-            <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
-          </div>
-          <button
-            type="button"
-            class="button button--ghost"
-            (click)="downloadAttachment(attachment)"
-            [disabled]="downloading() === attachment.MediaResourceId"
-          >
-            {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-          </button>
-        </li>
-      </ul>
-    </ng-container>
-  </section>
-
-  <section class="submission-module" *ngIf="isStudent()">
-    <header class="submission-module__header">
-      <div>
-        <h3>Realizar atividade</h3>
-        <p class="muted">
-          Envie uma observacao e adicione arquivos de apoio para concluir esta atividade.
-        </p>
-      </div>
-      <span class="badge badge--accent">Area do aluno</span>
-    </header>
-
-    <ng-container *ngIf="submissionLoading(); else submissionContent">
-      <div class="state state--info">Verificando envios anteriores...</div>
-    </ng-container>
-
-    <ng-template #submissionContent>
-      <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
-
-        <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
-          <header>
-            <div>
-              <h4>Envio registrado</h4>
-              <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
-            </div>
-            <span class="status-badge" data-status="enviado">Enviado</span>
-          </header>
-
-          <section class="submission-summary__grading">
-            <h5>Correção</h5>
-            <ng-container *ngIf="submission.Status !== 2 || submission.Score != null || submission.Feedback; else notReviewed">
-              <dl>
-                <div>
-                  <dt>Status</dt>
-                  <dd>{{ submissionStatusLabel(submission.Status) }}</dd>
-                </div>
-                <div *ngIf="submission.Score != null">
-                  <dt>Nota</dt>
-                  <dd>{{ submission.Score }}</dd>
-                </div>
-                <div *ngIf="submission.MasteryScore != null">
-                  <dt>Rubrica: Dominio</dt>
-                  <dd>{{ submission.MasteryScore }}/5</dd>
-                </div>
-                <div *ngIf="submission.ApplicationScore != null">
-                  <dt>Rubrica: Aplicacao</dt>
-                  <dd>{{ submission.ApplicationScore }}/5</dd>
-                </div>
-                <div *ngIf="submission.CommunicationScore != null">
-                  <dt>Rubrica: Comunicacao</dt>
-                  <dd>{{ submission.CommunicationScore }}/5</dd>
-                </div>
-                <div *ngIf="recommendedActionLabel(submission.RecommendedAction) as actionLabel">
-                  <dt>Acao recomendada</dt>
-                  <dd>{{ actionLabel }}</dd>
-                </div>
-                <div *ngIf="feedbackTagsList(submission.FeedbackTags).length">
-                  <dt>Tags diagnosticas</dt>
-                  <dd>{{ feedbackTagsList(submission.FeedbackTags).join(', ') }}</dd>
-                </div>
-                <div *ngIf="submission.Feedback">
-                  <dt>Feedback do instrutor</dt>
-                  <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>
-                </div>
-              </dl>
-            </ng-container>
-          </section>
-
-          <section *ngIf="submission.TextAnswer">
-            <h5>Observacao enviada</h5>
-            <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
-          </section>
-
-        <section>
-          <h5>Anexos do aluno</h5>
-          <ng-container *ngIf="submission.Attachments.length; else noStudentAttachments">
-            <ul class="attachments-list">
-              <li *ngFor="let attachment of submission.Attachments">
-                <div>
-                  <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
-                  <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
-                </div>
-                <button
-                  type="button"
-                  class="button button--ghost"
-                  (click)="downloadSubmissionAttachment(attachment)"
-                  [disabled]="downloading() === attachment.MediaResourceId"
-                >
-                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                </button>
-              </li>
-            </ul>
-          </ng-container>
-        </section>
-      </article>
-
-      <ng-template #submissionFormTpl>
-        <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
-          <label for="textAnswer">Observacao</label>
-          <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
-          <small class="field-hint">Descreva sua resposta ou contextualize os anexos enviados.</small>
-
-          <div class="submission-form__attachments">
-            <div class="submission-form__attachments-header">
-              <div>
-                <h4>Seus anexos</h4>
-                <p class="muted">Adicione os arquivos em PDF, imagem, audio ou video.</p>
-              </div>
-              <label class="upload-button">
-                <input type="file" multiple (change)="handleSubmissionFiles($event)" [disabled]="isSubmittingWork()" />
-                Adicionar arquivos
-              </label>
-            </div>
-
-            <ng-container *ngIf="submissionAttachments().length; else noDrafts">
-              <ul class="attachment-drafts">
-                <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
-                  <div>
-                    <strong>{{ attachment.fileName }}</strong>
-                    <p class="muted" *ngIf="attachment.status === 'uploading'">
-                      Enviando<span class="loading-dots" aria-hidden="true"></span>
-                    </p>
-                    <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
-                      Falha no envio
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    class="button button--ghost"
-                    (click)="removeSubmissionAttachment(attachment.id)"
-                    [disabled]="attachment.status === 'uploading' || isSubmittingWork()"
-                  >
-                    Remover
-                  </button>
-                </li>
-              </ul>
-            </ng-container>
-          </div>
-
-          <button
-            type="submit"
-            class="primary-button"
-            [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
-          >
-            {{ isSubmittingWork() ? 'Enviando...' : 'Enviar atividade' }}
-          </button>
-        </form>
-      </ng-template>
-    </ng-template>
-  </section>
-</section>
-
-<ng-template #stateBlock>
-  <div class="state state--info" *ngIf="loading(); else errorState">Carregando atividade...</div>
-</ng-template>
-
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
-
-<ng-template #noAttachments>
-  <p class="muted">Nenhum anexo publicado para esta atividade.</p>
-</ng-template>
-
-<ng-template #noStudentAttachments>
-  <p class="muted">Nenhum arquivo foi anexado neste envio.</p>
-</ng-template>
-
-<ng-template #noDrafts>
-  <p class="muted">Nenhum arquivo adicionado.</p>
-</ng-template>
-
-<ng-template #notReviewed>
-  <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
-</ng-template>
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.css
@@ -33064,6 +33112,323 @@ function formatNextEvent(group: ClassGroupDto, formatter: Intl.DateTimeFormat): 
 </ng-template>
 ````
 
+## File: src/ProjetoFinal.ClientApp/src/app/pages/class-group-manage/class-group-manage.component.css
+````css
+.class-group-manage{display:flex;flex-direction:column;gap:24px;padding:24px}
+.class-group-manage__header{display:flex;flex-direction:column;gap:12px}
+.breadcrumbs{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.back-link{border:none;background:none;padding:0;cursor:pointer;font-weight:600;color:var(--color-primary)}
+.back-link--muted{color:var(--color-text-muted);text-decoration:none}
+.header-content h2{margin:0;font-size:28px;color:var(--color-text-primary)}
+.subtitle{margin:4px 0 0;color:var(--color-text-muted)}
+.header-badges,.thread-labels{display:flex;flex-wrap:wrap;gap:8px}
+.badge,.status-badge,.enrollment-count,.thread-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font-size:.78rem;background:rgba(148,163,184,.18);color:var(--color-text-primary)}
+.badge--accent,.enrollment-count{background:rgba(13,110,253,.12);color:var(--color-primary)}
+.overview-cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.overview-card,.card-block,.thread-card,.thread-form{background:var(--color-surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.overview-card h3,.card-block h3{margin:0;font-size:.95rem;color:var(--color-text-muted)}
+.overview-card strong{font-size:1.7rem;color:var(--color-text-primary)}
+.details-card{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.details-card dl,.schedule dl{margin:0;display:grid;gap:10px}
+dt{font-weight:600;color:var(--color-text-primary)}
+dd{margin:4px 0 0;color:var(--color-text-muted)}
+.progress{height:10px;border-radius:999px;background:rgba(148,163,184,.2);overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--color-primary)0%,#8b5cf6 100%)}
+.enrollments-card header,.forum-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.student-name{font-weight:600;color:var(--color-text-primary)}
+.enrollments-card table{width:100%;border-collapse:collapse;font-size:.9rem}
+.table-scroll{width:100%;overflow-x:auto}
+.table-scroll table{min-width:520px}
+.enrollments-card th,.enrollments-card td{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.16);text-align:left}
+.enrollments-card th{font-size:.78rem;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.05em}
+.forum-actions{display:flex;gap:10px}
+.forum-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
+.forum-actions .primary-button:disabled{opacity:.6;cursor:not-allowed}
+.ghost-button,.primary-button{border-radius:999px;padding:10px 22px;font-weight:600;cursor:pointer;border:1px solid transparent}
+.ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
+.ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
+.primary-button{background:var(--color-primary);color:#fff}
+.primary-button:disabled{opacity:.6;cursor:not-allowed}
+.button{border-radius:999px;padding:8px 18px;font-weight:600;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--color-primary)}
+.button--ghost{border-color:rgba(13,110,253,.28)}
+.button--ghost:hover{background:rgba(13,110,253,.08)}
+.button--ghost:disabled{opacity:.6;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input,.field textarea{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
+.field__error{font-size:.75rem;color:#b91c1c}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--color-text-primary)}
+.form-actions{display:flex;justify-content:flex-end;gap:10px}
+.form-actions .primary-button{background:var(--color-primary);color:#fff;border:none}
+.form-actions .ghost-button{background:transparent;color:var(--color-primary);border-color:rgba(13,110,253,.28)}
+.form-actions .ghost-button--danger{color:#b91c1c;border-color:rgba(248,113,113,.28)}
+.threads-list{display:grid;gap:12px}
+.thread-link{color:inherit;text-decoration:none;display:flex;flex-direction:column;gap:12px}
+.thread-link:focus-visible{outline:2px solid rgba(13,110,253,.45);outline-offset:4px;border-radius:14px}
+.thread-link:hover .thread-title h4{text-decoration:underline}
+.thread-title{display:flex;justify-content:space-between;gap:8px}
+.thread-title h4{margin:0;font-size:1rem;color:var(--color-text-primary)}
+.thread-meta,.thread-card footer{color:var(--color-text-muted);font-size:.85rem}
+.thread-card footer{display:flex;flex-wrap:wrap;gap:10px}
+.state{padding:16px;border-radius:14px;text-align:center;font-weight:500;background:rgba(148,163,184,.16);color:var(--color-text-muted)}
+.state--info{background:rgba(59,130,246,.12);color:var(--color-primary)}
+.state--error{background:rgba(248,113,113,.16);color:#b91c1c}
+.activities-card{background:var(--color-surface);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.activities-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.activities-layout{display:grid;grid-template-columns:280px 1fr;gap:18px}
+.activities-list{display:flex;flex-direction:column;gap:10px}
+.activity-item{border-radius:16px;border:1px solid rgba(148,163,184,.25);background:transparent;padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.activity-item--active{background:rgba(59,130,246,.1);border-color:var(--color-primary)}
+.activity-item h4{margin:0;font-size:1rem;color:var(--color-text-primary)}
+.activity-item__meta{font-size:.85rem;color:var(--color-text-muted)}
+.activities-panel{display:grid;gap:18px}
+.submissions-card,.submission-detail{border:1px solid rgba(148,163,184,.18);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--color-surface)}
+.submissions-card header,.submission-detail header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.submissions-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.submissions-table th,.submissions-table td{padding:10px;border-bottom:1px solid rgba(148,163,184,.15);text-align:left}
+.submissions-table tr{cursor:pointer}
+.submissions-table tr.is-active{background:rgba(59,130,246,.08)}
+.submission-detail__attachments ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.attachments-list li{display:flex;flex-direction:column;gap:10px}
+.attachment-row{display:flex;flex-direction:column;gap:4px}
+.attachment-actions{display:flex;gap:10px;flex-wrap:wrap}
+.attachment-video{background:rgba(148,163,184,.12);border-radius:12px;padding:10px}
+.attachment-video video{width:100%;max-height:320px;border-radius:10px;background:#000}
+.grading-form{display:grid;gap:12px}
+.grading-form .field select{border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;font:inherit;background:var(--color-background)}
+.grading-form textarea{min-height:100px}
+.field--rubric .rubric-grid{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:10px}
+.multi-select{position:relative}
+.multi-select__trigger{list-style:none;border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px;background:var(--color-background);cursor:pointer}
+.multi-select__trigger::-webkit-details-marker{display:none}
+.multi-select__menu{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--color-surface);border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:8px;display:grid;gap:6px;max-height:220px;overflow-y:auto;box-shadow:0 10px 28px -20px rgba(15,23,42,.35)}
+.multi-select__item{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
+.multi-select__item:hover{background:rgba(148,163,184,.12)}
+@media(max-width:768px){.class-group-manage{padding:16px}.enrollments-card header,.forum-card header{flex-direction:column;align-items:flex-start}.forum-actions,.ghost-button,.primary-button{width:100%}.activities-layout{grid-template-columns:1fr}.field--rubric .rubric-grid{grid-template-columns:1fr}}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.html
+````html
+<section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
+  <header class="activity-viewer__header">
+    <a class="back-link" [routerLink]="backLink()">← Voltar</a>
+    <h2>{{ pageTitle() }}</h2>
+    <span class="badge">{{ current.ClassGroupName }}</span>
+  </header>
+
+  <div class="meta">
+    <p><strong>Entrega:</strong> {{ dueDateLabel() }}</p>
+    <p><strong>Visivel aos alunos:</strong> {{ current.VisibleToStudents ? 'Sim' : 'Nao' }}</p>
+    <p><strong>Atrasos:</strong> {{ current.AllowLateSubmissions ? 'Aceita' : 'Nao aceita' }}</p>
+    <p *ngIf="current.MaxScore"><strong>Nota máxima:</strong> {{ current.MaxScore }}</p>
+  </div>
+
+  <article class="activity-card">
+    <h3>Descricao</h3>
+    <div class="rich-content" [innerHTML]="safeHtml(current.Description)"></div>
+  </article>
+
+  <section class="attachments-section">
+    <header>
+      <h3>Anexos</h3>
+      <span>{{ current.Attachments.length }} arquivo(s)</span>
+    </header>
+
+    <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+      <ul class="attachments-list">
+        <li *ngFor="let attachment of current.Attachments">
+          <div>
+            <strong>{{ attachment.Caption || 'Anexo' }}</strong>
+            <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+          </div>
+          <button
+            type="button"
+            class="button button--ghost"
+            (click)="downloadAttachment(attachment)"
+            [disabled]="downloading() === attachment.MediaResourceId"
+          >
+            {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+          </button>
+        </li>
+      </ul>
+    </ng-container>
+  </section>
+
+  <section class="submission-module" *ngIf="isStudent()">
+    <header class="submission-module__header">
+      <div>
+        <h3>Realizar atividade</h3>
+        <p class="muted">
+          Envie uma observacao e adicione arquivos de apoio para concluir esta atividade.
+        </p>
+      </div>
+      <span class="badge badge--accent">Area do aluno</span>
+    </header>
+
+    <ng-container *ngIf="submissionLoading(); else submissionContent">
+      <div class="state state--info">Verificando envios anteriores...</div>
+    </ng-container>
+
+    <ng-template #submissionContent>
+      <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
+
+        <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
+          <header>
+            <div>
+              <h4>Envio registrado</h4>
+              <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <span class="status-badge" data-status="enviado">Enviado</span>
+          </header>
+
+          <section class="submission-summary__grading">
+            <h5>Correção</h5>
+            <ng-container *ngIf="submission.Status !== 2 || submission.Score != null || submission.Feedback; else notReviewed">
+              <dl>
+                <div>
+                  <dt>Status</dt>
+                  <dd>{{ submissionStatusLabel(submission.Status) }}</dd>
+                </div>
+                <div *ngIf="submission.Score != null">
+                  <dt>Nota</dt>
+                  <dd>{{ submission.Score }}</dd>
+                </div>
+                <div *ngIf="submission.MasteryScore != null">
+                  <dt>Rubrica: Dominio</dt>
+                  <dd>{{ submission.MasteryScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.ApplicationScore != null">
+                  <dt>Rubrica: Aplicacao</dt>
+                  <dd>{{ submission.ApplicationScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.CommunicationScore != null">
+                  <dt>Rubrica: Comunicacao</dt>
+                  <dd>{{ submission.CommunicationScore }}/5</dd>
+                </div>
+                <div *ngIf="recommendedActionLabel(submission.RecommendedAction) as actionLabel">
+                  <dt>Acao recomendada</dt>
+                  <dd>{{ actionLabel }}</dd>
+                </div>
+                <div *ngIf="feedbackTagsList(submission.FeedbackTags).length">
+                  <dt>Tags diagnosticas</dt>
+                  <dd>{{ feedbackTagsList(submission.FeedbackTags).join(', ') }}</dd>
+                </div>
+                <div *ngIf="submission.Feedback">
+                  <dt>Feedback do instrutor</dt>
+                  <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>
+                </div>
+              </dl>
+            </ng-container>
+          </section>
+
+          <section *ngIf="submission.TextAnswer">
+            <h5>Observacao enviada</h5>
+            <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
+          </section>
+
+        <section>
+          <h5>Anexos do aluno</h5>
+          <ng-container *ngIf="submission.Attachments.length; else noStudentAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of submission.Attachments">
+                <div>
+                  <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
+                  <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="button button--ghost"
+                  (click)="downloadSubmissionAttachment(attachment)"
+                  [disabled]="downloading() === attachment.MediaResourceId"
+                >
+                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                </button>
+              </li>
+            </ul>
+          </ng-container>
+        </section>
+      </article>
+
+      <ng-template #submissionFormTpl>
+        <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
+          <label for="textAnswer">Observacao</label>
+          <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
+          <small class="field-hint">Descreva sua resposta ou contextualize os anexos enviados.</small>
+
+          <div class="submission-form__attachments">
+            <div class="submission-form__attachments-header">
+              <div>
+                <h4>Seus anexos</h4>
+                <p class="muted">Adicione os arquivos em PDF, imagem, audio ou video.</p>
+              </div>
+              <label class="upload-button">
+                <input type="file" multiple (change)="handleSubmissionFiles($event)" [disabled]="isSubmittingWork()" />
+                Adicionar arquivos
+              </label>
+            </div>
+
+            <ng-container *ngIf="submissionAttachments().length; else noDrafts">
+              <ul class="attachment-drafts">
+                <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
+                  <div>
+                    <strong>{{ attachment.fileName }}</strong>
+                    <p class="muted" *ngIf="attachment.status === 'uploading'">
+                      Enviando<span class="loading-dots" aria-hidden="true"></span>
+                    </p>
+                    <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
+                      Falha no envio
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="button button--ghost"
+                    (click)="removeSubmissionAttachment(attachment.id)"
+                    [disabled]="attachment.status === 'uploading' || isSubmittingWork()"
+                  >
+                    Remover
+                  </button>
+                </li>
+              </ul>
+            </ng-container>
+          </div>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
+          >
+            {{ isSubmittingWork() ? 'Enviando...' : 'Enviar atividade' }}
+          </button>
+        </form>
+      </ng-template>
+    </ng-template>
+  </section>
+</section>
+
+<ng-template #stateBlock>
+  <div class="state state--info" *ngIf="loading(); else errorState">Carregando atividade...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #noAttachments>
+  <p class="muted">Nenhum anexo publicado para esta atividade.</p>
+</ng-template>
+
+<ng-template #noStudentAttachments>
+  <p class="muted">Nenhum arquivo foi anexado neste envio.</p>
+</ng-template>
+
+<ng-template #noDrafts>
+  <p class="muted">Nenhum arquivo adicionado.</p>
+</ng-template>
+
+<ng-template #notReviewed>
+  <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
+</ng-template>
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.html
 ````html
 <section class="student-dashboard" *ngIf="isStudentView(); else instructorView">
@@ -33790,139 +34155,6 @@ export class AppComponent {
     }
   }
 }
-````
-
-## File: docs/relatorio.md
-````markdown
-# Relatorio Geral do Projeto EAD
-
-## Data
-2026-01-06
-
-## Fontes analisadas
-- docs/especificacao.md
-- docs/propont.md
-- docs/memoria_projeto.md
-- docs/context.md
-- Estrutura do repositorio (src/ e docs/)
-
-## Visao geral do projeto
-Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao de material didatico. O sistema contempla cadastro de usuarios (aluno/professor), autenticacao JWT, criacao e publicacao de cursos, turmas, conteudos, atividades, forum e chat, com upload/download de midias via MinIO. O frontend Angular oferece dashboards para aluno e professor, gerenciamento de cursos/turmas e fluxo completo de inscricoes e submissao/correcao de atividades.
-
-## Status por modulo (resumo)
-### Autenticacao e usuarios
-- Login JWT com guardas, interceptor e roles.
-- Cadastro publico de usuario (aluno/professor) via /auth/register com hash BCrypt.
-
-### Cursos e turmas
-- Criacao/edicao/publicacao de cursos e turmas no frontend, com pre-selecao de curso ao criar turma pela gerencia.
-- Cursos interativos com turmas, capacidade, aprovacao e codigo de inscricao.
-- Cursos nao interativos (distribuicao) com acesso aberto a materiais e forum.
-- API restringe acesso de instrutores apenas aos proprios cursos e turmas.
-
-### Inscricoes e matrículas
-- Inscricao de aluno em distribuicao (course-subscriptions) e em turmas interativas (class enrollments).
-- Dashboard do aluno mescla inscricoes de distribuicao e matrículas em turmas interativas, com status.
-
-### Conteudos e midias
-- Upload de midias via API com deduplicacao por hash (MinIO).
-- Conteudos com anexos e viewer com download autenticado.
-- Anotacoes em videos de conteudo persistidas no backend.
-
-### Atividades e correcoes
-- Criacao de atividades por turma ou para todas as turmas.
-- Envio de atividades pelo aluno com rich-text e anexos.
-- Gerencia e correcao pelo professor em turma e em tela dedicada por atividade.
-- Visualizacao de status/nota/feedback pelo aluno.
-- Listagem e gestao de atividades restritas ao instrutor proprietario do curso.
-
-### Forum e chat
-- Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
-- Criacao de topicos restrita a professores; alunos podem responder.
-- Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
-- UI do topico renderiza respostas em niveis recursivos.
-
-### Dashboard professor
-- Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
-- Secao de atividade recente em foruns mostrando os 3 topicos com ultima interacao e data.
-
-### Documentacao
-- Memoria/contexto em Markdown com historico de evolucao.
-- Especificacao/proposta/transcricao migradas para .md.
-
-## Conformidade com requisitos principais
-- Duas modalidades de curso (interativo/distribuicao): implementado.
-- Turmas com limite, inscricao com aprovacao/codigo: implementado.
-- Forum e chat: forum implementado; chat previsto no modelo e habilitado em cursos/turmas.
-- Upload de midias e anexos: implementado (MinIO).
-- Comentarios em video: implementado para conteudos e anotacoes em submissao.
-- Inscricao de alunos em qualquer curso: implementado (distribuicao + interativo).
-- Pesquisa de cursos por nome/categoria: parcialmente (filtro por titulo/categoria via API).
-
-## Cronograma resumido (implementado)
-- 2025-09/10: base da API, contratos, estrutura Angular e shell.
-- 2025-10: login JWT, criacao de cursos, turmas e publicacao; ajustes de rotas /api/v1.
-- 2025-11: MinIO, uploads/downloads, viewer de conteudos/atividades, rich-text editor, inscricoes e dashboard aluno.
-- 2025-11 fim: correcao de atividades, restricoes de exibicao, ajustes de forum.
-- 2026-01: anotacoes de video persistentes, melhorias no UI/UX, forum com discussao, correcoes por atividade, cadastro publico de usuario.
-- 2026-01-06: dashboard professor com contagens reais; docs migradas para Markdown.
-
-## Pendencias e proximos passos sugeridos
-- Revisar avisos de bundle/CSS do Angular antes do deploy final.
-- Validar e finalizar fluxos de chat em tempo real (definir implementacao e UI).
-- Reforcar validacoes/limpeza do HTML rich-text no backend (seguranca).
-- Completar pesquisa de cursos no frontend por nome/categoria com UI dedicada.
-- Revisar politicas de permissao (professor/aluno) em todos os endpoints sensiveis.
-- Adicionar testes automatizados (unitarios/e2e) para inscricao, envio de atividades e forum.
-
-## Observacoes
-- Builds recentes executados com sucesso; warnings de budget/seletores ja conhecidos no Angular.
-- Documentacao deve seguir append-only em memoria/contexto e transcricao.
-
-## Cronograma de melhorias de usabilidade (iniciado)
-### Itens planejados
-- Consistencia de linguagem e acentos em rotulos e mensagens do frontend.
-- Acessibilidade: foco visivel para links/botoes/inputs.
-- Responsividade de tabelas densas (scroll horizontal em telas menores).
-- Feedback visual de envio de anexos (indicadores durante upload).
-- Performance percebida: reduzir warnings de budget (acao continua).
-
-### Alteracoes ja aplicadas
-- Acessibilidade: foco visivel global em `styles.css`.
-- Responsividade: tabelas de inscricoes/submissoes com wrapper de scroll.
-- Feedback de anexos: indicador visual animado durante envio.
-
-### Proximos passos
-- Padronizar textos com acentos/idioma em todos os modulos.
-- Revisar componentes mais densos para simplificar a hierarquia visual.
-- Definir estrategia para reduzir tamanhos de CSS/bundle.
-
-### 2026-02-02
-- Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
-- Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
-
-### 2026-03-12
-- Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
-- Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
-- Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
-
-### 2026-03-13
-- Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
-- Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
-
-### 2026-03-13 (tema e nomenclatura)
-- Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
-- Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
-- Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).
-
-### 2026-03-20 (feedback estruturado de correcoes)
-- Implementado feedback estruturado nas submissoes de atividades com novos campos persistidos: `MasteryScore`, `ApplicationScore`, `CommunicationScore` (rubrica 1-5), `FeedbackTags` (tags diagnosticas) e `RecommendedAction` (acao recomendada).
-- Backend atualizado em entidade/DTOs/servico com validacao de rubrica (faixa 1-5) e normalizacao de tags para armazenamento consistente.
-- Migration EF criada: `20260320204713_AddStructuredActivityFeedback` com inclusao das novas colunas em `ActivitySubmissions`.
-- Frontend de correcao atualizado nas telas de professor (`activity-corrections` e `class-group-manage`) com novos campos no formulario.
-- Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
-- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
-- Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/core/services/courses.service.ts
@@ -34706,6 +34938,147 @@ export class DashboardComponent {
 }
 ````
 
+## File: docs/relatorio.md
+````markdown
+# Relatorio Geral do Projeto EAD
+
+## Data
+2026-01-06
+
+## Fontes analisadas
+- docs/especificacao.md
+- docs/propont.md
+- docs/memoria_projeto.md
+- docs/context.md
+- Estrutura do repositorio (src/ e docs/)
+
+## Visao geral do projeto
+Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao de material didatico. O sistema contempla cadastro de usuarios (aluno/professor), autenticacao JWT, criacao e publicacao de cursos, turmas, conteudos, atividades, forum e chat, com upload/download de midias via MinIO. O frontend Angular oferece dashboards para aluno e professor, gerenciamento de cursos/turmas e fluxo completo de inscricoes e submissao/correcao de atividades.
+
+## Status por modulo (resumo)
+### Autenticacao e usuarios
+- Login JWT com guardas, interceptor e roles.
+- Cadastro publico de usuario (aluno/professor) via /auth/register com hash BCrypt.
+
+### Cursos e turmas
+- Criacao/edicao/publicacao de cursos e turmas no frontend, com pre-selecao de curso ao criar turma pela gerencia.
+- Cursos interativos com turmas, capacidade, aprovacao e codigo de inscricao.
+- Cursos nao interativos (distribuicao) com acesso aberto a materiais e forum.
+- API restringe acesso de instrutores apenas aos proprios cursos e turmas.
+
+### Inscricoes e matrículas
+- Inscricao de aluno em distribuicao (course-subscriptions) e em turmas interativas (class enrollments).
+- Dashboard do aluno mescla inscricoes de distribuicao e matrículas em turmas interativas, com status.
+
+### Conteudos e midias
+- Upload de midias via API com deduplicacao por hash (MinIO).
+- Conteudos com anexos e viewer com download autenticado.
+- Anotacoes em videos de conteudo persistidas no backend.
+
+### Atividades e correcoes
+- Criacao de atividades por turma ou para todas as turmas.
+- Envio de atividades pelo aluno com rich-text e anexos.
+- Gerencia e correcao pelo professor em turma e em tela dedicada por atividade.
+- Visualizacao de status/nota/feedback pelo aluno.
+- Listagem e gestao de atividades restritas ao instrutor proprietario do curso.
+
+### Forum e chat
+- Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
+- Criacao de topicos restrita a professores; alunos podem responder.
+- Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
+- UI do topico renderiza respostas em niveis recursivos.
+
+### Dashboard professor
+- Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
+- Secao de atividade recente em foruns mostrando os 3 topicos com ultima interacao e data.
+
+### Documentacao
+- Memoria/contexto em Markdown com historico de evolucao.
+- Especificacao/proposta/transcricao migradas para .md.
+
+## Conformidade com requisitos principais
+- Duas modalidades de curso (interativo/distribuicao): implementado.
+- Turmas com limite, inscricao com aprovacao/codigo: implementado.
+- Forum e chat: forum implementado; chat previsto no modelo e habilitado em cursos/turmas.
+- Upload de midias e anexos: implementado (MinIO).
+- Comentarios em video: implementado para conteudos e anotacoes em submissao.
+- Inscricao de alunos em qualquer curso: implementado (distribuicao + interativo).
+- Pesquisa de cursos por nome/categoria: parcialmente (filtro por titulo/categoria via API).
+
+## Cronograma resumido (implementado)
+- 2025-09/10: base da API, contratos, estrutura Angular e shell.
+- 2025-10: login JWT, criacao de cursos, turmas e publicacao; ajustes de rotas /api/v1.
+- 2025-11: MinIO, uploads/downloads, viewer de conteudos/atividades, rich-text editor, inscricoes e dashboard aluno.
+- 2025-11 fim: correcao de atividades, restricoes de exibicao, ajustes de forum.
+- 2026-01: anotacoes de video persistentes, melhorias no UI/UX, forum com discussao, correcoes por atividade, cadastro publico de usuario.
+- 2026-01-06: dashboard professor com contagens reais; docs migradas para Markdown.
+
+## Pendencias e proximos passos sugeridos
+- Revisar avisos de bundle/CSS do Angular antes do deploy final.
+- Validar e finalizar fluxos de chat em tempo real (definir implementacao e UI).
+- Reforcar validacoes/limpeza do HTML rich-text no backend (seguranca).
+- Completar pesquisa de cursos no frontend por nome/categoria com UI dedicada.
+- Revisar politicas de permissao (professor/aluno) em todos os endpoints sensiveis.
+- Adicionar testes automatizados (unitarios/e2e) para inscricao, envio de atividades e forum.
+
+## Observacoes
+- Builds recentes executados com sucesso; warnings de budget/seletores ja conhecidos no Angular.
+- Documentacao deve seguir append-only em memoria/contexto e transcricao.
+
+## Cronograma de melhorias de usabilidade (iniciado)
+### Itens planejados
+- Consistencia de linguagem e acentos em rotulos e mensagens do frontend.
+- Acessibilidade: foco visivel para links/botoes/inputs.
+- Responsividade de tabelas densas (scroll horizontal em telas menores).
+- Feedback visual de envio de anexos (indicadores durante upload).
+- Performance percebida: reduzir warnings de budget (acao continua).
+
+### Alteracoes ja aplicadas
+- Acessibilidade: foco visivel global em `styles.css`.
+- Responsividade: tabelas de inscricoes/submissoes com wrapper de scroll.
+- Feedback de anexos: indicador visual animado durante envio.
+
+### Proximos passos
+- Padronizar textos com acentos/idioma em todos os modulos.
+- Revisar componentes mais densos para simplificar a hierarquia visual.
+- Definir estrategia para reduzir tamanhos de CSS/bundle.
+
+### 2026-02-02
+- Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
+- Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
+
+### 2026-03-12
+- Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
+- Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
+- Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
+
+### 2026-03-13
+- Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
+- Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
+
+### 2026-03-13 (tema e nomenclatura)
+- Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
+- Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
+- Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).
+
+### 2026-03-20 (feedback estruturado de correcoes)
+- Implementado feedback estruturado nas submissoes de atividades com novos campos persistidos: `MasteryScore`, `ApplicationScore`, `CommunicationScore` (rubrica 1-5), `FeedbackTags` (tags diagnosticas) e `RecommendedAction` (acao recomendada).
+- Backend atualizado em entidade/DTOs/servico com validacao de rubrica (faixa 1-5) e normalizacao de tags para armazenamento consistente.
+- Migration EF criada: `20260320204713_AddStructuredActivityFeedback` com inclusao das novas colunas em `ActivitySubmissions`.
+- Frontend de correcao atualizado nas telas de professor (`activity-corrections` e `class-group-manage`) com novos campos no formulario.
+- Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
+- Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.
+
+### 2026-03-20 (documentacao academica)
+- Criado `docs/documento_projeto_final_uerj.md` com estrutura completa de documento final academico (modelo UERJ), incluindo capa, folha de rosto, resumo/abstract, objetivos, especificacao funcional e nao funcional, arquitetura, validacao, cronograma, riscos, conclusao e apendices.
+- `ProjetoFinal.sln` atualizado na secao de Solution Items para incluir o novo arquivo `.md` em `docs/`.
+- Documento academico UERJ (`docs/documento_projeto_final_uerj.md`) atualizado com tabela comparativa entre Projeto, Google Classroom, Moodle e Udemy, destacando diferenciais do sistema em funcionalidades nativas.
+- Criado `.dockerignore` na raiz com regras globais para ignorar `**/wwwroot/**` e `**/node_modules/**` no contexto de build Docker.
+- Dockerfile refatorado para multi-stage com estagio dedicado de build do frontend e copia explicita dos artefatos gerados para `wwwroot` da imagem final da API.
+- Validacao operacional: `docker build -t projeto-final:test-multistage .` executado com sucesso.
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.ts
 ````typescript
 import { CommonModule } from '@angular/common';
@@ -35418,6 +35791,31 @@ export class CoursesComponent {
 [2026-03-20 17:53:41] User: Melhore o dropdown multiplo de Tags diagnosticas para que ainda abra o menu, mas permita multiplas seleções
 
 [2026-03-20 17:53:41] Assistant: Substitui o select multiplo por dropdown com checklist nas telas de correcao (activity-corrections e class-group-manage), mantendo abertura do menu com selecao multipla, e validei com dotnet build e npm run build.
+
+[2026-03-20 23:11:36] User: $skill-installer
+
+[2026-03-20 23:11:36] Assistant: Listei as skills curadas disponiveis do repositorio openai/skills para instalacao.
+
+[2026-03-20 23:11:36] User: 1, 20
+
+[2026-03-20 23:11:36] Assistant: Instalei as skills `aspnet-core` e `pdf` no diretorio local de skills do Codex.
+
+[2026-03-20 23:28:07] User: Consegue gerar um arquivo .md fazendo as especificações do sistema e escrevendo um documento de projeto final com os padrões da uerj?
+
+[2026-03-20 23:28:07] Assistant: Criei o arquivo `docs/documento_projeto_final_uerj.md` com modelo completo de especificacao e documento final academico no padrao UERJ, e atualizei o `ProjetoFinal.sln` para incluir o novo `.md` em Solution Items.
+
+[2026-03-21 10:51:27] User: Crie uma tabela no arquivo documento_projeto_final_uerj comparando o projeto com Google Classroom, Moodle e Udemy, mostrando o que tem no projeto e não tem nesses sistemas
+
+[2026-03-21 10:51:27] Assistant: Atualizei `docs/documento_projeto_final_uerj.md` com uma tabela comparativa de funcionalidades em fluxo nativo/padrao entre Projeto, Google Classroom, Moodle e Udemy, destacando os diferenciais do sistema.
+
+[2026-03-21 10:53:31] User: Crie um .docker ignore ignorando as seguintes pastas independente da localização: wwwroot/* e node_modules
+
+[2026-03-21 10:53:31] Assistant: Criei `.dockerignore` na raiz com padroes globais para ignorar `wwwroot` e `node_modules` em qualquer nivel.
+
+[2026-03-21 11:18:40] User: Faça uma edição no Dockerfile:
+Quero que o Dockerfile seja multistaging contendo uma parte que builda o frontend e depois do projeto buildado, copiar o conteúdo do front buildado para a pasta wwwroot do projeto buildado
+
+[2026-03-21 11:18:40] Assistant: Atualizei o Dockerfile para multi-stage (`frontend-build`, `backend-build`, `runtime`) e passei a copiar os artefatos do frontend (`dist/browser`) para `wwwroot` na imagem final, validando com `docker build` bem-sucedido.
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/app.routes.ts
@@ -35728,6 +36126,14 @@ export const routes: Routes = [
 - Backend atualizado (dominio, DTOs, service e EF) com migration `AddStructuredActivityFeedback` para persistencia em `ActivitySubmissions`.
 - Frontend de correcao atualizado em `activity-corrections` e `class-group-manage`; tags agora usam dropdown com checklist para selecao multipla.
 - Tela do aluno (`course-activity-viewer`) passou a exibir feedback estruturado quando disponivel.
+
+### Data: 2026-03-21
+### Resumo
+- Documento academico UERJ adicionado com especificacao funcional e modelo de projeto final (`docs/documento_projeto_final_uerj.md`).
+- Solucao atualizada para incluir novo `.md` em Solution Items no `ProjetoFinal.sln`.
+- Pipeline Docker atualizado para multi-stage com estagio de build frontend e copia dos artefatos para `wwwroot` no runtime.
+- `.dockerignore` adicionado para excluir `**/wwwroot/**` e `**/node_modules/**` do contexto de build.
+- `ProjetoFinal.Api.csproj` ajustado para evitar dependencia de build do esproj do frontend durante publish da API.
 ````
 
 ## File: docs/memoria_projeto.md
@@ -36156,4 +36562,12 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - UX: campo de tags migrado de `select multiple` para dropdown com checklist, permitindo selecao multipla sem fechar a lista.
 - Visualizacao do aluno em `course-activity-viewer` passou a exibir rubrica, tags e acao recomendada quando informadas.
 - Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+## 2026-03-21 (documentacao UERJ e docker)
+- Criado `docs/documento_projeto_final_uerj.md` com estrutura de especificacao e documento final academico no modelo UERJ.
+- `ProjetoFinal.sln` atualizado para incluir o novo arquivo de documentacao em Solution Items.
+- Criado `.dockerignore` com exclusao global de `wwwroot` e `node_modules` no contexto de build.
+- Dockerfile refatorado para multi-stage com build dedicado do frontend e copia de `dist/browser` para `wwwroot` na imagem final da API.
+- Ajustado `ProjetoFinal.Api.csproj` para remover dependencia de `ProjetoFinal.ClientApp.esproj` no publish da API.
+- Validacao de imagem com `docker build -t projeto-final:test-multistage .` concluida com sucesso.
 ````

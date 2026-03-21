@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F
 		docs\especificacao.md = docs\especificacao.md
 		docs\relatorio.md = docs\relatorio.md
 		docs\context.md = docs\context.md
+		docs\documento_projeto_final_uerj.md = docs\documento_projeto_final_uerj.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"

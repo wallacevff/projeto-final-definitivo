@@ -1,16 +1,15 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
 
+COPY src/ProjetoFinal.ClientApp/package*.json ./
+RUN npm ci
+
+COPY src/ProjetoFinal.ClientApp/ ./
+RUN npm run ng -- build --configuration=production --delete-output-path --output-path dist --progress --aot --output-hashing all
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-
-# Install Node.js for the SPA build during publish
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && node --version \
-    && npm --version \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY ProjetoFinal.sln ./
 COPY Directory.Build.props ./
@@ -38,6 +37,7 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-COPY --from=build /app/publish .
+COPY --from=backend-build /app/publish ./
+COPY --from=frontend-build /app/dist/browser/ ./wwwroot/
 
 ENTRYPOINT ["dotnet", "ProjetoFinal.Api.dll"]

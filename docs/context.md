@@ -189,3 +189,11 @@
 - Backend atualizado (dominio, DTOs, service e EF) com migration `AddStructuredActivityFeedback` para persistencia em `ActivitySubmissions`.
 - Frontend de correcao atualizado em `activity-corrections` e `class-group-manage`; tags agora usam dropdown com checklist para selecao multipla.
 - Tela do aluno (`course-activity-viewer`) passou a exibir feedback estruturado quando disponivel.
+
+### Data: 2026-03-21
+### Resumo
+- Documento academico UERJ adicionado com especificacao funcional e modelo de projeto final (`docs/documento_projeto_final_uerj.md`).
+- Solucao atualizada para incluir novo `.md` em Solution Items no `ProjetoFinal.sln`.
+- Pipeline Docker atualizado para multi-stage com estagio de build frontend e copia dos artefatos para `wwwroot` no runtime.
+- `.dockerignore` adicionado para excluir `**/wwwroot/**` e `**/node_modules/**` do contexto de build.
+- `ProjetoFinal.Api.csproj` ajustado para evitar dependencia de build do esproj do frontend durante publish da API.
