@@ -462,3 +462,17 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Backend reforcado para permitir exclusao apenas do proprio registro do aluno ao sair do curso, mantendo a remocao por instrutor para gerenciamento de turma.
 - Validacao: `npm.cmd run build` executado com sucesso e API compilada com `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.
 - Observacao: `dotnet build ProjetoFinal.sln` padrao estava bloqueado por uma instancia em execucao de `ProjetoFinal.Api` usando o binario em `src/ProjetoFinal.Api/bin/Debug/net8.0`.
+
+## 2026-03-22 (layout estavel dos cards de cursos)
+- Grid de `Meus cursos` ajustado para usar colunas com largura minima maior (`auto-fill` + `minmax`) e alinhamento estavel no inicio da linha.
+- Cards passaram a manter altura consistente no grid, reduzindo a sensacao de layout comprimido quando ha muitos cursos.
+- Validacao: `npm.cmd run build` executado com sucesso e API recompilada em saida alternativa (`artifacts/api-build`).
+
+## 2026-03-22 (quebra de texto nos quadros do card)
+- Quadros de estatisticas do card de curso receberam `min-width: 0` e quebra de linha para evitar vazamento visual em rotulos e valores.
+- Ajuste focado nos blocos `Vagas ocupadas` e `Matriculado em` da area `Meus cursos`.
+- Validacao: `npm.cmd run build` executado com sucesso.
+
+## 2026-03-22 (largura ampliada dos cards)
+- Cards de `Meus cursos` tiveram a largura minima e maxima ampliadas no grid para acomodar melhor os valores de data e ocupacao sem quebra desnecessaria.
+- Validacao: `npm.cmd run build` executado com sucesso.

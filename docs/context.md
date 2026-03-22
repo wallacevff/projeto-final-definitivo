@@ -228,3 +228,20 @@
 - Controllers de `course-subscriptions` e `class-groups` passaram a validar propriedade do registro antes de remover a inscricao do aluno.
 - Frontend atualizado para confirmar a saida, chamar o endpoint correto e remover o card da lista sem recarregar a pagina.
 - Validacao do backend realizada com build da API em pasta alternativa devido lock no binario da instancia local em execucao.
+
+### Data: 2026-03-22 (ajuste visual dos cards)
+### Resumo
+- Grid dos cards do dashboard do aluno atualizado para preservar melhor a largura dos cards mesmo com muitos cursos listados.
+- Cards mantidos com altura consistente e colunas alinhadas ao inicio, evitando encolhimento excessivo.
+- Validacao executada com `npm.cmd run build` e build alternativo da API.
+
+### Data: 2026-03-22 (estatisticas sem vazamento)
+### Resumo
+- Blocos internos de estatisticas dos cards do dashboard passaram a quebrar texto e valores longos sem vazar do container.
+- Ajuste aplicado especificamente nos `dt` e `dd` de `Meus cursos`.
+- Validacao executada com `npm.cmd run build`.
+
+### Data: 2026-03-22 (cards mais largos)
+### Resumo
+- Grid de `Meus cursos` teve a largura dos cards ampliada para reduzir quebra de linha nos valores de `Vagas ocupadas` e `Matriculado em`.
+- Validacao executada com `npm.cmd run build`.

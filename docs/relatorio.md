@@ -168,3 +168,17 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Frontend atualiza o estado local apos a exclusao, exibe confirmacao antes da acao e mostra mensagens detalhadas de erro/sucesso.
 - Validacao concluida com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
 - Restricao encontrada no ambiente: `dotnet build ProjetoFinal.sln` padrao falhou por lock do processo `ProjetoFinal.Api` (PID 3356) sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.
+
+### 2026-03-22 (cards de cursos com tamanho mais estavel)
+- Ajustado o grid de `Meus cursos` para usar colunas `auto-fill` com largura minima maior, reduzindo o encolhimento visual quando muitos cards aparecem na mesma tela.
+- Cards configurados para ocupar altura consistente dentro do grid, preservando alinhamento entre linhas.
+- Validacao concluida com `npm.cmd run build` e build alternativo da API em `artifacts/api-build`.
+
+### 2026-03-22 (estatisticas do card sem overflow)
+- Ajustados os quadros internos de estatisticas em `Meus cursos` para impedir overflow de texto nos campos `Vagas ocupadas` e `Matriculado em`.
+- Adicionados `min-width: 0`, `overflow-wrap` e `word-break` nos elementos do bloco de stats do card.
+- Validacao concluida com `npm.cmd run build` (warnings Angular conhecidos mantidos).
+
+### 2026-03-22 (cards mais largos para datas e ocupacao)
+- Ampliada a largura minima e maxima dos cards do grid de `Meus cursos` para reduzir quebras de linha nos valores dos campos de data e ocupacao.
+- Validacao concluida com `npm.cmd run build` (warnings Angular conhecidos mantidos).

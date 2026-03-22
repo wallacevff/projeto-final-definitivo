@@ -380,3 +380,15 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 15:44:07] User: Agora, permita que o aluno possa sair do curso.
 
 [2026-03-22 15:44:07] Assistant: Implementei a opcao de o aluno sair do curso na area "Meus cursos", com remocao segura da propria assinatura em cursos assincronos e da propria inscricao em turmas interativas, incluindo confirmacao e atualizacao imediata da lista no frontend. Validei o frontend com `npm.cmd run build` e o backend com build da API em saida alternativa (`artifacts/api-build`), porque o `dotnet build ProjetoFinal.sln` padrao estava bloqueado por uma instancia em execucao de `ProjetoFinal.Api` (PID 3356).
+
+[2026-03-22 17:23:47] User: Os cards de cursos ficam bagunçados quando tem vários cursos. Consegue ajustar para eles manterem o tamanho sem diminuir muito
+
+[2026-03-22 17:23:47] Assistant: Ajustei o grid dos cards em "Meus cursos" para usar largura minima mais estavel e evitar encolhimento excessivo quando houver muitos cursos, mantendo os cards com altura consistente. Validei com `npm.cmd run build` e com build da API em saida alternativa (`artifacts/api-build`), preservando o aviso conhecido de lock no `dotnet build` padrao quando a API local esta em execucao.
+
+[2026-03-22 17:25:45] User: Ajuste dentro do card de curso para que os quadros vagas ocupadas e Matriculado em não deixe o texto vazar
+
+[2026-03-22 17:25:45] Assistant: Ajustei os quadros de estatisticas dos cards de curso para impedir vazamento de texto, adicionando largura minima controlada e quebra de linha em `dt` e `dd` para "Vagas ocupadas" e "Matriculado em". Validei com `npm.cmd run build` (warnings conhecidos mantidos).
+
+[2026-03-22 17:27:12] User: Aumente a largura de card de curso para que não quebre linha nos valores de datas do matriculado em nem das vagas ocupadas
+
+[2026-03-22 17:27:12] Assistant: Aumentei a largura minima e maxima dos cards de `Meus cursos` para dar mais espaco aos valores de data e ocupacao, reduzindo a quebra de linha nesses campos. Validei com `npm.cmd run build` (warnings conhecidos mantidos).
