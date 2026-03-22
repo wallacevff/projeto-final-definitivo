@@ -512,6 +512,44 @@ README.md
 
 # Files
 
+## File: docker/appsettings.Docker.json
+````json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "UploadsConfiguration": {
+    "PathDir": "Uploads"
+  },
+  "Minio": {
+    "Endpoint": "http://minio:9000",
+    "AccessKey": "admin",
+    "SecretKey": "admin123",
+    "Region": "us-east-1",
+    "BucketName": "meajudaai"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=sqlserver;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+  },
+  "Jwt": {
+    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
+    "Issuer": "ProjetoFinal.Api",
+    "Audience": "ProjetoFinal.Client",
+    "ExpiresInMinutes": 120
+  },
+  "RhbkConfiguration": {
+    "Realm": "",
+    "ClientId": "",
+    "ClientSecret": "",
+    "KeycloakBaseUrl": "",
+    "RedirectUri": ""
+  }
+}
+````
+
 ## File: docs/documento_projeto_final_uerj.md
 ````markdown
 # Documento de Projeto Final (Modelo UERJ)
@@ -867,50 +905,6 @@ Como continuidade, recomenda-se priorizar a camada de analytics/IA para consolid
 - Demo dos fluxos principais.
 - Diferenciais (feedback estruturado e base para analytics).
 - Limitacoes e roadmap de evolucao.
-````
-
-## File: .dockerignore
-````
-**/wwwroot/**
-**/node_modules/**
-````
-
-## File: docker/appsettings.Docker.json
-````json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "UploadsConfiguration": {
-    "PathDir": "Uploads"
-  },
-  "Minio": {
-    "Endpoint": "http://minio:9000",
-    "AccessKey": "admin",
-    "SecretKey": "admin123",
-    "Region": "us-east-1",
-    "BucketName": "meajudaai"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=sqlserver;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
-  },
-  "Jwt": {
-    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
-    "Issuer": "ProjetoFinal.Api",
-    "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 120
-  },
-  "RhbkConfiguration": {
-    "Realm": "",
-    "ClientId": "",
-    "ClientSecret": "",
-    "KeycloakBaseUrl": "",
-    "RedirectUri": ""
-  }
-}
 ````
 
 ## File: docs/especificacao.md
@@ -8889,6 +8883,12 @@ public class ContentVideoAnnotationRepository
 }
 ````
 
+## File: .dockerignore
+````
+**/wwwroot/**
+**/node_modules/**
+````
+
 ## File: Directory.Build.props
 ````
 <Project>
@@ -8977,53 +8977,6 @@ networks:
 configs:
   projeto-final-settings:
     external: true
-````
-
-## File: Dockerfile
-````dockerfile
-FROM node:20-alpine AS frontend-build
-WORKDIR /app
-
-COPY src/ProjetoFinal.ClientApp/package*.json ./
-RUN npm ci
-
-COPY src/ProjetoFinal.ClientApp/ ./
-RUN npm run ng -- build --configuration=production --delete-output-path --output-path dist --progress --aot --output-hashing all
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-
-COPY ProjetoFinal.sln ./
-COPY Directory.Build.props ./
-COPY src/ProjetoFinal.Domain.Shared/ProjetoFinal.Domain.Shared.csproj src/ProjetoFinal.Domain.Shared/
-COPY src/ProjetoFinal.Domain/ProjetoFinal.Domain.csproj src/ProjetoFinal.Domain/
-COPY src/ProjetoFinal.Application.Contracts/ProjetoFinal.Application.Contracts.csproj src/ProjetoFinal.Application.Contracts/
-COPY src/ProjetoFinal.Aplication.Services/ProjetoFinal.Aplication.Services.csproj src/ProjetoFinal.Aplication.Services/
-COPY src/ProjetoFinal.Infra.CrossCutting/ProjetoFinal.Infra.CrossCutting.csproj src/ProjetoFinal.Infra.CrossCutting/
-COPY src/ProjetoFinal.Infra.Data/ProjetoFinal.Infra.Data.csproj src/ProjetoFinal.Infra.Data/
-COPY src/ProjetoFinal.IoC/ProjetoFinal.IoC.csproj src/ProjetoFinal.IoC/
-COPY src/ProjetoFinal.Api/ProjetoFinal.Api.csproj src/ProjetoFinal.Api/
-COPY src/ProjetoFinal.ClientApp/ProjetoFinal.ClientApp.esproj src/ProjetoFinal.ClientApp/
-
-RUN dotnet restore ProjetoFinal.sln
-
-COPY src/ ./src/
-
-RUN dotnet publish src/ProjetoFinal.Api/ProjetoFinal.Api.csproj \
-    -c $BUILD_CONFIGURATION \
-    -o /app/publish \
-    /p:UseAppHost=false
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
-
-COPY --from=backend-build /app/publish ./
-COPY --from=frontend-build /app/dist/browser/ ./wwwroot/
-
-ENTRYPOINT ["dotnet", "ProjetoFinal.Api.dll"]
 ````
 
 ## File: docs/commands.md
@@ -16972,6 +16925,53 @@ echo Limpeza concluída.
 pause
 ````
 
+## File: Dockerfile
+````dockerfile
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
+
+COPY src/ProjetoFinal.ClientApp/package*.json ./
+RUN npm ci
+
+COPY src/ProjetoFinal.ClientApp/ ./
+RUN npm run ng -- build --configuration=production --delete-output-path --output-path dist --progress --aot --output-hashing all
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+COPY ProjetoFinal.sln ./
+COPY Directory.Build.props ./
+COPY src/ProjetoFinal.Domain.Shared/ProjetoFinal.Domain.Shared.csproj src/ProjetoFinal.Domain.Shared/
+COPY src/ProjetoFinal.Domain/ProjetoFinal.Domain.csproj src/ProjetoFinal.Domain/
+COPY src/ProjetoFinal.Application.Contracts/ProjetoFinal.Application.Contracts.csproj src/ProjetoFinal.Application.Contracts/
+COPY src/ProjetoFinal.Aplication.Services/ProjetoFinal.Aplication.Services.csproj src/ProjetoFinal.Aplication.Services/
+COPY src/ProjetoFinal.Infra.CrossCutting/ProjetoFinal.Infra.CrossCutting.csproj src/ProjetoFinal.Infra.CrossCutting/
+COPY src/ProjetoFinal.Infra.Data/ProjetoFinal.Infra.Data.csproj src/ProjetoFinal.Infra.Data/
+COPY src/ProjetoFinal.IoC/ProjetoFinal.IoC.csproj src/ProjetoFinal.IoC/
+COPY src/ProjetoFinal.Api/ProjetoFinal.Api.csproj src/ProjetoFinal.Api/
+COPY src/ProjetoFinal.ClientApp/ProjetoFinal.ClientApp.esproj src/ProjetoFinal.ClientApp/
+
+RUN dotnet restore ProjetoFinal.sln
+
+COPY src/ ./src/
+
+RUN dotnet publish src/ProjetoFinal.Api/ProjetoFinal.Api.csproj \
+    -c $BUILD_CONFIGURATION \
+    -o /app/publish \
+    /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+COPY --from=backend-build /app/publish ./
+COPY --from=frontend-build /app/dist/browser/ ./wwwroot/
+
+ENTRYPOINT ["dotnet", "ProjetoFinal.Api.dll"]
+````
+
 ## File: README.md
 ````markdown
 # ProjetoFinal
@@ -17524,60 +17524,6 @@ public static class DataSeeder
         }
     }
 }
-````
-
-## File: src/ProjetoFinal.Api/ProjetoFinal.Api.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-
-        <IsPackable>false</IsPackable>
-        <SpaRoot>..\ProjetoFinal.ClientApp\</SpaRoot>
-        <SpaProxyServerUrl>http://localhost:4200</SpaProxyServerUrl>
-        <SpaProxyLaunchCommand>npm i &amp; npm start</SpaProxyLaunchCommand>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <Version>2.0.0</Version>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Compile Remove="wwwroot\media\**" />
-        <Content Remove="wwwroot\media\**" />
-        <EmbeddedResource Remove="wwwroot\media\**" />
-        <None Remove="wwwroot\media\**" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-          <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="wwwroot\" />
-    </ItemGroup>
-<!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
-        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
-<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />-->
-        <!-- O postbuild do ClientApp ja copia os artefatos para ProjetoFinal.Api/wwwroot -->
-<!--    </Target>-->
-
-</Project>
 ````
 
 ## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivityAppService.cs
@@ -21125,6 +21071,99 @@ export class CourseContentsComponent {
   font-size: 1rem;
 }
 
+.course-manage__actions {
+  margin-top: 0.9rem;
+}
+
+.publish-course-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  box-shadow: 0 12px 30px -20px rgba(15, 23, 42, 0.85);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.publish-course-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.9);
+}
+
+.publish-course-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.draft-edit-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  display: grid;
+  gap: 0.8rem;
+}
+
+.draft-edit-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--surface-700);
+}
+
+.draft-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.draft-edit-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.draft-edit-field span {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.draft-edit-field input {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.92rem;
+  color: var(--surface-900);
+  background: #fff;
+}
+
+.draft-edit-field input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.draft-save-button {
+  justify-self: start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
+  cursor: pointer;
+}
+
+.draft-save-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -22957,6 +22996,60 @@ await DataSeeder.SeedAsync(app);
 app.Run();
 ````
 
+## File: src/ProjetoFinal.Api/ProjetoFinal.Api.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <IsPackable>false</IsPackable>
+        <SpaRoot>..\ProjetoFinal.ClientApp\</SpaRoot>
+        <SpaProxyServerUrl>http://localhost:4200</SpaProxyServerUrl>
+        <SpaProxyLaunchCommand>npm i &amp; npm start</SpaProxyLaunchCommand>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Version>2.0.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="wwwroot\media\**" />
+        <Content Remove="wwwroot\media\**" />
+        <EmbeddedResource Remove="wwwroot\media\**" />
+        <None Remove="wwwroot\media\**" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
+    </ItemGroup>
+<!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />-->
+        <!-- O postbuild do ClientApp ja copia os artefatos para ProjetoFinal.Api/wwwroot -->
+<!--    </Target>-->
+
+</Project>
+````
+
 ## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionDto.cs
 ````csharp
 using System;
@@ -24121,6 +24214,50 @@ export class CourseCreateComponent {
         <span class="status-badge" [attr.data-status]="statusLabel(current)">{{ statusLabel(current) }}</span>
         <h2>{{ current.Title }}</h2>
         <p class="subtitle">{{ current.ShortDescription }}</p>
+        <div class="course-manage__actions" *ngIf="!current.IsPublished">
+          <button
+            type="button"
+            class="publish-course-button"
+            (click)="publishCourse()"
+            [disabled]="publishingCourse()"
+          >
+            {{ publishingCourse() ? 'Publicando...' : 'Publicar curso' }}
+          </button>
+        </div>
+
+        <section class="draft-edit-card" *ngIf="!current.IsPublished">
+          <h3>Edicao do rascunho</h3>
+          <div class="draft-edit-grid">
+            <label class="draft-edit-field">
+              <span>Nome do curso</span>
+              <input
+                #draftTitleInput
+                type="text"
+                [value]="draftTitle()"
+                (input)="onDraftTitleChange(draftTitleInput.value)"
+                maxlength="120"
+              />
+            </label>
+            <label class="draft-edit-field">
+              <span>Categoria</span>
+              <input
+                #draftCategoryInput
+                type="text"
+                [value]="draftCategory()"
+                (input)="onDraftCategoryChange(draftCategoryInput.value)"
+                maxlength="150"
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            class="draft-save-button"
+            (click)="saveDraftDetails()"
+            [disabled]="savingDraftDetails()"
+          >
+            {{ savingDraftDetails() ? 'Salvando...' : 'Salvar alteracoes' }}
+          </button>
+        </section>
       </div>
 
       <div class="course-manage__meta">
@@ -24290,6 +24427,8 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, map, switchMap } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
 
 import { CoursesService } from '../../core/services/courses.service';
 import { CourseDto, ClassGroupDto } from '../../core/api/courses.api';
@@ -24314,10 +24453,15 @@ export class CourseManageComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly coursesService = inject(CoursesService);
   private readonly router = inject(Router);
+  private readonly toastr = inject(ToastrService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly course = signal<CourseDto | null>(null);
+  readonly publishingCourse = signal(false);
+  readonly savingDraftDetails = signal(false);
+  readonly draftTitle = signal('');
+  readonly draftCategory = signal('');
 
   readonly totalCapacity = computed(() => {
     const current = this.course();
@@ -24362,6 +24506,8 @@ export class CourseManageComponent {
       .subscribe({
         next: course => {
           this.course.set(course);
+          this.draftTitle.set(course.Title ?? '');
+          this.draftCategory.set(course.CategoryName ?? '');
           this.error.set(null);
           this.loading.set(false);
         },
@@ -24406,6 +24552,99 @@ export class CourseManageComponent {
       return '';
     }
     return new Date(course.CreatedAt).toLocaleDateString('pt-BR');
+  }
+
+  publishCourse(): void {
+    const current = this.course();
+    if (!current || current.IsPublished || this.publishingCourse()) {
+      return;
+    }
+
+    this.publishingCourse.set(true);
+    this.coursesService
+      .updateCourse(current.Id, {
+        Title: current.Title,
+        ShortDescription: current.ShortDescription,
+        DetailedDescription: current.DetailedDescription ?? undefined,
+        Mode: current.Mode,
+        CategoryName: current.CategoryName,
+        EnableForum: current.EnableForum,
+        EnableChat: current.EnableChat,
+        IsPublished: true,
+        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
+        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.publishingCourse.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.course.set({
+            ...current,
+            IsPublished: true,
+            PublishedAt: current.PublishedAt ?? new Date().toISOString()
+          });
+          this.toastr.success('Curso publicado com sucesso.');
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel publicar o curso.');
+        }
+      });
+  }
+
+  onDraftTitleChange(value: string): void {
+    this.draftTitle.set(value ?? '');
+  }
+
+  onDraftCategoryChange(value: string): void {
+    this.draftCategory.set(value ?? '');
+  }
+
+  saveDraftDetails(): void {
+    const current = this.course();
+    if (!current || current.IsPublished || this.savingDraftDetails()) {
+      return;
+    }
+
+    const title = (this.draftTitle() ?? '').trim();
+    const category = (this.draftCategory() ?? '').trim();
+    if (!title || !category) {
+      this.toastr.error('Informe titulo e categoria para salvar o rascunho.');
+      return;
+    }
+
+    this.savingDraftDetails.set(true);
+    this.coursesService
+      .updateCourse(current.Id, {
+        Title: title,
+        ShortDescription: current.ShortDescription,
+        DetailedDescription: current.DetailedDescription ?? undefined,
+        Mode: current.Mode,
+        CategoryName: category,
+        EnableForum: current.EnableForum,
+        EnableChat: current.EnableChat,
+        IsPublished: false,
+        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
+        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.savingDraftDetails.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.course.set({
+            ...current,
+            Title: title,
+            CategoryName: category
+          });
+          this.toastr.success('Rascunho atualizado com sucesso.');
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel salvar as alteracoes do rascunho.');
+        }
+      });
   }
 
   goToCreateClassGroup(): void {
@@ -28826,10 +29065,10 @@ export class CourseActivitiesComponent {
     "AccessKey": "admin",
     "SecretKey": "admin123",
     "Region": "us-east-1",
-    "BucketName": "meajudaai"
+    "BucketName": "meajudaai-development"
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Server=127.0.0.1;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal_Development;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
   },
   "Jwt": {
     "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
@@ -30658,111 +30897,6 @@ public class ForumThreadRepository(AppDbContext context)
 }
 ````
 
-## File: ProjetoFinal.sln
-````
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Api", "src\ProjetoFinal.Api\ProjetoFinal.Api.csproj", "{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F39C-4898-996F-02BE379BAD86}"
-	ProjectSection(SolutionItems) = preProject
-		docs\commands.md = docs\commands.md
-		docs\memoria_projeto.md = docs\memoria_projeto.md
-		docs\propont.md = docs\propont.md
-		docs\transcription.md = docs\transcription.md
-		docs\especificacao.md = docs\especificacao.md
-		docs\relatorio.md = docs\relatorio.md
-		docs\context.md = docs\context.md
-		docs\documento_projeto_final_uerj.md = docs\documento_projeto_final_uerj.md
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Application.Contracts", "src\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj", "{DA6BE528-C8A4-41BF-B898-A3A801C24568}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain.Shared", "src\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj", "{5C014F9F-F754-4311-BF57-054D52839DA7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain", "src\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj", "{8788179F-83E2-442A-866D-DF9EF82640ED}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Aplication.Services", "src\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj", "{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.Data", "src\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj", "{3F42AFFE-0B0A-4775-81CD-C04C42927033}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{38C7D967-FAD5-4560-9AB7-6D71F48F7D27}"
-EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjetoFinal.ClientApp", "src\ProjetoFinal.ClientApp\ProjetoFinal.ClientApp.esproj", "{3823AD60-71EB-BD5F-F256-F30AE905FD7A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.CrossCutting", "src\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj", "{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{DA6BE528-C8A4-41BF-B898-A3A801C24568} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{5C014F9F-F754-4311-BF57-054D52839DA7} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{8788179F-83E2-442A-866D-DF9EF82640ED} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{3F42AFFE-0B0A-4775-81CD-C04C42927033} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{3823AD60-71EB-BD5F-F256-F30AE905FD7A} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DBDCF9D2-9D03-4CEE-A8DB-1613AA739A63}
-	EndGlobalSection
-EndGlobal
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/activities/activities.component.ts
 ````typescript
 import { CommonModule } from '@angular/common';
@@ -32089,6 +32223,11 @@ export class CourseActivityViewerComponent {
   color: var(--accent-600);
 }
 
+.course-card[data-status='Rascunho'] .course-card__status {
+  background: rgba(148, 163, 184, 0.25);
+  color: var(--surface-700);
+}
+
 .course-card h3 {
   margin: 0;
   font-size: 1.2rem;
@@ -32191,6 +32330,12 @@ export class CourseActivityViewerComponent {
   background: rgba(99, 102, 241, 0.12);
   color: var(--accent-700);
   border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.course-card__action--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .course-card__actions small {
@@ -32485,6 +32630,111 @@ textarea:focus-visible {
 - JWT secrets e chaves de storage ficam fora do repositório; gere chaves com `node -p "crypto.randomBytes(256).toString('base64');"` conforme `docs/commands.md`.
 - Uploads/downloads de mídia devem usar os endpoints do backend (com MinIO) — evite acessar o storage diretamente.
 - Ao rodar `dotnet build`, feche processos que possam bloquear `src/ProjetoFinal.Api/bin` para evitar falhas de lock.
+````
+
+## File: ProjetoFinal.sln
+````
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Api", "src\ProjetoFinal.Api\ProjetoFinal.Api.csproj", "{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF4986D9-F39C-4898-996F-02BE379BAD86}"
+	ProjectSection(SolutionItems) = preProject
+		docs\commands.md = docs\commands.md
+		docs\memoria_projeto.md = docs\memoria_projeto.md
+		docs\propont.md = docs\propont.md
+		docs\transcription.md = docs\transcription.md
+		docs\especificacao.md = docs\especificacao.md
+		docs\relatorio.md = docs\relatorio.md
+		docs\context.md = docs\context.md
+		docs\documento_projeto_final_uerj.md = docs\documento_projeto_final_uerj.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.IoC", "src\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj", "{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Application.Contracts", "src\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj", "{DA6BE528-C8A4-41BF-B898-A3A801C24568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain.Shared", "src\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj", "{5C014F9F-F754-4311-BF57-054D52839DA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Domain", "src\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj", "{8788179F-83E2-442A-866D-DF9EF82640ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Aplication.Services", "src\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj", "{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.Data", "src\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj", "{3F42AFFE-0B0A-4775-81CD-C04C42927033}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{38C7D967-FAD5-4560-9AB7-6D71F48F7D27}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjetoFinal.ClientApp", "src\ProjetoFinal.ClientApp\ProjetoFinal.ClientApp.esproj", "{3823AD60-71EB-BD5F-F256-F30AE905FD7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjetoFinal.Infra.CrossCutting", "src\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj", "{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C014F9F-F754-4311-BF57-054D52839DA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8788179F-83E2-442A-866D-DF9EF82640ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7208A541-B8F9-4B97-9526-E7E9BD5A0D19} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{F1CAE558-5A94-4F35-AF8D-6526ACBC557C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{DA6BE528-C8A4-41BF-B898-A3A801C24568} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{5C014F9F-F754-4311-BF57-054D52839DA7} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{8788179F-83E2-442A-866D-DF9EF82640ED} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{47DE596D-2AB6-4AD6-A1DA-B46AB74B6B8C} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{3F42AFFE-0B0A-4775-81CD-C04C42927033} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{3823AD60-71EB-BD5F-F256-F30AE905FD7A} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+		{58E3A075-9C83-2BA7-A4EE-DC49AE9446D5} = {C59B6A8B-1FE4-4FC0-ADA5-F5D8FB22DFF5}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DBDCF9D2-9D03-4CEE-A8DB-1613AA739A63}
+	EndGlobalSection
+EndGlobal
 ````
 
 ## File: src/ProjetoFinal.Api/Controllers/MediaResourcesController.cs
@@ -33766,13 +34016,12 @@ export class ForumComponent {
   readonly availableClassGroups = computed<ClassGroupDto[]>(() => {
     const courseId = this.form.controls.courseId.value;
     const course = this.courses().find(item => item.Id === courseId);
-    const groups = course?.ClassGroups ?? [];
-    return groups.filter(group => !group.IsMaterialsDistribution);
+    return course?.ClassGroups ?? [];
   });
 
   readonly hasClassGroups = computed(() =>
     this.courses().some(course =>
-      (course.ClassGroups ?? []).some(group => !group.IsMaterialsDistribution)
+      (course.ClassGroups ?? []).length > 0
     )
   );
   readonly isInstructorUser = computed(() => this.authService.isInstructorRole());
@@ -33929,7 +34178,7 @@ export class ForumComponent {
     const firstAvailable = this.findFirstCourseWithGroups();
     if (firstAvailable) {
       this.form.controls.courseId.setValue(firstAvailable.Id, { emitEvent: false });
-      const firstGroup = (firstAvailable.ClassGroups ?? []).find(group => !group.IsMaterialsDistribution);
+      const firstGroup = (firstAvailable.ClassGroups ?? [])[0];
       this.form.controls.classGroupId.setValue(firstGroup?.Id ?? '', { emitEvent: false });
     }
 
@@ -33951,7 +34200,7 @@ export class ForumComponent {
 
   private findFirstCourseWithGroups(): CourseDto | undefined {
     return this.courses().find(course =>
-      (course.ClassGroups ?? []).some(group => !group.IsMaterialsDistribution)
+      (course.ClassGroups ?? []).length > 0
     );
   }
 }
@@ -34234,6 +34483,13 @@ export class CoursesService {
     );
   }
 
+  deleteCourse(courseId: string) {
+    return this.http.delete<void>(`${this.baseUrl}/courses/${courseId}`).pipe(
+      tap(() => this.invalidateCache()),
+      catchError(error => throwError(() => error))
+    );
+  }
+
   private fetchCoursesDto(filter: CoursesFilter = {}, forceRefresh = false): Observable<ApiPagedResponse<CourseDto>> {
     if (forceRefresh || !this.cache$ || Object.keys(filter).length) {
       const params = toHttpParams({ PageSize: 50, ...filter });
@@ -34325,10 +34581,14 @@ export class CoursesService {
     <ng-container *ngIf="!error(); else errorState">
       <ng-container *ngIf="filteredCourses().length; else emptyState">
         <div class="courses__grid">
-          <article *ngFor="let course of filteredCourses(); trackBy: trackByCourseId" class="course-card">
+          <article
+            *ngFor="let course of filteredCourses(); trackBy: trackByCourseId"
+            class="course-card"
+            [attr.data-status]="course.published ? 'Publicado' : 'Rascunho'"
+          >
             <div class="course-card__header">
               <span class="course-card__category">{{ course.category || 'Sem categoria' }}</span>
-              <span class="course-card__status">Publicado</span>
+              <span class="course-card__status">{{ course.published ? 'Publicado' : 'Rascunho' }}</span>
             </div>
 
             <h3>{{ course.title }}</h3>
@@ -34357,6 +34617,26 @@ export class CoursesService {
             </div>
 
             <div class="course-card__actions" *ngIf="isInstructorUser()">
+              <ng-container *ngIf="!course.published; else publishedActions">
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--secondary"
+                  (click)="editDraftCourse(course.id)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  Editar rascunho
+                </button>
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--danger"
+                  (click)="deleteDraftCourse(course)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  {{ isDeletingCourse(course.id) ? 'Excluindo...' : 'Excluir rascunho' }}
+                </button>
+                <small>Rascunhos podem ser editados e removidos antes da publicação.</small>
+              </ng-container>
+              <ng-template #publishedActions>
               <button
                 type="button"
                 class="course-card__action course-card__action--secondary"
@@ -34365,6 +34645,7 @@ export class CoursesService {
                 Gerenciar curso
               </button>
               <small>Atualize turmas, conteudos e atividades.</small>
+              </ng-template>
             </div>
 
             <div class="course-card__actions" *ngIf="canSubscribe(course)">
@@ -34938,147 +35219,6 @@ export class DashboardComponent {
 }
 ````
 
-## File: docs/relatorio.md
-````markdown
-# Relatorio Geral do Projeto EAD
-
-## Data
-2026-01-06
-
-## Fontes analisadas
-- docs/especificacao.md
-- docs/propont.md
-- docs/memoria_projeto.md
-- docs/context.md
-- Estrutura do repositorio (src/ e docs/)
-
-## Visao geral do projeto
-Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao de material didatico. O sistema contempla cadastro de usuarios (aluno/professor), autenticacao JWT, criacao e publicacao de cursos, turmas, conteudos, atividades, forum e chat, com upload/download de midias via MinIO. O frontend Angular oferece dashboards para aluno e professor, gerenciamento de cursos/turmas e fluxo completo de inscricoes e submissao/correcao de atividades.
-
-## Status por modulo (resumo)
-### Autenticacao e usuarios
-- Login JWT com guardas, interceptor e roles.
-- Cadastro publico de usuario (aluno/professor) via /auth/register com hash BCrypt.
-
-### Cursos e turmas
-- Criacao/edicao/publicacao de cursos e turmas no frontend, com pre-selecao de curso ao criar turma pela gerencia.
-- Cursos interativos com turmas, capacidade, aprovacao e codigo de inscricao.
-- Cursos nao interativos (distribuicao) com acesso aberto a materiais e forum.
-- API restringe acesso de instrutores apenas aos proprios cursos e turmas.
-
-### Inscricoes e matrículas
-- Inscricao de aluno em distribuicao (course-subscriptions) e em turmas interativas (class enrollments).
-- Dashboard do aluno mescla inscricoes de distribuicao e matrículas em turmas interativas, com status.
-
-### Conteudos e midias
-- Upload de midias via API com deduplicacao por hash (MinIO).
-- Conteudos com anexos e viewer com download autenticado.
-- Anotacoes em videos de conteudo persistidas no backend.
-
-### Atividades e correcoes
-- Criacao de atividades por turma ou para todas as turmas.
-- Envio de atividades pelo aluno com rich-text e anexos.
-- Gerencia e correcao pelo professor em turma e em tela dedicada por atividade.
-- Visualizacao de status/nota/feedback pelo aluno.
-- Listagem e gestao de atividades restritas ao instrutor proprietario do curso.
-
-### Forum e chat
-- Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
-- Criacao de topicos restrita a professores; alunos podem responder.
-- Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
-- UI do topico renderiza respostas em niveis recursivos.
-
-### Dashboard professor
-- Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
-- Secao de atividade recente em foruns mostrando os 3 topicos com ultima interacao e data.
-
-### Documentacao
-- Memoria/contexto em Markdown com historico de evolucao.
-- Especificacao/proposta/transcricao migradas para .md.
-
-## Conformidade com requisitos principais
-- Duas modalidades de curso (interativo/distribuicao): implementado.
-- Turmas com limite, inscricao com aprovacao/codigo: implementado.
-- Forum e chat: forum implementado; chat previsto no modelo e habilitado em cursos/turmas.
-- Upload de midias e anexos: implementado (MinIO).
-- Comentarios em video: implementado para conteudos e anotacoes em submissao.
-- Inscricao de alunos em qualquer curso: implementado (distribuicao + interativo).
-- Pesquisa de cursos por nome/categoria: parcialmente (filtro por titulo/categoria via API).
-
-## Cronograma resumido (implementado)
-- 2025-09/10: base da API, contratos, estrutura Angular e shell.
-- 2025-10: login JWT, criacao de cursos, turmas e publicacao; ajustes de rotas /api/v1.
-- 2025-11: MinIO, uploads/downloads, viewer de conteudos/atividades, rich-text editor, inscricoes e dashboard aluno.
-- 2025-11 fim: correcao de atividades, restricoes de exibicao, ajustes de forum.
-- 2026-01: anotacoes de video persistentes, melhorias no UI/UX, forum com discussao, correcoes por atividade, cadastro publico de usuario.
-- 2026-01-06: dashboard professor com contagens reais; docs migradas para Markdown.
-
-## Pendencias e proximos passos sugeridos
-- Revisar avisos de bundle/CSS do Angular antes do deploy final.
-- Validar e finalizar fluxos de chat em tempo real (definir implementacao e UI).
-- Reforcar validacoes/limpeza do HTML rich-text no backend (seguranca).
-- Completar pesquisa de cursos no frontend por nome/categoria com UI dedicada.
-- Revisar politicas de permissao (professor/aluno) em todos os endpoints sensiveis.
-- Adicionar testes automatizados (unitarios/e2e) para inscricao, envio de atividades e forum.
-
-## Observacoes
-- Builds recentes executados com sucesso; warnings de budget/seletores ja conhecidos no Angular.
-- Documentacao deve seguir append-only em memoria/contexto e transcricao.
-
-## Cronograma de melhorias de usabilidade (iniciado)
-### Itens planejados
-- Consistencia de linguagem e acentos em rotulos e mensagens do frontend.
-- Acessibilidade: foco visivel para links/botoes/inputs.
-- Responsividade de tabelas densas (scroll horizontal em telas menores).
-- Feedback visual de envio de anexos (indicadores durante upload).
-- Performance percebida: reduzir warnings de budget (acao continua).
-
-### Alteracoes ja aplicadas
-- Acessibilidade: foco visivel global em `styles.css`.
-- Responsividade: tabelas de inscricoes/submissoes com wrapper de scroll.
-- Feedback de anexos: indicador visual animado durante envio.
-
-### Proximos passos
-- Padronizar textos com acentos/idioma em todos os modulos.
-- Revisar componentes mais densos para simplificar a hierarquia visual.
-- Definir estrategia para reduzir tamanhos de CSS/bundle.
-
-### 2026-02-02
-- Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
-- Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
-
-### 2026-03-12
-- Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
-- Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
-- Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
-
-### 2026-03-13
-- Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
-- Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
-
-### 2026-03-13 (tema e nomenclatura)
-- Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
-- Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
-- Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).
-
-### 2026-03-20 (feedback estruturado de correcoes)
-- Implementado feedback estruturado nas submissoes de atividades com novos campos persistidos: `MasteryScore`, `ApplicationScore`, `CommunicationScore` (rubrica 1-5), `FeedbackTags` (tags diagnosticas) e `RecommendedAction` (acao recomendada).
-- Backend atualizado em entidade/DTOs/servico com validacao de rubrica (faixa 1-5) e normalizacao de tags para armazenamento consistente.
-- Migration EF criada: `20260320204713_AddStructuredActivityFeedback` com inclusao das novas colunas em `ActivitySubmissions`.
-- Frontend de correcao atualizado nas telas de professor (`activity-corrections` e `class-group-manage`) com novos campos no formulario.
-- Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
-- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
-- Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.
-
-### 2026-03-20 (documentacao academica)
-- Criado `docs/documento_projeto_final_uerj.md` com estrutura completa de documento final academico (modelo UERJ), incluindo capa, folha de rosto, resumo/abstract, objetivos, especificacao funcional e nao funcional, arquitetura, validacao, cronograma, riscos, conclusao e apendices.
-- `ProjetoFinal.sln` atualizado na secao de Solution Items para incluir o novo arquivo `.md` em `docs/`.
-- Documento academico UERJ (`docs/documento_projeto_final_uerj.md`) atualizado com tabela comparativa entre Projeto, Google Classroom, Moodle e Udemy, destacando diferenciais do sistema em funcionalidades nativas.
-- Criado `.dockerignore` na raiz com regras globais para ignorar `**/wwwroot/**` e `**/node_modules/**` no contexto de build Docker.
-- Dockerfile refatorado para multi-stage com estagio dedicado de build do frontend e copia explicita dos artefatos gerados para `wwwroot` da imagem final da API.
-- Validacao operacional: `docker build -t projeto-final:test-multistage .` executado com sucesso.
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.ts
 ````typescript
 import { CommonModule } from '@angular/common';
@@ -35143,6 +35283,7 @@ export class CoursesComponent {
   readonly subscribedCourseIds = signal<Set<string>>(new Set());
   readonly interactiveEnrollmentCourseIds = signal<Set<string>>(new Set());
   readonly enrollingCourseId = signal<string | null>(null);
+  readonly deletingCourseId = signal<string | null>(null);
   readonly enrollmentPanelLoading = signal(false);
   readonly enrollmentPanelError = signal<string | null>(null);
   readonly enrollmentPanelCourse = signal<CourseDto | null>(null);
@@ -35190,6 +35331,41 @@ export class CoursesComponent {
       return;
     }
     this.router.navigate(['/courses', courseId, 'manage']);
+  }
+
+  editDraftCourse(courseId: string): void {
+    this.manageCourse(courseId);
+  }
+
+  isDeletingCourse(courseId: string): boolean {
+    return this.deletingCourseId() === courseId;
+  }
+
+  deleteDraftCourse(course: CourseListItem): void {
+    if (!this.isInstructorUser() || course.published || this.isDeletingCourse(course.id)) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Deseja excluir o rascunho "${course.title}"? Esta acao nao pode ser desfeita.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingCourseId.set(course.id);
+    this.service
+      .deleteCourse(course.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.courses.update(current => current.filter(item => item.id !== course.id));
+          this.deletingCourseId.set(null);
+          this.toastr.success('Rascunho excluido com sucesso.');
+        },
+        error: () => {
+          this.deletingCourseId.set(null);
+          this.toastr.error('Nao foi possivel excluir o rascunho.');
+        }
+      });
   }
 
   goToCreateCourse(): void {
@@ -35486,6 +35662,154 @@ export class CoursesComponent {
       .trim();
   }
 }
+````
+
+## File: docs/relatorio.md
+````markdown
+# Relatorio Geral do Projeto EAD
+
+## Data
+2026-01-06
+
+## Fontes analisadas
+- docs/especificacao.md
+- docs/propont.md
+- docs/memoria_projeto.md
+- docs/context.md
+- Estrutura do repositorio (src/ e docs/)
+
+## Visao geral do projeto
+Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao de material didatico. O sistema contempla cadastro de usuarios (aluno/professor), autenticacao JWT, criacao e publicacao de cursos, turmas, conteudos, atividades, forum e chat, com upload/download de midias via MinIO. O frontend Angular oferece dashboards para aluno e professor, gerenciamento de cursos/turmas e fluxo completo de inscricoes e submissao/correcao de atividades.
+
+## Status por modulo (resumo)
+### Autenticacao e usuarios
+- Login JWT com guardas, interceptor e roles.
+- Cadastro publico de usuario (aluno/professor) via /auth/register com hash BCrypt.
+
+### Cursos e turmas
+- Criacao/edicao/publicacao de cursos e turmas no frontend, com pre-selecao de curso ao criar turma pela gerencia.
+- Cursos interativos com turmas, capacidade, aprovacao e codigo de inscricao.
+- Cursos nao interativos (distribuicao) com acesso aberto a materiais e forum.
+- API restringe acesso de instrutores apenas aos proprios cursos e turmas.
+
+### Inscricoes e matrículas
+- Inscricao de aluno em distribuicao (course-subscriptions) e em turmas interativas (class enrollments).
+- Dashboard do aluno mescla inscricoes de distribuicao e matrículas em turmas interativas, com status.
+
+### Conteudos e midias
+- Upload de midias via API com deduplicacao por hash (MinIO).
+- Conteudos com anexos e viewer com download autenticado.
+- Anotacoes em videos de conteudo persistidas no backend.
+
+### Atividades e correcoes
+- Criacao de atividades por turma ou para todas as turmas.
+- Envio de atividades pelo aluno com rich-text e anexos.
+- Gerencia e correcao pelo professor em turma e em tela dedicada por atividade.
+- Visualizacao de status/nota/feedback pelo aluno.
+- Listagem e gestao de atividades restritas ao instrutor proprietario do curso.
+
+### Forum e chat
+- Forum com topicos por turma, posts autenticados, replies e pagina dedicada de discussao.
+- Criacao de topicos restrita a professores; alunos podem responder.
+- Forum filtrado por instrutor para impedir acesso a topicos de outros cursos.
+- UI do topico renderiza respostas em niveis recursivos.
+
+### Dashboard professor
+- Indicadores de alunos matriculados e total de cursos interativos/nao interativos do instrutor.
+- Secao de atividade recente em foruns mostrando os 3 topicos com ultima interacao e data.
+
+### Documentacao
+- Memoria/contexto em Markdown com historico de evolucao.
+- Especificacao/proposta/transcricao migradas para .md.
+
+## Conformidade com requisitos principais
+- Duas modalidades de curso (interativo/distribuicao): implementado.
+- Turmas com limite, inscricao com aprovacao/codigo: implementado.
+- Forum e chat: forum implementado; chat previsto no modelo e habilitado em cursos/turmas.
+- Upload de midias e anexos: implementado (MinIO).
+- Comentarios em video: implementado para conteudos e anotacoes em submissao.
+- Inscricao de alunos em qualquer curso: implementado (distribuicao + interativo).
+- Pesquisa de cursos por nome/categoria: parcialmente (filtro por titulo/categoria via API).
+
+## Cronograma resumido (implementado)
+- 2025-09/10: base da API, contratos, estrutura Angular e shell.
+- 2025-10: login JWT, criacao de cursos, turmas e publicacao; ajustes de rotas /api/v1.
+- 2025-11: MinIO, uploads/downloads, viewer de conteudos/atividades, rich-text editor, inscricoes e dashboard aluno.
+- 2025-11 fim: correcao de atividades, restricoes de exibicao, ajustes de forum.
+- 2026-01: anotacoes de video persistentes, melhorias no UI/UX, forum com discussao, correcoes por atividade, cadastro publico de usuario.
+- 2026-01-06: dashboard professor com contagens reais; docs migradas para Markdown.
+
+## Pendencias e proximos passos sugeridos
+- Revisar avisos de bundle/CSS do Angular antes do deploy final.
+- Validar e finalizar fluxos de chat em tempo real (definir implementacao e UI).
+- Reforcar validacoes/limpeza do HTML rich-text no backend (seguranca).
+- Completar pesquisa de cursos no frontend por nome/categoria com UI dedicada.
+- Revisar politicas de permissao (professor/aluno) em todos os endpoints sensiveis.
+- Adicionar testes automatizados (unitarios/e2e) para inscricao, envio de atividades e forum.
+
+## Observacoes
+- Builds recentes executados com sucesso; warnings de budget/seletores ja conhecidos no Angular.
+- Documentacao deve seguir append-only em memoria/contexto e transcricao.
+
+## Cronograma de melhorias de usabilidade (iniciado)
+### Itens planejados
+- Consistencia de linguagem e acentos em rotulos e mensagens do frontend.
+- Acessibilidade: foco visivel para links/botoes/inputs.
+- Responsividade de tabelas densas (scroll horizontal em telas menores).
+- Feedback visual de envio de anexos (indicadores durante upload).
+- Performance percebida: reduzir warnings de budget (acao continua).
+
+### Alteracoes ja aplicadas
+- Acessibilidade: foco visivel global em `styles.css`.
+- Responsividade: tabelas de inscricoes/submissoes com wrapper de scroll.
+- Feedback de anexos: indicador visual animado durante envio.
+
+### Proximos passos
+- Padronizar textos com acentos/idioma em todos os modulos.
+- Revisar componentes mais densos para simplificar a hierarquia visual.
+- Definir estrategia para reduzir tamanhos de CSS/bundle.
+
+### 2026-02-02
+- Empacotamento para homologacao: Dockerfile multi-stage e docker-compose com SQL Server e MinIO. Configuracao Docker em `docker/appsettings.Docker.json` e uso de configs externos no swarm.
+- Ajuste de appsettings.json para usar hosts do stack (projeto-final_sqlserver/projeto-final_minio).
+
+### 2026-03-12
+- Correcao de resiliencia no upload de midias: a API so reaproveita `MediaResources` por hash quando o objeto existe no MinIO; caso contrario, reenvia o arquivo e reidrata o registro.
+- Evolucao da camada de storage com `ExistsAsync` no contrato e implementacao MinIO por `StatObject`.
+- Entregue script operacional `docs/saneamento_media_resources_orfaos.sql` para limpeza controlada de registros orfaos sem vinculos em outras entidades.
+
+### 2026-03-13
+- Resolvido erro de build Docker `NETSDK1152` no publish da API removendo inclusao duplicada dos artefatos SPA no `ProjetoFinal.Api.csproj`.
+- Validacao de regressao: `dotnet build`, `npm run build` e `docker build` executados com sucesso (warnings Angular conhecidos mantidos).
+
+### 2026-03-13 (tema e nomenclatura)
+- Aplicado tema azul na sidebar e componentes de acao relacionados no shell do frontend.
+- Removida nomenclatura "SES" dos titulos/branding do frontend, padronizando para "Plataforma EAD".
+- Validacao de build concluida com `dotnet build` e `npm run build` (apenas warnings Angular ja conhecidos).
+
+### 2026-03-20 (feedback estruturado de correcoes)
+- Implementado feedback estruturado nas submissoes de atividades com novos campos persistidos: `MasteryScore`, `ApplicationScore`, `CommunicationScore` (rubrica 1-5), `FeedbackTags` (tags diagnosticas) e `RecommendedAction` (acao recomendada).
+- Backend atualizado em entidade/DTOs/servico com validacao de rubrica (faixa 1-5) e normalizacao de tags para armazenamento consistente.
+- Migration EF criada: `20260320204713_AddStructuredActivityFeedback` com inclusao das novas colunas em `ActivitySubmissions`.
+- Frontend de correcao atualizado nas telas de professor (`activity-corrections` e `class-group-manage`) com novos campos no formulario.
+- Visualizacao do aluno atualizada em `course-activity-viewer` para exibir rubrica, tags e acao recomendada quando presentes.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build` (warnings Angular de budget/seletores permanecem conhecidos).
+- Ajuste de usabilidade no campo de Tags diagnosticas: substituido `select multiple` por dropdown com checklist nas telas de correcao, permitindo abrir menu e selecionar multiplos itens sem perder contexto.
+
+### 2026-03-20 (documentacao academica)
+- Criado `docs/documento_projeto_final_uerj.md` com estrutura completa de documento final academico (modelo UERJ), incluindo capa, folha de rosto, resumo/abstract, objetivos, especificacao funcional e nao funcional, arquitetura, validacao, cronograma, riscos, conclusao e apendices.
+- `ProjetoFinal.sln` atualizado na secao de Solution Items para incluir o novo arquivo `.md` em `docs/`.
+- Documento academico UERJ (`docs/documento_projeto_final_uerj.md`) atualizado com tabela comparativa entre Projeto, Google Classroom, Moodle e Udemy, destacando diferenciais do sistema em funcionalidades nativas.
+- Criado `.dockerignore` na raiz com regras globais para ignorar `**/wwwroot/**` e `**/node_modules/**` no contexto de build Docker.
+- Dockerfile refatorado para multi-stage com estagio dedicado de build do frontend e copia explicita dos artefatos gerados para `wwwroot` da imagem final da API.
+- Validacao operacional: `docker build -t projeto-final:test-multistage .` executado com sucesso.
+
+### 2026-03-22 (forum assíncrono e rascunhos)
+- Forum de cursos ajustado para permitir topicos em turmas assincronas, removendo restricao anterior a turmas interativas.
+- Criada acao de publicacao no gerenciamento de cursos em rascunho (`Publicar curso`).
+- Listagem de cursos do instrutor evoluida com status real do card e acoes de rascunho: editar e excluir com confirmacao.
+- Gerenciamento de rascunho recebeu formulario de edicao rapida para `Nome do curso` e `Categoria` com persistencia via API.
+- Validacoes executadas: `dotnet build ProjetoFinal.sln` e `npm run build` (apenas warnings conhecidos).
 ````
 
 ## File: docs/transcription.md
@@ -35816,6 +36140,34 @@ export class CoursesComponent {
 Quero que o Dockerfile seja multistaging contendo uma parte que builda o frontend e depois do projeto buildado, copiar o conteúdo do front buildado para a pasta wwwroot do projeto buildado
 
 [2026-03-21 11:18:40] Assistant: Atualizei o Dockerfile para multi-stage (`frontend-build`, `backend-build`, `runtime`) e passei a copiar os artefatos do frontend (`dist/browser`) para `wwwroot` na imagem final, validando com `docker build` bem-sucedido.
+
+[2026-03-21 16:45:18] User: Faça os commits e o push das alterações
+
+[2026-03-21 16:45:18] Assistant: Atualizei memoria/contexto/relatorio e repomix, validei build Docker multi-stage e builds .NET/Angular, e realizei commit/push das alteracoes pendentes.
+
+[2026-03-22 11:18:35] User: Eu preciso que o forum também esteja disponível para turmas assincronas.
+
+[2026-03-22 11:18:35] Assistant: Ajustei o forum para aceitar qualquer turma do curso (incluindo turmas assíncronas de distribuicao de materiais), removendo o filtro que restringia apenas turmas interativas, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:22:45] User: Eu criei um curso assincrono e ele está como rascunho, como publico ele? Não encontrei nada que conseguisse fazer isso
+
+[2026-03-22 11:22:45] Assistant: Identifiquei que o fluxo atual nao possui botao de publicacao para curso ja criado como rascunho e orientei a publicacao imediata via API, alem de sugerir implementar acao de Publicar no gerenciamento do curso.
+
+[2026-03-22 11:24:27] User: Crie essa funionalidade
+
+[2026-03-22 11:24:27] Assistant: Implementei acao de publicar curso rascunho na tela de gerenciamento (botao Publicar curso com estado de carregamento e feedback), enviando update com IsPublished=true e validando com dotnet build e npm run build.
+
+[2026-03-22 11:26:09] User: Formate os estilos css do botão publicar curso
+
+[2026-03-22 11:26:09] Assistant: Ajustei o botao Publicar curso com classe CSS dedicada, incluindo padding, tipografia, gradiente, hover e estado disabled, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:28:22] User: Cursos em modo rascunho, devem permitir edição e exclusão
+
+[2026-03-22 11:28:22] Assistant: Implementei na listagem de cursos para instrutor as acoes de editar rascunho (abrindo gerenciamento) e excluir rascunho com confirmacao, corrigi a exibicao de status publicado/rascunho no card, adicionei endpoint de delete no service e validei com dotnet build e npm run build.
+
+[2026-03-22 11:30:56] User: Na edição do rascunho, deve=se permitir alterar o nome e categoria
+
+[2026-03-22 11:30:56] Assistant: Adicionei no gerenciamento do curso em rascunho um bloco de edicao rapida para titulo e categoria com botao de salvar, persistindo via updateCourse (mantendo IsPublished=false), e validei com dotnet build e npm run build.
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/app.routes.ts
@@ -36134,6 +36486,13 @@ export const routes: Routes = [
 - Pipeline Docker atualizado para multi-stage com estagio de build frontend e copia dos artefatos para `wwwroot` no runtime.
 - `.dockerignore` adicionado para excluir `**/wwwroot/**` e `**/node_modules/**` do contexto de build.
 - `ProjetoFinal.Api.csproj` ajustado para evitar dependencia de build do esproj do frontend durante publish da API.
+
+### Data: 2026-03-22
+### Resumo
+- Forum passou a aceitar turmas assincronas no frontend (sem exclusao por `IsMaterialsDistribution`).
+- Fluxo de publicacao de curso rascunho implementado na tela de gerenciamento com botao dedicado.
+- Cursos rascunho na listagem do instrutor agora suportam edicao e exclusao.
+- Edicao de rascunho no gerenciamento passou a permitir alterar titulo e categoria com salvamento imediato.
 ````
 
 ## File: docs/memoria_projeto.md
@@ -36570,4 +36929,11 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Dockerfile refatorado para multi-stage com build dedicado do frontend e copia de `dist/browser` para `wwwroot` na imagem final da API.
 - Ajustado `ProjetoFinal.Api.csproj` para remover dependencia de `ProjetoFinal.ClientApp.esproj` no publish da API.
 - Validacao de imagem com `docker build -t projeto-final:test-multistage .` concluida com sucesso.
+
+## 2026-03-22 (forum assíncrono e ciclo de rascunho)
+- Forum do curso liberado para turmas assincronas (`IsMaterialsDistribution`), removendo o filtro que permitia apenas turmas interativas na criacao/seleção de topicos.
+- Gerenciamento de curso ganhou acao `Publicar curso` para rascunhos, com feedback visual de carregamento e toast.
+- Listagem de cursos para instrutor passou a exibir status real (Publicado/Rascunho) e acoes para rascunho: `Editar rascunho` e `Excluir rascunho` com confirmacao.
+- Em curso rascunho, adicionado bloco de edicao rapida para alterar `Nome do curso` e `Categoria`, persistindo via update sem publicar.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
 ````

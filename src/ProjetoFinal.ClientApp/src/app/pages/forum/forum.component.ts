@@ -48,13 +48,12 @@ export class ForumComponent {
   readonly availableClassGroups = computed<ClassGroupDto[]>(() => {
     const courseId = this.form.controls.courseId.value;
     const course = this.courses().find(item => item.Id === courseId);
-    const groups = course?.ClassGroups ?? [];
-    return groups.filter(group => !group.IsMaterialsDistribution);
+    return course?.ClassGroups ?? [];
   });
 
   readonly hasClassGroups = computed(() =>
     this.courses().some(course =>
-      (course.ClassGroups ?? []).some(group => !group.IsMaterialsDistribution)
+      (course.ClassGroups ?? []).length > 0
     )
   );
   readonly isInstructorUser = computed(() => this.authService.isInstructorRole());
@@ -211,7 +210,7 @@ export class ForumComponent {
     const firstAvailable = this.findFirstCourseWithGroups();
     if (firstAvailable) {
       this.form.controls.courseId.setValue(firstAvailable.Id, { emitEvent: false });
-      const firstGroup = (firstAvailable.ClassGroups ?? []).find(group => !group.IsMaterialsDistribution);
+      const firstGroup = (firstAvailable.ClassGroups ?? [])[0];
       this.form.controls.classGroupId.setValue(firstGroup?.Id ?? '', { emitEvent: false });
     }
 
@@ -233,7 +232,7 @@ export class ForumComponent {
 
   private findFirstCourseWithGroups(): CourseDto | undefined {
     return this.courses().find(course =>
-      (course.ClassGroups ?? []).some(group => !group.IsMaterialsDistribution)
+      (course.ClassGroups ?? []).length > 0
     );
   }
 }

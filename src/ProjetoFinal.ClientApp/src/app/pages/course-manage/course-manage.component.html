@@ -7,6 +7,50 @@
         <span class="status-badge" [attr.data-status]="statusLabel(current)">{{ statusLabel(current) }}</span>
         <h2>{{ current.Title }}</h2>
         <p class="subtitle">{{ current.ShortDescription }}</p>
+        <div class="course-manage__actions" *ngIf="!current.IsPublished">
+          <button
+            type="button"
+            class="publish-course-button"
+            (click)="publishCourse()"
+            [disabled]="publishingCourse()"
+          >
+            {{ publishingCourse() ? 'Publicando...' : 'Publicar curso' }}
+          </button>
+        </div>
+
+        <section class="draft-edit-card" *ngIf="!current.IsPublished">
+          <h3>Edicao do rascunho</h3>
+          <div class="draft-edit-grid">
+            <label class="draft-edit-field">
+              <span>Nome do curso</span>
+              <input
+                #draftTitleInput
+                type="text"
+                [value]="draftTitle()"
+                (input)="onDraftTitleChange(draftTitleInput.value)"
+                maxlength="120"
+              />
+            </label>
+            <label class="draft-edit-field">
+              <span>Categoria</span>
+              <input
+                #draftCategoryInput
+                type="text"
+                [value]="draftCategory()"
+                (input)="onDraftCategoryChange(draftCategoryInput.value)"
+                maxlength="150"
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            class="draft-save-button"
+            (click)="saveDraftDetails()"
+            [disabled]="savingDraftDetails()"
+          >
+            {{ savingDraftDetails() ? 'Salvando...' : 'Salvar alteracoes' }}
+          </button>
+        </section>
       </div>
 
       <div class="course-manage__meta">

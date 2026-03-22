@@ -30,6 +30,99 @@
   font-size: 1rem;
 }
 
+.course-manage__actions {
+  margin-top: 0.9rem;
+}
+
+.publish-course-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  box-shadow: 0 12px 30px -20px rgba(15, 23, 42, 0.85);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.publish-course-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.9);
+}
+
+.publish-course-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.draft-edit-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  display: grid;
+  gap: 0.8rem;
+}
+
+.draft-edit-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--surface-700);
+}
+
+.draft-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.draft-edit-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.draft-edit-field span {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.draft-edit-field input {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.92rem;
+  color: var(--surface-900);
+  background: #fff;
+}
+
+.draft-edit-field input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.draft-save-button {
+  justify-self: start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
+  cursor: pointer;
+}
+
+.draft-save-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;

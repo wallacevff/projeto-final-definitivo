@@ -197,3 +197,10 @@
 - Pipeline Docker atualizado para multi-stage com estagio de build frontend e copia dos artefatos para `wwwroot` no runtime.
 - `.dockerignore` adicionado para excluir `**/wwwroot/**` e `**/node_modules/**` do contexto de build.
 - `ProjetoFinal.Api.csproj` ajustado para evitar dependencia de build do esproj do frontend durante publish da API.
+
+### Data: 2026-03-22
+### Resumo
+- Forum passou a aceitar turmas assincronas no frontend (sem exclusao por `IsMaterialsDistribution`).
+- Fluxo de publicacao de curso rascunho implementado na tela de gerenciamento com botao dedicado.
+- Cursos rascunho na listagem do instrutor agora suportam edicao e exclusao.
+- Edicao de rascunho no gerenciamento passou a permitir alterar titulo e categoria com salvamento imediato.

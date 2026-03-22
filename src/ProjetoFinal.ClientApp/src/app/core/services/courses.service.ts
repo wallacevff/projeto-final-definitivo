@@ -73,6 +73,13 @@ export class CoursesService {
     );
   }
 
+  deleteCourse(courseId: string) {
+    return this.http.delete<void>(`${this.baseUrl}/courses/${courseId}`).pipe(
+      tap(() => this.invalidateCache()),
+      catchError(error => throwError(() => error))
+    );
+  }
+
   private fetchCoursesDto(filter: CoursesFilter = {}, forceRefresh = false): Observable<ApiPagedResponse<CourseDto>> {
     if (forceRefresh || !this.cache$ || Object.keys(filter).length) {
       const params = toHttpParams({ PageSize: 50, ...filter });

@@ -135,3 +135,10 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Criado `.dockerignore` na raiz com regras globais para ignorar `**/wwwroot/**` e `**/node_modules/**` no contexto de build Docker.
 - Dockerfile refatorado para multi-stage com estagio dedicado de build do frontend e copia explicita dos artefatos gerados para `wwwroot` da imagem final da API.
 - Validacao operacional: `docker build -t projeto-final:test-multistage .` executado com sucesso.
+
+### 2026-03-22 (forum assíncrono e rascunhos)
+- Forum de cursos ajustado para permitir topicos em turmas assincronas, removendo restricao anterior a turmas interativas.
+- Criada acao de publicacao no gerenciamento de cursos em rascunho (`Publicar curso`).
+- Listagem de cursos do instrutor evoluida com status real do card e acoes de rascunho: editar e excluir com confirmacao.
+- Gerenciamento de rascunho recebeu formulario de edicao rapida para `Nome do curso` e `Categoria` com persistencia via API.
+- Validacoes executadas: `dotnet build ProjetoFinal.sln` e `npm run build` (apenas warnings conhecidos).

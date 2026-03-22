@@ -430,3 +430,10 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Dockerfile refatorado para multi-stage com build dedicado do frontend e copia de `dist/browser` para `wwwroot` na imagem final da API.
 - Ajustado `ProjetoFinal.Api.csproj` para remover dependencia de `ProjetoFinal.ClientApp.esproj` no publish da API.
 - Validacao de imagem com `docker build -t projeto-final:test-multistage .` concluida com sucesso.
+
+## 2026-03-22 (forum assíncrono e ciclo de rascunho)
+- Forum do curso liberado para turmas assincronas (`IsMaterialsDistribution`), removendo o filtro que permitia apenas turmas interativas na criacao/seleção de topicos.
+- Gerenciamento de curso ganhou acao `Publicar curso` para rascunhos, com feedback visual de carregamento e toast.
+- Listagem de cursos para instrutor passou a exibir status real (Publicado/Rascunho) e acoes para rascunho: `Editar rascunho` e `Excluir rascunho` com confirmacao.
+- Em curso rascunho, adicionado bloco de edicao rapida para alterar `Nome do curso` e `Categoria`, persistindo via update sem publicar.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.

@@ -61,10 +61,14 @@
     <ng-container *ngIf="!error(); else errorState">
       <ng-container *ngIf="filteredCourses().length; else emptyState">
         <div class="courses__grid">
-          <article *ngFor="let course of filteredCourses(); trackBy: trackByCourseId" class="course-card">
+          <article
+            *ngFor="let course of filteredCourses(); trackBy: trackByCourseId"
+            class="course-card"
+            [attr.data-status]="course.published ? 'Publicado' : 'Rascunho'"
+          >
             <div class="course-card__header">
               <span class="course-card__category">{{ course.category || 'Sem categoria' }}</span>
-              <span class="course-card__status">Publicado</span>
+              <span class="course-card__status">{{ course.published ? 'Publicado' : 'Rascunho' }}</span>
             </div>
 
             <h3>{{ course.title }}</h3>
@@ -93,6 +97,26 @@
             </div>
 
             <div class="course-card__actions" *ngIf="isInstructorUser()">
+              <ng-container *ngIf="!course.published; else publishedActions">
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--secondary"
+                  (click)="editDraftCourse(course.id)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  Editar rascunho
+                </button>
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--danger"
+                  (click)="deleteDraftCourse(course)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  {{ isDeletingCourse(course.id) ? 'Excluindo...' : 'Excluir rascunho' }}
+                </button>
+                <small>Rascunhos podem ser editados e removidos antes da publicação.</small>
+              </ng-container>
+              <ng-template #publishedActions>
               <button
                 type="button"
                 class="course-card__action course-card__action--secondary"
@@ -101,6 +125,7 @@
                 Gerenciar curso
               </button>
               <small>Atualize turmas, conteudos e atividades.</small>
+              </ng-template>
             </div>
 
             <div class="course-card__actions" *ngIf="canSubscribe(course)">

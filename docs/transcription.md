@@ -328,3 +328,27 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-21 16:45:18] User: Faça os commits e o push das alterações
 
 [2026-03-21 16:45:18] Assistant: Atualizei memoria/contexto/relatorio e repomix, validei build Docker multi-stage e builds .NET/Angular, e realizei commit/push das alteracoes pendentes.
+
+[2026-03-22 11:18:35] User: Eu preciso que o forum também esteja disponível para turmas assincronas.
+
+[2026-03-22 11:18:35] Assistant: Ajustei o forum para aceitar qualquer turma do curso (incluindo turmas assíncronas de distribuicao de materiais), removendo o filtro que restringia apenas turmas interativas, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:22:45] User: Eu criei um curso assincrono e ele está como rascunho, como publico ele? Não encontrei nada que conseguisse fazer isso
+
+[2026-03-22 11:22:45] Assistant: Identifiquei que o fluxo atual nao possui botao de publicacao para curso ja criado como rascunho e orientei a publicacao imediata via API, alem de sugerir implementar acao de Publicar no gerenciamento do curso.
+
+[2026-03-22 11:24:27] User: Crie essa funionalidade
+
+[2026-03-22 11:24:27] Assistant: Implementei acao de publicar curso rascunho na tela de gerenciamento (botao Publicar curso com estado de carregamento e feedback), enviando update com IsPublished=true e validando com dotnet build e npm run build.
+
+[2026-03-22 11:26:09] User: Formate os estilos css do botão publicar curso
+
+[2026-03-22 11:26:09] Assistant: Ajustei o botao Publicar curso com classe CSS dedicada, incluindo padding, tipografia, gradiente, hover e estado disabled, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:28:22] User: Cursos em modo rascunho, devem permitir edição e exclusão
+
+[2026-03-22 11:28:22] Assistant: Implementei na listagem de cursos para instrutor as acoes de editar rascunho (abrindo gerenciamento) e excluir rascunho com confirmacao, corrigi a exibicao de status publicado/rascunho no card, adicionei endpoint de delete no service e validei com dotnet build e npm run build.
+
+[2026-03-22 11:30:56] User: Na edição do rascunho, deve=se permitir alterar o nome e categoria
+
+[2026-03-22 11:30:56] Assistant: Adicionei no gerenciamento do curso em rascunho um bloco de edicao rapida para titulo e categoria com botao de salvar, persistindo via updateCourse (mantendo IsPublished=false), e validei com dotnet build e npm run build.

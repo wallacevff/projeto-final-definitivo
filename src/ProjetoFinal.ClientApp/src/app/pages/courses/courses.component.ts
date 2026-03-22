@@ -60,6 +60,7 @@ export class CoursesComponent {
   readonly subscribedCourseIds = signal<Set<string>>(new Set());
   readonly interactiveEnrollmentCourseIds = signal<Set<string>>(new Set());
   readonly enrollingCourseId = signal<string | null>(null);
+  readonly deletingCourseId = signal<string | null>(null);
   readonly enrollmentPanelLoading = signal(false);
   readonly enrollmentPanelError = signal<string | null>(null);
   readonly enrollmentPanelCourse = signal<CourseDto | null>(null);
@@ -107,6 +108,41 @@ export class CoursesComponent {
       return;
     }
     this.router.navigate(['/courses', courseId, 'manage']);
+  }
+
+  editDraftCourse(courseId: string): void {
+    this.manageCourse(courseId);
+  }
+
+  isDeletingCourse(courseId: string): boolean {
+    return this.deletingCourseId() === courseId;
+  }
+
+  deleteDraftCourse(course: CourseListItem): void {
+    if (!this.isInstructorUser() || course.published || this.isDeletingCourse(course.id)) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Deseja excluir o rascunho "${course.title}"? Esta acao nao pode ser desfeita.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingCourseId.set(course.id);
+    this.service
+      .deleteCourse(course.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.courses.update(current => current.filter(item => item.id !== course.id));
+          this.deletingCourseId.set(null);
+          this.toastr.success('Rascunho excluido com sucesso.');
+        },
+        error: () => {
+          this.deletingCourseId.set(null);
+          this.toastr.error('Nao foi possivel excluir o rascunho.');
+        }
+      });
   }
 
   goToCreateCourse(): void {
