@@ -25,4 +25,21 @@ public class ClassEnrollmentRepository : DefaultRepository<ClassEnrollment, Clas
                                     && enrollment.Status == EnrollmentStatus.Pending,
                 cancellationToken);
     }
+
+    public Task<bool> ExistsActiveEnrollmentInCourseAsync(
+        Guid courseId,
+        Guid studentId,
+        Guid? excludeEnrollmentId = null,
+        CancellationToken cancellationToken = default)
+    {
+        return _context.ClassEnrollments
+            .AnyAsync(
+                enrollment => enrollment.StudentId == studentId
+                              && enrollment.ClassGroup != null
+                              && enrollment.ClassGroup.CourseId == courseId
+                              && (enrollment.Status == EnrollmentStatus.Pending
+                                  || enrollment.Status == EnrollmentStatus.Approved)
+                              && (!excludeEnrollmentId.HasValue || enrollment.Id != excludeEnrollmentId.Value),
+                cancellationToken);
+    }
 }

@@ -7,4 +7,9 @@ namespace ProjetoFinal.Domain.Repositories;
 public interface IClassEnrollmentRepository : IDefaultRepository<ClassEnrollment, ClassEnrollmentFilter, Guid>
 {
     Task<bool> ExistsPendingRequestAsync(Guid classGroupId, Guid studentId, CancellationToken cancellationToken = default);
+    Task<bool> ExistsActiveEnrollmentInCourseAsync(
+        Guid courseId,
+        Guid studentId,
+        Guid? excludeEnrollmentId = null,
+        CancellationToken cancellationToken = default);
 }

@@ -149,3 +149,22 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Corrigido backend de atividades para incluir `MediaResource` no include de anexos, viabilizando deteccao de tipo de arquivo no frontend.
 - Corrigido backend de turmas para retornar nome de aluno nas inscricoes via include de `Student` + mapeamento explicito em `ClassEnrollmentDto`.
 - Validacao tecnica executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### 2026-03-22 (restricao de uma turma por curso)
+- Implementada regra de negocio para impedir que um aluno tenha solicitacao ou matricula ativa (`Pending`/`Approved`) em mais de uma turma do mesmo curso.
+- A validacao foi aplicada no pedido de inscricao e tambem na aprovacao pelo professor, cobrindo inclusive registros legados inconsistentes.
+- Frontend da tela de cursos passou a mostrar a mensagem detalhada retornada pelo backend quando a inscricao e bloqueada.
+- Validacao tecnica pendente de execucao com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### 2026-03-22 (validacao da restricao por curso)
+- `dotnet build ProjetoFinal.sln` concluido com sucesso apos a implementacao.
+- `npm.cmd run build` concluido com sucesso; o uso de `npm.cmd` contornou a restricao local de execucao do `npm.ps1`.
+- Permanecem apenas warnings conhecidos: `NU1903` do `AutoMapper` no restore .NET e warnings de budget/seletores no Angular.
+
+### 2026-03-22 (aluno sair do curso)
+- Implementada a acao `Sair do curso` nos cards de `Meus cursos` da area do aluno.
+- Para cursos assincronos, a saida remove a `CourseSubscription` do proprio aluno; para cursos interativos, remove a `ClassEnrollment` correspondente do proprio aluno.
+- Backend protegido para impedir que um aluno remova inscricoes de terceiros, preservando o fluxo existente de remocao por instrutor no gerenciamento de turma.
+- Frontend atualiza o estado local apos a exclusao, exibe confirmacao antes da acao e mostra mensagens detalhadas de erro/sucesso.
+- Validacao concluida com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
+- Restricao encontrada no ambiente: `dotnet build ProjetoFinal.sln` padrao falhou por lock do processo `ProjetoFinal.Api` (PID 3356) sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.

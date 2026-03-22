@@ -210,3 +210,21 @@
 - Visualizacao de atividade passou a renderizar player para anexos de video, substituindo o fluxo de download nesses casos.
 - Repositorio de atividades atualizado para retornar metadados completos de media nos anexos (`ThenInclude` de `MediaResource`).
 - Gerenciamento de turma: nomes de alunos em inscricoes estabilizados com includes no backend e fallback no frontend.
+
+### Data: 2026-03-22 (restricao por curso)
+### Resumo
+- Backend de turmas agora impede que um mesmo aluno mantenha solicitacao/matricula ativa em mais de uma turma do mesmo curso.
+- Regra reforcada tanto na solicitacao da inscricao quanto na aprovacao pelo professor.
+- Frontend da vitrine de cursos passou a aproveitar a mensagem retornada pela API ao rejeitar a inscricao.
+
+### Data: 2026-03-22 (validacao)
+### Resumo
+- Build backend validado com `dotnet build ProjetoFinal.sln`.
+- Build frontend validado com `npm.cmd run build`, mantendo apenas warnings conhecidos do projeto.
+
+### Data: 2026-03-22 (saida do curso)
+### Resumo
+- Aluno agora pode sair do curso a partir do dashboard, tanto em inscricoes de distribuicao quanto em matriculas/solicitacoes de turmas interativas.
+- Controllers de `course-subscriptions` e `class-groups` passaram a validar propriedade do registro antes de remover a inscricao do aluno.
+- Frontend atualizado para confirmar a saida, chamar o endpoint correto e remover o card da lista sem recarregar a pagina.
+- Validacao do backend realizada com build da API em pasta alternativa devido lock no binario da instancia local em execucao.

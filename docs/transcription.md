@@ -372,3 +372,11 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 11:49:06] User: Funcionou, mas deixe um player igual que é feito em conteúdo, o vídeo ficou grande demais na tela
 
 [2026-03-22 11:49:06] Assistant: Ajustei o CSS do player de anexos da atividade para seguir o mesmo padrao visual do viewer de conteudo (item em coluna, video responsivo com max-height e bordas equivalentes), validando com dotnet build e npm run build.
+[2026-03-22 15:32:03] User: O sistema está permitindo que o aluno se cadastre em várias turmas de um mesmo curso, isso não deve acontecer. Consegue implementar a restrição?
+
+[2026-03-22 15:32:03] Assistant: Implementei a restricao para impedir solicitacao ou matricula ativa em mais de uma turma do mesmo curso, reforcando a regra no backend (solicitacao e aprovacao) e ajustando o frontend para exibir a mensagem retornada pela API.
+[2026-03-22 15:34:58] Assistant: Validei a correcao com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`; ambos concluiram com sucesso. Permanecem apenas warnings conhecidos do projeto (NU1903 do AutoMapper e budgets/seletores do Angular).
+
+[2026-03-22 15:44:07] User: Agora, permita que o aluno possa sair do curso.
+
+[2026-03-22 15:44:07] Assistant: Implementei a opcao de o aluno sair do curso na area "Meus cursos", com remocao segura da propria assinatura em cursos assincronos e da propria inscricao em turmas interativas, incluindo confirmacao e atualizacao imediata da lista no frontend. Validei o frontend com `npm.cmd run build` e o backend com build da API em saida alternativa (`artifacts/api-build`), porque o `dotnet build ProjetoFinal.sln` padrao estava bloqueado por uma instancia em execucao de `ProjetoFinal.Api` (PID 3356).

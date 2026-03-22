@@ -37,4 +37,10 @@ export class CourseSubscriptionsService {
       .post<CourseSubscriptionDto>(`${this.baseUrl}/course-subscriptions`, payload)
       .pipe(catchError(error => throwError(() => error)));
   }
+
+  remove(subscriptionId: string) {
+    return this.http
+      .delete<void>(`${this.baseUrl}/course-subscriptions/${subscriptionId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
 }

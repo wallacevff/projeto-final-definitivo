@@ -2,6 +2,7 @@
 using ProjetoFinal.Application.Contracts.Dto.Courses;
 using ProjetoFinal.Application.Contracts.Services;
 using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
 using ProjetoFinal.Domain.Shared.Enums;
 using ProjetoFinal.Domain.Shared.Exceptions;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,8 +20,13 @@ public class CourseSubscriptionsController : BaseController<
     Guid,
     ICourseSubscriptionAppService>
 {
-    public CourseSubscriptionsController(ICourseSubscriptionAppService service) : base(service)
+    private readonly ICourseSubscriptionRepository _subscriptionRepository;
+
+    public CourseSubscriptionsController(
+        ICourseSubscriptionAppService service,
+        ICourseSubscriptionRepository subscriptionRepository) : base(service)
     {
+        _subscriptionRepository = subscriptionRepository;
     }
 
     [HttpPost]
@@ -36,6 +42,31 @@ public class CourseSubscriptionsController : BaseController<
 
         createDto.StudentId = studentId;
         return await base.AddAsync(createDto, cancellationToken);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public override async Task<CourseSubscriptionDto> DeleteAsync(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var studentId = ResolveCurrentUserId();
+        if (studentId == Guid.Empty)
+        {
+            throw new BusinessException("Aluno nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var subscription = await _subscriptionRepository.FindAsync(id, cancellationToken);
+        if (subscription is null)
+        {
+            throw new BusinessException("Inscricao no curso nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (subscription.StudentId != studentId)
+        {
+            throw new BusinessException("Voce nao pode remover a inscricao de outro aluno.", ECodigo.NaoPermitido);
+        }
+
+        return await base.DeleteAsync(id, cancellationToken);
     }
 
     private Guid ResolveCurrentUserId()

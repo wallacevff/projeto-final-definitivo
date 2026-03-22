@@ -48,14 +48,24 @@
               </div>
             </dl>
 
-            <button
-              type="button"
-              class="student-course-card__cta"
-              (click)="openCourse(course.id)"
-              [disabled]="!canAccessCourse(course)"
-            >
-              {{ canAccessCourse(course) ? 'Acessar curso' : 'Aguardando aprovacao' }}
-            </button>
+            <div class="student-course-card__actions">
+              <button
+                type="button"
+                class="student-course-card__cta"
+                (click)="openCourse(course.id)"
+                [disabled]="!canAccessCourse(course) || isLeavingCourse(course.id)"
+              >
+                {{ canAccessCourse(course) ? 'Acessar curso' : 'Aguardando aprovacao' }}
+              </button>
+              <button
+                type="button"
+                class="student-course-card__leave"
+                (click)="leaveCourse(course)"
+                [disabled]="isLeavingCourse(course.id)"
+              >
+                {{ isLeavingCourse(course.id) ? 'Saindo...' : 'Sair do curso' }}
+              </button>
+            </div>
             <small
               class="student-course-card__hint"
               *ngIf="!canAccessCourse(course) && course.enrollmentType === 'interactive'"

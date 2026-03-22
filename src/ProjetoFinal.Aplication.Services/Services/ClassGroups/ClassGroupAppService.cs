@@ -161,6 +161,16 @@ public class ClassGroupAppService : DefaultService<ClassGroup, ClassGroupDto, Cl
             throw new BusinessException("Voce ja possui uma solicitacao para esta turma.", ECodigo.Conflito);
         }
 
+        var alreadyEnrolledInCourse = await _classEnrollmentRepository.ExistsActiveEnrollmentInCourseAsync(
+            classGroup.CourseId,
+            dto.StudentId,
+            cancellationToken: cancellationToken);
+
+        if (alreadyEnrolledInCourse)
+        {
+            throw new BusinessException("Voce ja possui uma solicitacao ou matricula ativa em outra turma deste curso.", ECodigo.Conflito);
+        }
+
         if (classGroup.RequiresEnrollmentCode)
         {
             if (string.IsNullOrWhiteSpace(dto.EnrollmentCode))
@@ -210,6 +220,23 @@ public class ClassGroupAppService : DefaultService<ClassGroup, ClassGroupDto, Cl
 
         if (dto.Status == EnrollmentStatus.Approved)
         {
+            var enrollmentClassGroup = await _classGroupRepository.FindAsync(enrollment.ClassGroupId, cancellationToken);
+            if (enrollmentClassGroup is null)
+            {
+                throw new BusinessException("Turma nao encontrada para esta inscricao.", ECodigo.NaoEncontrado);
+            }
+
+            var alreadyEnrolledInCourse = await _classEnrollmentRepository.ExistsActiveEnrollmentInCourseAsync(
+                enrollmentClassGroup.CourseId,
+                enrollment.StudentId,
+                enrollment.Id,
+                cancellationToken);
+
+            if (alreadyEnrolledInCourse)
+            {
+                throw new BusinessException("O aluno ja possui uma solicitacao ou matricula ativa em outra turma deste curso.", ECodigo.Conflito);
+            }
+
             var hasSeats = await _classGroupRepository.HasAvailableSeatsAsync(enrollment.ClassGroupId, cancellationToken);
             if (!hasSeats)
             {

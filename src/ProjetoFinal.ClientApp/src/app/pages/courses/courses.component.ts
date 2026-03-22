@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -329,11 +330,16 @@ export class CoursesComponent {
               ? 'Inscricao confirmada! Acesse suas aulas na area do aluno.'
               : 'Solicitacao enviada. Aguarde a aprovacao do instrutor.';
           this.toastr.success(message);
+          this.interactiveEnrollmentCourseIds.update(current => {
+            const updated = new Set(current);
+            updated.add(course.Id);
+            return updated;
+          });
           this.enrollmentSubmitting.set(false);
           this.closeInteractiveEnrollment();
         },
-        error: () => {
-          this.toastr.error('Nao foi possivel enviar a solicitacao para esta turma.');
+        error: error => {
+          this.toastr.error(this.extractErrorMessage(error, 'Nao foi possivel enviar a solicitacao para esta turma.'));
           this.enrollmentSubmitting.set(false);
         }
       });
@@ -437,5 +443,25 @@ export class CoursesComponent {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const payload = error.error;
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const message = (payload.message ?? payload.Message ?? payload.title ?? payload.Title) as string | undefined;
+      if (message?.trim()) {
+        return message;
+      }
+    }
+
+    return fallback;
   }
 }

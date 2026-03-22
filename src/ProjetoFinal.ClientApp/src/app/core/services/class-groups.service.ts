@@ -35,4 +35,10 @@ export class ClassGroupsService {
       .post<ClassEnrollmentDto>(`${this.baseUrl}/class-groups/${classGroupId}/enrollments`, payload)
       .pipe(catchError(error => throwError(() => error)));
   }
+
+  removeEnrollment(enrollmentId: string) {
+    return this.http
+      .delete<void>(`${this.baseUrl}/class-groups/enrollments/${enrollmentId}`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
 }

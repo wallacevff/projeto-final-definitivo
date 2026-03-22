@@ -444,3 +444,21 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Backend de atividades corrigido para incluir `ActivityAttachment.MediaResource` no retorno de atividade, permitindo identificar tipo de anexo no frontend.
 - Tabela de inscricoes da turma corrigida para resolver nomes de alunos com fallback confiavel.
 - Backend de turmas ajustado para incluir `Enrollments.Student` e mapear `ClassEnrollmentDto.StudentName` por `Student.FullName`.
+
+## 2026-03-22 (restricao de matricula por curso)
+- Matricula em turmas interativas agora bloqueia solicitacao duplicada em turmas diferentes do mesmo curso quando ja existe inscricao `Pending` ou `Approved`.
+- Aprovacao de inscricao pelo professor tambem valida a regra por curso, evitando consolidar dados antigos inconsistentes.
+- Frontend da listagem de cursos passou a exibir a mensagem retornada pela API ao falhar a inscricao em turma interativa.
+- Validacao prevista com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+## 2026-03-22 (validacao da restricao de matricula)
+- `dotnet build ProjetoFinal.sln` executado com sucesso apos a correcao.
+- `npm.cmd run build` executado com sucesso; uso de `npm.cmd` foi necessario por politica do PowerShell local bloqueando `npm.ps1`.
+- Warnings mantidos: `NU1903` do pacote `AutoMapper` e budgets/seletores conhecidos do Angular.
+
+## 2026-03-22 (saida voluntaria do curso)
+- Dashboard do aluno ganhou a acao `Sair do curso` nos cards de `Meus cursos`.
+- Cursos assincronos removem a propria `CourseSubscription`; cursos interativos removem a propria `ClassEnrollment`.
+- Backend reforcado para permitir exclusao apenas do proprio registro do aluno ao sair do curso, mantendo a remocao por instrutor para gerenciamento de turma.
+- Validacao: `npm.cmd run build` executado com sucesso e API compilada com `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.
+- Observacao: `dotnet build ProjetoFinal.sln` padrao estava bloqueado por uma instancia em execucao de `ProjetoFinal.Api` usando o binario em `src/ProjetoFinal.Api/bin/Debug/net8.0`.

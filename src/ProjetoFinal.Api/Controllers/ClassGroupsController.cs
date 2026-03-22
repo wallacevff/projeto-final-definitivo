@@ -149,7 +149,15 @@ public class ClassGroupsController : BaseController<
         [FromRoute] Guid enrollmentId,
         CancellationToken cancellationToken = default)
     {
-        await EnsureInstructorOwnsEnrollmentAsync(enrollmentId, cancellationToken);
+        if (IsInstructor() && !IsAdministrator())
+        {
+            await EnsureInstructorOwnsEnrollmentAsync(enrollmentId, cancellationToken);
+        }
+        else
+        {
+            await EnsureStudentOwnsEnrollmentAsync(enrollmentId, cancellationToken);
+        }
+
         await Service.RemoveEnrollmentAsync(enrollmentId, cancellationToken);
         return NoContent();
     }
@@ -231,6 +239,26 @@ public class ClassGroupsController : BaseController<
         }
 
         await EnsureInstructorOwnsClassGroupAsync(enrollment.ClassGroupId, cancellationToken);
+    }
+
+    private async Task EnsureStudentOwnsEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        var studentId = ResolveCurrentUserId();
+        if (studentId == Guid.Empty)
+        {
+            throw new BusinessException("Aluno nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        var enrollment = await _classEnrollmentRepository.FindAsync(enrollmentId, cancellationToken);
+        if (enrollment is null)
+        {
+            throw new BusinessException("Inscricao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (enrollment.StudentId != studentId)
+        {
+            throw new BusinessException("Voce nao pode remover a inscricao de outro aluno.", ECodigo.NaoPermitido);
+        }
     }
 
     public record AvailabilityResponse(bool HasSeats);

@@ -1,16 +1,19 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
 
 import { CourseDto, CourseListItem } from '../../core/api/courses.api';
+import { ForumPostDto, ForumThreadDto } from '../../core/api/forum.api';
 import { AuthService } from '../../core/services/auth.service';
+import { ClassGroupsService } from '../../core/services/class-groups.service';
 import { CourseSubscriptionsService } from '../../core/services/course-subscriptions.service';
 import { CoursesService } from '../../core/services/courses.service';
 import { ForumService } from '../../core/services/forum.service';
-import { ForumPostDto, ForumThreadDto } from '../../core/api/forum.api';
 
 interface HighlightCard {
   label: string;
@@ -31,6 +34,8 @@ interface ForumActivityItem {
 interface StudentCourseCard extends CourseListItem {
   subscribedAt?: string;
   enrollmentType: 'distribution' | 'interactive';
+  subscriptionId?: string;
+  enrollmentId?: string;
   classGroupName?: string;
   enrollmentStatus?: number;
 }
@@ -48,8 +53,10 @@ export class DashboardComponent {
   private readonly authService = inject(AuthService);
   private readonly coursesService = inject(CoursesService);
   private readonly subscriptionsService = inject(CourseSubscriptionsService);
+  private readonly classGroupsService = inject(ClassGroupsService);
   private readonly forumService = inject(ForumService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toastr = inject(ToastrService);
   private readonly modeLabels: Record<number, string> = {
     1: 'Interactivo',
     2: 'Assincrono'
@@ -66,6 +73,7 @@ export class DashboardComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly studentCourses = signal<StudentCourseCard[]>([]);
+  readonly leavingCourseId = signal<string | null>(null);
 
   readonly highlightCards = signal<HighlightCard[]>([
     { label: 'ALUNOS MATRICULADOS', value: '0', trend: 'steady', context: 'Total nos seus cursos' },
@@ -136,6 +144,48 @@ export class DashboardComponent {
     this.router.navigate(['/student/courses', courseId]);
   }
 
+  isLeavingCourse(courseId: string): boolean {
+    return this.leavingCourseId() === courseId;
+  }
+
+  leaveCourse(course: StudentCourseCard): void {
+    if (this.isLeavingCourse(course.id)) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Deseja sair do curso "${course.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    const request =
+      course.enrollmentType === 'distribution' && course.subscriptionId
+        ? this.subscriptionsService.remove(course.subscriptionId)
+        : course.enrollmentType === 'interactive' && course.enrollmentId
+          ? this.classGroupsService.removeEnrollment(course.enrollmentId)
+          : null;
+
+    if (!request) {
+      this.toastr.error('Nao foi possivel identificar sua inscricao neste curso.');
+      return;
+    }
+
+    this.leavingCourseId.set(course.id);
+    request
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.studentCourses.update(current => current.filter(item => item.id !== course.id));
+          this.leavingCourseId.set(null);
+          this.toastr.success('Voce saiu do curso com sucesso.');
+        },
+        error: error => {
+          this.leavingCourseId.set(null);
+          this.toastr.error(this.extractErrorMessage(error, 'Nao foi possivel sair do curso.'));
+        }
+      });
+  }
+
   private loadStudentCourses(studentId: string): void {
     forkJoin({
       subscriptions: this.subscriptionsService.getByStudent(studentId),
@@ -159,7 +209,8 @@ export class DashboardComponent {
             mergedCourses.push({
               ...courseCard,
               subscribedAt: subscription.SubscribedAt,
-              enrollmentType: 'distribution'
+              enrollmentType: 'distribution',
+              subscriptionId: subscription.Id
             });
             addedCourseIds.add(courseCard.id);
           });
@@ -180,6 +231,7 @@ export class DashboardComponent {
               ...courseCard,
               subscribedAt: enrollment.date,
               enrollmentType: 'interactive',
+              enrollmentId: enrollment.id,
               classGroupName: enrollment.groupName,
               enrollmentStatus: enrollment.status
             });
@@ -396,6 +448,7 @@ export class DashboardComponent {
       return scopedEnrollments
         .filter(enrollment => enrollment.StudentId === studentId && [1, 2].includes(enrollment.Status))
         .map(enrollment => ({
+          id: enrollment.Id,
           groupName: group.Name,
           status: enrollment.Status,
           date: enrollment.DecisionAt ?? enrollment.RequestedAt ?? new Date().toISOString()
@@ -426,5 +479,25 @@ export class DashboardComponent {
       default:
         return 0;
     }
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const payload = error.error;
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const message = (payload.message ?? payload.Message ?? payload.title ?? payload.Title) as string | undefined;
+      if (message?.trim()) {
+        return message;
+      }
+    }
+
+    return fallback;
   }
 }
