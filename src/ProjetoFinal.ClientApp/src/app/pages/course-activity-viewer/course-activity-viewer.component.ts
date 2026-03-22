@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -35,7 +35,7 @@ interface SubmissionAttachmentDraft {
   styleUrl: './course-activity-viewer.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CourseActivityViewerComponent {
+export class CourseActivityViewerComponent implements OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly activitiesService = inject(ActivitiesService);
@@ -51,6 +51,8 @@ export class CourseActivityViewerComponent {
   readonly activity = signal<ActivityDto | null>(null);
   readonly courseId = signal<string | null>(null);
   readonly downloading = signal<string | null>(null);
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
   readonly existingSubmission = signal<ActivitySubmissionDto | null>(null);
   readonly submissionLoading = signal(false);
   readonly submissionError = signal<string | null>(null);
@@ -80,6 +82,7 @@ export class CourseActivityViewerComponent {
     monitoria: 'Encaminhar para monitoria',
     proximo_modulo: 'Liberar proximo modulo'
   };
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg', 'mov', 'webm', 'avi'];
 
   constructor() {
     this.route.paramMap
@@ -98,7 +101,11 @@ export class CourseActivityViewerComponent {
       )
       .subscribe({
         next: activity => {
+          this.revokeVideoUrls();
+          this.videoUrls.set({});
+          this.videoLoading.set({});
           this.activity.set(activity);
+          this.preloadActivityVideos(activity.Attachments ?? []);
           this.error.set(null);
           this.loading.set(false);
           this.resetSubmissionState();
@@ -112,6 +119,10 @@ export class CourseActivityViewerComponent {
           this.loading.set(false);
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.revokeVideoUrls();
   }
 
   readonly backLink = computed(() => {
@@ -129,6 +140,25 @@ export class CourseActivityViewerComponent {
   downloadSubmissionAttachment(attachment: SubmissionAttachmentDto): void {
     const fallback = attachment.Media?.OriginalFileName ?? 'Envio do aluno';
     this.downloadMedia(attachment.MediaResourceId, fallback);
+  }
+
+  isVideoActivityAttachment(attachment: ActivityAttachmentDto): boolean {
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? attachment.Caption ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(mediaResourceId: string): string | null {
+    return this.videoUrls()[mediaResourceId] ?? null;
+  }
+
+  videoIsLoading(mediaResourceId: string): boolean {
+    return Boolean(this.videoLoading()[mediaResourceId]);
   }
 
   handleSubmissionFiles(event: Event): void {
@@ -288,6 +318,34 @@ export class CourseActivityViewerComponent {
       });
   }
 
+  private preloadActivityVideos(attachments: ActivityAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoActivityAttachment(attachment))
+      .forEach(attachment => this.loadActivityVideo(attachment.MediaResourceId));
+  }
+
+  private loadActivityVideo(mediaResourceId: string): void {
+    if (!mediaResourceId || this.videoIsLoading(mediaResourceId) || this.videoUrlFor(mediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [mediaResourceId]: true }));
+    this.mediaService
+      .download(mediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [mediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video do anexo.');
+        }
+      });
+  }
+
   private fetchStudentSubmission(activityId: string): void {
     const student = this.currentUser();
     if (!student) {
@@ -380,5 +438,10 @@ export class CourseActivityViewerComponent {
         IsVideo: item.media?.Kind === MediaKind.Video,
         Media: item.media
       }));
+  }
+
+  private revokeVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
   }
 }

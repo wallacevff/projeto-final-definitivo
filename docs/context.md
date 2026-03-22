@@ -204,3 +204,9 @@
 - Fluxo de publicacao de curso rascunho implementado na tela de gerenciamento com botao dedicado.
 - Cursos rascunho na listagem do instrutor agora suportam edicao e exclusao.
 - Edicao de rascunho no gerenciamento passou a permitir alterar titulo e categoria com salvamento imediato.
+
+### Data: 2026-03-22 (incremental)
+### Resumo
+- Visualizacao de atividade passou a renderizar player para anexos de video, substituindo o fluxo de download nesses casos.
+- Repositorio de atividades atualizado para retornar metadados completos de media nos anexos (`ThenInclude` de `MediaResource`).
+- Gerenciamento de turma: nomes de alunos em inscricoes estabilizados com includes no backend e fallback no frontend.

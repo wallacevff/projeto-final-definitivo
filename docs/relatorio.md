@@ -142,3 +142,10 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Listagem de cursos do instrutor evoluida com status real do card e acoes de rascunho: editar e excluir com confirmacao.
 - Gerenciamento de rascunho recebeu formulario de edicao rapida para `Nome do curso` e `Categoria` com persistencia via API.
 - Validacoes executadas: `dotnet build ProjetoFinal.sln` e `npm run build` (apenas warnings conhecidos).
+
+### 2026-03-22 (ajustes finais de UX e dados)
+- Anexos de video em atividades agora sao reproduzidos inline no `course-activity-viewer` (sem acao de baixar para video), com preload autenticado do blob.
+- Refinado estilo do player de atividade para o mesmo padrao do viewer de conteudo, reduzindo impacto visual e mantendo responsividade.
+- Corrigido backend de atividades para incluir `MediaResource` no include de anexos, viabilizando deteccao de tipo de arquivo no frontend.
+- Corrigido backend de turmas para retornar nome de aluno nas inscricoes via include de `Student` + mapeamento explicito em `ClassEnrollmentDto`.
+- Validacao tecnica executada com `dotnet build ProjetoFinal.sln` e `npm run build`.

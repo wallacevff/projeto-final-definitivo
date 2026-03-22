@@ -1,5 +1,6 @@
 ﻿import { ApiPagedResponse, normalizePagedResponse } from './api.types';
 import { formatDateLabel } from '../utils/date.util';
+import { MediaResource } from './media.api';
 
 export interface ActivityDto {
   Id: string;
@@ -30,6 +31,7 @@ export interface ActivityAttachmentDto {
   Id: string;
   MediaResourceId: string;
   Caption?: string;
+  Media?: MediaResource;
 }
 
 export interface ActivityAttachmentPayload {

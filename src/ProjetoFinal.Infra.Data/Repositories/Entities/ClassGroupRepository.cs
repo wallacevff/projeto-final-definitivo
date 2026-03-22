@@ -17,6 +17,20 @@ public class ClassGroupRepository : DefaultRepository<ClassGroup, ClassGroupFilt
         _context = context;
     }
 
+    protected override IQueryable<ClassGroup> ApplyIncludes(IQueryable<ClassGroup> query)
+    {
+        return query
+            .Include(group => group.Enrollments)
+            .ThenInclude(enrollment => enrollment.Student);
+    }
+
+    protected override IQueryable<ClassGroup> ApplyIncludesList(IQueryable<ClassGroup> query)
+    {
+        return query
+            .Include(group => group.Enrollments)
+            .ThenInclude(enrollment => enrollment.Student);
+    }
+
     public async Task<bool> HasAvailableSeatsAsync(Guid classGroupId, CancellationToken cancellationToken = default)
     {
         var groupInfo = await _context.ClassGroups

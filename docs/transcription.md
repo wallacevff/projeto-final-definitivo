@@ -352,3 +352,23 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 11:30:56] User: Na edição do rascunho, deve=se permitir alterar o nome e categoria
 
 [2026-03-22 11:30:56] Assistant: Adicionei no gerenciamento do curso em rascunho um bloco de edicao rapida para titulo e categoria com botao de salvar, persistindo via updateCourse (mantendo IsPublished=false), e validei com dotnet build e npm run build.
+
+[2026-03-22 11:38:07] User: Na parte de professor em http://localhost:4200/courses/3629b68c-b245-47d0-b472-7fa8a9e510a0/activities/f96991d4-221c-4510-99aa-a02eed163300 eu quero que no lugar do botão baixar quando for vídeo esteja disponível o player do vídeo.
+
+[2026-03-22 11:38:07] Assistant: Ajustei a tela de visualizacao da atividade para detectar anexos de video e renderizar player inline no lugar do botao de baixar, com preload do blob autenticado, cache por anexo e limpeza de URLs, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:40:25] User: Em http://localhost:4200/class-groups/923035ab-8f59-45a2-a371-6eec7a9a7278/manage Na tabela de inscrições, o nome do aluno não está aparecendo
+
+[2026-03-22 11:40:25] Assistant: Corrigi a tabela de inscricoes para usar fallback de nome do aluno com cache local e busca em Users quando StudentName vem vazio, ajustando o carregamento inicial e a exibicao na tela, com validacao em dotnet build e npm run build.
+
+[2026-03-22 11:42:14] User: No lugar do nome do aluno exibiu o nome Aluno
+
+[2026-03-22 11:42:14] Assistant: Corrigi na origem para retornar StudentName preenchido nas inscricoes da turma, adicionando include de Enrollments.Student no repositorio de ClassGroup e mapeamento explicito de Student.FullName em ClassEnrollmentDto, mantendo fallback no frontend e validando com dotnet build e npm run build.
+
+[2026-03-22 11:45:08] User: http://localhost:4200/courses/3629b68c-b245-47d0-b472-7fa8a9e510a0/activities/f96991d4-221c-4510-99aa-a02eed163300 nesse link, quando é vídeo ainda só exibe o botão baixar
+
+[2026-03-22 11:45:08] Assistant: Corrigi o backend para incluir MediaResource nos anexos de atividade (ThenInclude de attachment.MediaResource), permitindo ao frontend identificar video e exibir player no lugar de baixar; validado com dotnet build e npm run build.
+
+[2026-03-22 11:49:06] User: Funcionou, mas deixe um player igual que é feito em conteúdo, o vídeo ficou grande demais na tela
+
+[2026-03-22 11:49:06] Assistant: Ajustei o CSS do player de anexos da atividade para seguir o mesmo padrao visual do viewer de conteudo (item em coluna, video responsivo com max-height e bordas equivalentes), validando com dotnet build e npm run build.

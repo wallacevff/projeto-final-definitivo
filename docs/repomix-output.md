@@ -15932,6 +15932,20 @@ public class ClassGroupRepository : DefaultRepository<ClassGroup, ClassGroupFilt
         _context = context;
     }
 
+    protected override IQueryable<ClassGroup> ApplyIncludes(IQueryable<ClassGroup> query)
+    {
+        return query
+            .Include(group => group.Enrollments)
+            .ThenInclude(enrollment => enrollment.Student);
+    }
+
+    protected override IQueryable<ClassGroup> ApplyIncludesList(IQueryable<ClassGroup> query)
+    {
+        return query
+            .Include(group => group.Enrollments)
+            .ThenInclude(enrollment => enrollment.Student);
+    }
+
     public async Task<bool> HasAvailableSeatsAsync(Guid classGroupId, CancellationToken cancellationToken = default)
     {
         var groupInfo = await _context.ClassGroups
@@ -21037,410 +21051,6 @@ export class CourseContentsComponent {
 }
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.css
-````css
-.course-manage {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.course-manage__header {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.back-link {
-  align-self: flex-start;
-  text-decoration: none;
-  color: var(--accent-600);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.course-manage__title h2 {
-  margin: 0.35rem 0 0;
-  font-size: 1.8rem;
-  color: var(--surface-900);
-}
-
-.course-manage__title .subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--surface-500);
-  font-size: 1rem;
-}
-
-.course-manage__actions {
-  margin-top: 0.9rem;
-}
-
-.publish-course-button {
-  border: none;
-  border-radius: 999px;
-  padding: 0.6rem 1.3rem;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  box-shadow: 0 12px 30px -20px rgba(15, 23, 42, 0.85);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.publish-course-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.9);
-}
-
-.publish-course-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.draft-edit-card {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(255, 255, 255, 0.8);
-  display: grid;
-  gap: 0.8rem;
-}
-
-.draft-edit-card h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--surface-700);
-}
-
-.draft-edit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.75rem;
-}
-
-.draft-edit-field {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.draft-edit-field span {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-}
-
-.draft-edit-field input {
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 10px;
-  padding: 0.55rem 0.7rem;
-  font-size: 0.92rem;
-  color: var(--surface-900);
-  background: #fff;
-}
-
-.draft-edit-field input:focus {
-  outline: none;
-  border-color: var(--accent-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-}
-
-.draft-save-button {
-  justify-self: start;
-  border: none;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
-  cursor: pointer;
-}
-
-.draft-save-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-}
-
-.status-badge[data-status='Publicado'] {
-  background: rgba(34, 197, 94, 0.16);
-  color: #15803d;
-}
-
-.course-manage__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  color: var(--surface-500);
-  font-size: 0.95rem;
-}
-
-.course-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.summary-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 18px;
-  padding: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  box-shadow: 0 18px 46px -42px rgba(15, 23, 42, 0.6);
-  display: grid;
-  gap: 0.35rem;
-}
-
-.summary-card h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--surface-500);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.summary-card strong {
-  font-size: 2rem;
-  color: var(--surface-900);
-}
-
-.summary-card span {
-  color: var(--surface-500);
-  font-size: 0.9rem;
-}
-
-.course-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.course-details h3 {
-  margin: 0 0 0.75rem;
-  color: var(--surface-700);
-}
-
-.course-details dl {
-  margin: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.course-details dt {
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: var(--surface-500);
-  letter-spacing: 0.08em;
-}
-
-.course-details dd {
-  margin: 0.1rem 0 0;
-  color: var(--surface-700);
-}
-
-.materials-info {
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 16px;
-  padding: 1.25rem;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-}
-
-.materials-info h4 {
-  margin: 0 0 0.5rem;
-  color: #1d4ed8;
-}
-
-.materials-info p {
-  margin: 0;
-  color: var(--surface-600);
-}
-
-.course-groups {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.course-groups header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.course-groups__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.course-groups__create {
-  border: none;
-  border-radius: 999px;
-  padding: 0.55rem 1.2rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.2s ease;
-}
-
-.course-groups__create:hover {
-  transform: translateY(-1px);
-}
-
-.course-groups h3 {
-  margin: 0;
-  color: var(--surface-700);
-}
-
-.groups-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-.group-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 18px;
-  padding: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
-  display: grid;
-  gap: 1rem;
-}
-
-.group-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.group-card__header h4 {
-  margin: 0;
-  color: var(--surface-900);
-  font-size: 1.2rem;
-}
-
-.group-card__header p {
-  margin: 0.35rem 0 0;
-  color: var(--surface-500);
-  font-size: 0.95rem;
-}
-
-.group-card__stats {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-}
-
-.group-card__stats dt {
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-  margin-bottom: 0.25rem;
-}
-
-.group-card__stats dd {
-  margin: 0;
-  color: var(--surface-700);
-  font-size: 0.95rem;
-}
-
-.group-card__occupancy {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.group-card__occupancy label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-}
-
-.group-card__occupancy .progress {
-  position: relative;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.25);
-  overflow: hidden;
-}
-
-.group-card__occupancy .progress span {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(56, 189, 248, 0.9));
-}
-
-.group-card__occupancy small {
-  color: var(--surface-500);
-}
-
-.group-card__actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-  font-weight: 600;
-  font-size: 0.75rem;
-}
-
-.badge--materials {
-  background: rgba(34, 197, 94, 0.16);
-  color: #15803d;
-}
-
-.state {
-  padding: 1.5rem;
-  border-radius: 16px;
-  text-align: center;
-  font-weight: 500;
-  background: rgba(148, 163, 184, 0.15);
-  color: var(--surface-600);
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.18);
-  color: #b91c1c;
-}
-
-.state--info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #1d4ed8;
-}
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/forum-thread/forum-thread.component.html
 ````html
 <section class="forum-thread">
@@ -23108,6 +22718,7 @@ public class VideoAnnotationDto
 ````typescript
 import { ApiPagedResponse, normalizePagedResponse } from './api.types';
 import { formatDateLabel } from '../utils/date.util';
+import { MediaResource } from './media.api';
 
 export interface ActivityDto {
   Id: string;
@@ -23138,6 +22749,7 @@ export interface ActivityAttachmentDto {
   Id: string;
   MediaResourceId: string;
   Caption?: string;
+  Media?: MediaResource;
 }
 
 export interface ActivityAttachmentPayload {
@@ -24203,470 +23815,407 @@ export class CourseCreateComponent {
 }
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.html
-````html
-<section class="course-manage">
-  <header class="course-manage__header">
-    <a routerLink="/courses" class="back-link">← Voltar para cursos</a>
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.css
+````css
+.course-manage {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
 
-    <ng-container *ngIf="course() as current">
-      <div class="course-manage__title">
-        <span class="status-badge" [attr.data-status]="statusLabel(current)">{{ statusLabel(current) }}</span>
-        <h2>{{ current.Title }}</h2>
-        <p class="subtitle">{{ current.ShortDescription }}</p>
-        <div class="course-manage__actions" *ngIf="!current.IsPublished">
-          <button
-            type="button"
-            class="publish-course-button"
-            (click)="publishCourse()"
-            [disabled]="publishingCourse()"
-          >
-            {{ publishingCourse() ? 'Publicando...' : 'Publicar curso' }}
-          </button>
-        </div>
+.course-manage__header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-        <section class="draft-edit-card" *ngIf="!current.IsPublished">
-          <h3>Edicao do rascunho</h3>
-          <div class="draft-edit-grid">
-            <label class="draft-edit-field">
-              <span>Nome do curso</span>
-              <input
-                #draftTitleInput
-                type="text"
-                [value]="draftTitle()"
-                (input)="onDraftTitleChange(draftTitleInput.value)"
-                maxlength="120"
-              />
-            </label>
-            <label class="draft-edit-field">
-              <span>Categoria</span>
-              <input
-                #draftCategoryInput
-                type="text"
-                [value]="draftCategory()"
-                (input)="onDraftCategoryChange(draftCategoryInput.value)"
-                maxlength="150"
-              />
-            </label>
-          </div>
-          <button
-            type="button"
-            class="draft-save-button"
-            (click)="saveDraftDetails()"
-            [disabled]="savingDraftDetails()"
-          >
-            {{ savingDraftDetails() ? 'Salvando...' : 'Salvar alteracoes' }}
-          </button>
-        </section>
-      </div>
+.back-link {
+  align-self: flex-start;
+  text-decoration: none;
+  color: var(--accent-600);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
 
-      <div class="course-manage__meta">
-        <span>Instrutor: <strong>{{ current.InstructorName }}</strong></span>
-        <span>Modalidade: {{ modeLabel(current) }}</span>
-        <span>Criado em {{ createdLabel(current) }}</span>
-        <span>Publicação: {{ publishedLabel(current) }}</span>
-      </div>
-    </ng-container>
-  </header>
+.course-manage__title h2 {
+  margin: 0.35rem 0 0;
+  font-size: 1.8rem;
+  color: var(--surface-900);
+}
 
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <ng-container *ngIf="course() as current">
-        <section class="course-summary">
-          <article class="summary-card">
-            <h3>Capacidade total</h3>
-            <strong>{{ totalCapacity() }}</strong>
-            <span>Somatório de vagas das turmas</span>
-          </article>
+.course-manage__title .subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+  font-size: 1rem;
+}
 
-          <article class="summary-card">
-            <h3>Inscrições aprovadas</h3>
-            <strong>{{ totalApproved() }}</strong>
-            <span>Alunos confirmados nas turmas</span>
-          </article>
+.course-manage__actions {
+  margin-top: 0.9rem;
+}
 
-          <article class="summary-card">
-            <h3>Solicitações pendentes</h3>
-            <strong>{{ totalPending() }}</strong>
-            <span>Aguardando liberação do instrutor</span>
-          </article>
-        </section>
+.publish-course-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  box-shadow: 0 12px 30px -20px rgba(15, 23, 42, 0.85);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
 
-        <section class="course-details">
-          <div>
-            <h3>Detalhes do curso</h3>
-            <dl>
-              <div>
-                <dt>Categoria</dt>
-                <dd>{{ current.CategoryName }}</dd>
-              </div>
-              <div>
-                <dt>Forum</dt>
-                <dd>{{ featureLabel(current.EnableForum) }}</dd>
-              </div>
-              <div>
-                <dt>Chat</dt>
-                <dd>{{ featureLabel(current.EnableChat) }}</dd>
-              </div>
-              <div *ngIf="current.EnrollmentInstructions">
-                <dt>Instruções para inscrição</dt>
-                <dd>{{ current.EnrollmentInstructions }}</dd>
-              </div>
-            </dl>
-          </div>
+.publish-course-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.9);
+}
 
-          <article class="materials-info" *ngIf="materialsClassGroup() as materialsGroup">
-            <h4>Distribuição de materiais</h4>
-            <p>
-              O curso possui a turma <strong>{{ materialsGroup.Name }}</strong> marcada como distribuição de materiais.
-              Utilize essa turma para disponibilizar recursos assíncronos.
-            </p>
-          </article>
-        </section>
+.publish-course-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
-        <section class="course-groups">
-          <header>
-            <h3>Turmas do curso</h3>
-            <div class="course-groups__actions">
-              <span>{{ current.ClassGroups.length }} turma(s)</span>
-              <button type="button" class="course-groups__create" (click)="goToCreateClassGroup()">
-                Criar turma
-              </button>
-            </div>
-          </header>
+.draft-edit-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  display: grid;
+  gap: 0.8rem;
+}
 
-          <ng-container *ngIf="current.ClassGroups.length; else emptyGroups">
-            <div class="groups-grid">
-              <article class="group-card" *ngFor="let group of current.ClassGroups">
-                <div class="group-card__header">
-                  <div>
-                    <h4>{{ group.Name }}</h4>
-                    <p *ngIf="group.Description">{{ group.Description }}</p>
-                  </div>
-                  <span class="badge" [class.badge--materials]="group.IsMaterialsDistribution">
-                    {{ group.IsMaterialsDistribution ? 'Materiais' : 'Turma interativa' }}
-                  </span>
-                </div>
+.draft-edit-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--surface-700);
+}
 
-                <dl class="group-card__stats">
-                  <div>
-                    <dt>Capacidade</dt>
-                    <dd>{{ group.Capacity }}</dd>
-                  </div>
-                  <div>
-                    <dt>Aprovados</dt>
-                    <dd>{{ group.ApprovedEnrollments }}</dd>
-                  </div>
-                  <div>
-                    <dt>Pendentes</dt>
-                    <dd>{{ group.PendingEnrollments }}</dd>
-                  </div>
-                  <div>
-                    <dt>Requer aprovação</dt>
-                    <dd>{{ group.RequiresApproval ? 'Sim' : 'Não' }}</dd>
-                  </div>
-                  <div *ngIf="group.EnrollmentOpensAt">
-                    <dt>Inscrições</dt>
-                    <dd>{{ group.EnrollmentOpensAt | date:'dd/MM/yyyy HH:mm' }} - {{ group.EnrollmentClosesAt | date:'dd/MM/yyyy HH:mm' }}</dd>
-                  </div>
-                  <div *ngIf="group.StartsAt || group.EndsAt">
-                    <dt>Agenda</dt>
-                    <dd>
-                      <span *ngIf="group.StartsAt">De {{ group.StartsAt | date:'dd/MM/yyyy' }}</span>
-                      <span *ngIf="group.EndsAt"> até {{ group.EndsAt | date:'dd/MM/yyyy' }}</span>
-                    </dd>
-                  </div>
-                </dl>
+.draft-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
 
-                <div class="group-card__occupancy">
-                  <label>Ocupação</label>
-                  <div class="progress">
-                    <span [style.width.%]="classGroupOccupancy(group)"></span>
-                  </div>
-                  <small>{{ group.ApprovedEnrollments }} de {{ group.Capacity }} alunos ({{ classGroupOccupancy(group) }}%)</small>
-                </div>
+.draft-edit-field {
+  display: grid;
+  gap: 0.3rem;
+}
 
-                <footer class="group-card__actions">
-                  <a
-                    class="back-link"
-                    role="button"
-                    (click)="navigateToClassGroup(group)"
-                  >
-                    Gerenciar turma
-                  </a>
-                </footer>
-              </article>
-            </div>
-          </ng-container>
-        </section>
+.draft-edit-field span {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
 
-        <app-course-activities [course]="current"></app-course-activities>
-        <app-course-contents [course]="current"></app-course-contents>
-      </ng-container>
-    </ng-container>
-  </ng-container>
-</section>
+.draft-edit-field input {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.92rem;
+  color: var(--surface-900);
+  background: #fff;
+}
 
-<ng-template #loadingState>
-  <div class="state state--info">Carregando informacoes do curso...</div>
-</ng-template>
+.draft-edit-field input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
 
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
+.draft-save-button {
+  justify-self: start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
+  cursor: pointer;
+}
 
-<ng-template #emptyGroups>
-  <div class="state state--info">Nenhuma turma cadastrada para este curso ainda.</div>
-</ng-template>
-````
+.draft-save-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter, map, switchMap } from 'rxjs';
-import { finalize } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+}
 
-import { CoursesService } from '../../core/services/courses.service';
-import { CourseDto, ClassGroupDto } from '../../core/api/courses.api';
-import { CourseActivitiesComponent } from './course-activities.component';
-import { CourseContentsComponent } from './course-contents.component';
+.status-badge[data-status='Publicado'] {
+  background: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+}
 
-@Component({
-  selector: 'app-course-manage',
-  standalone: true,
-  imports: [CommonModule, RouterLink, CourseActivitiesComponent, CourseContentsComponent],
-  templateUrl: './course-manage.component.html',
-  styleUrl: './course-manage.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CourseManageComponent {
-  private readonly modeLabels: Record<number, string> = {
-    1: 'Turmas interativas',
-    2: 'Distribuição de materiais'
-  };
+.course-manage__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  color: var(--surface-500);
+  font-size: 0.95rem;
+}
 
-  private readonly route = inject(ActivatedRoute);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly coursesService = inject(CoursesService);
-  private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+.course-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
 
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly course = signal<CourseDto | null>(null);
-  readonly publishingCourse = signal(false);
-  readonly savingDraftDetails = signal(false);
-  readonly draftTitle = signal('');
-  readonly draftCategory = signal('');
+.summary-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 18px 46px -42px rgba(15, 23, 42, 0.6);
+  display: grid;
+  gap: 0.35rem;
+}
 
-  readonly totalCapacity = computed(() => {
-    const current = this.course();
-    if (!current) {
-      return 0;
-    }
-    return current.ClassGroups.reduce((sum, group) => sum + (group.Capacity ?? 0), 0);
-  });
+.summary-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--surface-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-  readonly totalApproved = computed(() => {
-    const current = this.course();
-    if (!current) {
-      return 0;
-    }
-    return current.ClassGroups.reduce((sum, group) => sum + (group.ApprovedEnrollments ?? 0), 0);
-  });
+.summary-card strong {
+  font-size: 2rem;
+  color: var(--surface-900);
+}
 
-  readonly totalPending = computed(() => {
-    const current = this.course();
-    if (!current) {
-      return 0;
-    }
-    return current.ClassGroups.reduce((sum, group) => sum + (group.PendingEnrollments ?? 0), 0);
-  });
+.summary-card span {
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
 
-  readonly materialsClassGroup = computed(() => {
-    const current = this.course();
-    if (!current) {
-      return null;
-    }
-    return current.ClassGroups.find(group => group.IsMaterialsDistribution) ?? null;
-  });
+.course-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
 
-  constructor() {
-    this.route.paramMap
-      .pipe(
-        map(params => params.get('courseId')),
-        filter((courseId): courseId is string => Boolean(courseId)),
-        switchMap(courseId => this.coursesService.getCourseById(courseId)),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: course => {
-          this.course.set(course);
-          this.draftTitle.set(course.Title ?? '');
-          this.draftCategory.set(course.CategoryName ?? '');
-          this.error.set(null);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.course.set(null);
-          this.error.set('Nao foi possivel carregar os detalhes do curso.');
-          this.loading.set(false);
-        }
-      });
-  }
+.course-details h3 {
+  margin: 0 0 0.75rem;
+  color: var(--surface-700);
+}
 
-  statusLabel(course: CourseDto | null): string {
-    if (!course) {
-      return '';
-    }
-    return course.IsPublished ? 'Publicado' : 'Rascunho';
-  }
+.course-details dl {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
 
-  modeLabel(course: CourseDto | null): string {
-    if (!course) {
-      return '';
-    }
-    return this.modeLabels[course.Mode] ?? 'Modalidade desconhecida';
-  }
+.course-details dt {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--surface-500);
+  letter-spacing: 0.08em;
+}
 
-  featureLabel(enabled: boolean): string {
-    return enabled ? 'Ativo' : 'Desativado';
-  }
+.course-details dd {
+  margin: 0.1rem 0 0;
+  color: var(--surface-700);
+}
 
-  publishedLabel(course: CourseDto | null): string {
-    if (!course) {
-      return 'Nunca publicado';
-    }
-    if (!course.IsPublished || !course.PublishedAt) {
-      return 'Nunca publicado';
-    }
-    return new Date(course.PublishedAt).toLocaleDateString('pt-BR');
-  }
+.materials-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
 
-  createdLabel(course: CourseDto | null): string {
-    if (!course) {
-      return '';
-    }
-    return new Date(course.CreatedAt).toLocaleDateString('pt-BR');
-  }
+.materials-info h4 {
+  margin: 0 0 0.5rem;
+  color: #1d4ed8;
+}
 
-  publishCourse(): void {
-    const current = this.course();
-    if (!current || current.IsPublished || this.publishingCourse()) {
-      return;
-    }
+.materials-info p {
+  margin: 0;
+  color: var(--surface-600);
+}
 
-    this.publishingCourse.set(true);
-    this.coursesService
-      .updateCourse(current.Id, {
-        Title: current.Title,
-        ShortDescription: current.ShortDescription,
-        DetailedDescription: current.DetailedDescription ?? undefined,
-        Mode: current.Mode,
-        CategoryName: current.CategoryName,
-        EnableForum: current.EnableForum,
-        EnableChat: current.EnableChat,
-        IsPublished: true,
-        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
-        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.publishingCourse.set(false))
-      )
-      .subscribe({
-        next: () => {
-          this.course.set({
-            ...current,
-            IsPublished: true,
-            PublishedAt: current.PublishedAt ?? new Date().toISOString()
-          });
-          this.toastr.success('Curso publicado com sucesso.');
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel publicar o curso.');
-        }
-      });
-  }
+.course-groups {
+  display: grid;
+  gap: 1.5rem;
+}
 
-  onDraftTitleChange(value: string): void {
-    this.draftTitle.set(value ?? '');
-  }
+.course-groups header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
 
-  onDraftCategoryChange(value: string): void {
-    this.draftCategory.set(value ?? '');
-  }
+.course-groups__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
 
-  saveDraftDetails(): void {
-    const current = this.course();
-    if (!current || current.IsPublished || this.savingDraftDetails()) {
-      return;
-    }
+.course-groups__create {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
 
-    const title = (this.draftTitle() ?? '').trim();
-    const category = (this.draftCategory() ?? '').trim();
-    if (!title || !category) {
-      this.toastr.error('Informe titulo e categoria para salvar o rascunho.');
-      return;
-    }
+.course-groups__create:hover {
+  transform: translateY(-1px);
+}
 
-    this.savingDraftDetails.set(true);
-    this.coursesService
-      .updateCourse(current.Id, {
-        Title: title,
-        ShortDescription: current.ShortDescription,
-        DetailedDescription: current.DetailedDescription ?? undefined,
-        Mode: current.Mode,
-        CategoryName: category,
-        EnableForum: current.EnableForum,
-        EnableChat: current.EnableChat,
-        IsPublished: false,
-        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
-        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.savingDraftDetails.set(false))
-      )
-      .subscribe({
-        next: () => {
-          this.course.set({
-            ...current,
-            Title: title,
-            CategoryName: category
-          });
-          this.toastr.success('Rascunho atualizado com sucesso.');
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel salvar as alteracoes do rascunho.');
-        }
-      });
-  }
+.course-groups h3 {
+  margin: 0;
+  color: var(--surface-700);
+}
 
-  goToCreateClassGroup(): void {
-    const course = this.course();
-    this.router.navigate(['/class-groups/create'], {
-      queryParams: course?.Id ? { courseId: course.Id } : undefined
-    });
-  }
+.groups-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
 
-  classGroupOccupancy(group: ClassGroupDto): number {
-    if (!group.Capacity) {
-      return 0;
-    }
-    return Math.min(100, Math.round((group.ApprovedEnrollments / group.Capacity) * 100));
-  }
+.group-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 40px -38px rgba(15, 23, 42, 0.5);
+  display: grid;
+  gap: 1rem;
+}
 
-  navigateToClassGroup(group: ClassGroupDto): void {
-    if (!group?.Id) {
-      return;
-    }
-    this.router.navigate(['/class-groups', group.Id, 'manage']);
-  }
+.group-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.group-card__header h4 {
+  margin: 0;
+  color: var(--surface-900);
+  font-size: 1.2rem;
+}
+
+.group-card__header p {
+  margin: 0.35rem 0 0;
+  color: var(--surface-500);
+  font-size: 0.95rem;
+}
+
+.group-card__stats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.group-card__stats dt {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+  margin-bottom: 0.25rem;
+}
+
+.group-card__stats dd {
+  margin: 0;
+  color: var(--surface-700);
+  font-size: 0.95rem;
+}
+
+.group-card__occupancy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.group-card__occupancy label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.group-card__occupancy .progress {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+}
+
+.group-card__occupancy .progress span {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(56, 189, 248, 0.9));
+}
+
+.group-card__occupancy small {
+  color: var(--surface-500);
+}
+
+.group-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.badge--materials {
+  background: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+}
+
+.state {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--surface-600);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+.state--info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
 }
 ````
 
@@ -25647,7 +25196,8 @@ public class ActivityRepository(AppDbContext context)
             .Include(activity => activity.ClassGroup)
             .Include(activity => activity.Audiences)
                 .ThenInclude(audience => audience.ClassGroup)
-            .Include(activity => activity.Attachments);
+            .Include(activity => activity.Attachments)
+                .ThenInclude(attachment => attachment.MediaResource);
     }
 
     protected override IQueryable<Activity> ApplyIncludesList(IQueryable<Activity> query)
@@ -26878,6 +26428,7 @@ export class ClassGroupManageComponent {
           this.classGroup.set(group);
           this.course.set(course);
           this.hydrateStudentNamesFromEnrollments(group.Enrollments ?? []);
+          this.ensureStudentNames((group.Enrollments ?? []).map(item => item.StudentId));
           this.error.set(null);
           this.loading.set(false);
           this.reloadThreads();
@@ -27376,20 +26927,39 @@ export class ClassGroupManageComponent {
     return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
   }
 
+  enrollmentStudentName(enrollment: ClassEnrollmentDto): string {
+    const cachedName = this.studentNames().get(enrollment.StudentId)?.trim();
+    const enrollmentName = enrollment.StudentName?.trim();
+    return cachedName || enrollmentName || 'Aluno';
+  }
+
   private hydrateStudentNamesFromEnrollments(enrollments: ClassEnrollmentDto[]): void {
     if (!enrollments?.length) {
       return;
     }
     const current = new Map(this.studentNames());
     enrollments.forEach(enrollment => {
-      current.set(enrollment.StudentId, enrollment.StudentName);
+      const name = enrollment.StudentName?.trim();
+      if (name) {
+        current.set(enrollment.StudentId, name);
+      }
     });
     this.studentNames.set(current);
   }
 
   private ensureStudentNames(studentIds: string[]): void {
     const cache = this.studentNames();
-    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
+    const pending = Array.from(
+      new Set(
+        studentIds.filter(id => {
+          if (!id) {
+            return false;
+          }
+          const cached = cache.get(id);
+          return !cached || !cached.trim();
+        })
+      )
+    );
     if (!pending.length) {
       return;
     }
@@ -27576,6 +27146,25 @@ export class ClassGroupsComponent {
   border: 1px solid rgba(148, 163, 184, 0.25);
   padding: 0.75rem 1rem;
   border-radius: 12px;
+}
+
+.attachments-list li.attachment-item--video {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.attachment-video {
+  margin-top: 0.65rem;
+  width: 100%;
+}
+
+.attachment-video video {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #000;
 }
 
 .muted {
@@ -28805,6 +28394,473 @@ export class CourseActivitiesComponent {
 }
 ````
 
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.html
+````html
+<section class="course-manage">
+  <header class="course-manage__header">
+    <a routerLink="/courses" class="back-link">← Voltar para cursos</a>
+
+    <ng-container *ngIf="course() as current">
+      <div class="course-manage__title">
+        <span class="status-badge" [attr.data-status]="statusLabel(current)">{{ statusLabel(current) }}</span>
+        <h2>{{ current.Title }}</h2>
+        <p class="subtitle">{{ current.ShortDescription }}</p>
+        <div class="course-manage__actions" *ngIf="!current.IsPublished">
+          <button
+            type="button"
+            class="publish-course-button"
+            (click)="publishCourse()"
+            [disabled]="publishingCourse()"
+          >
+            {{ publishingCourse() ? 'Publicando...' : 'Publicar curso' }}
+          </button>
+        </div>
+
+        <section class="draft-edit-card" *ngIf="!current.IsPublished">
+          <h3>Edicao do rascunho</h3>
+          <div class="draft-edit-grid">
+            <label class="draft-edit-field">
+              <span>Nome do curso</span>
+              <input
+                #draftTitleInput
+                type="text"
+                [value]="draftTitle()"
+                (input)="onDraftTitleChange(draftTitleInput.value)"
+                maxlength="120"
+              />
+            </label>
+            <label class="draft-edit-field">
+              <span>Categoria</span>
+              <input
+                #draftCategoryInput
+                type="text"
+                [value]="draftCategory()"
+                (input)="onDraftCategoryChange(draftCategoryInput.value)"
+                maxlength="150"
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            class="draft-save-button"
+            (click)="saveDraftDetails()"
+            [disabled]="savingDraftDetails()"
+          >
+            {{ savingDraftDetails() ? 'Salvando...' : 'Salvar alteracoes' }}
+          </button>
+        </section>
+      </div>
+
+      <div class="course-manage__meta">
+        <span>Instrutor: <strong>{{ current.InstructorName }}</strong></span>
+        <span>Modalidade: {{ modeLabel(current) }}</span>
+        <span>Criado em {{ createdLabel(current) }}</span>
+        <span>Publicação: {{ publishedLabel(current) }}</span>
+      </div>
+    </ng-container>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="course() as current">
+        <section class="course-summary">
+          <article class="summary-card">
+            <h3>Capacidade total</h3>
+            <strong>{{ totalCapacity() }}</strong>
+            <span>Somatório de vagas das turmas</span>
+          </article>
+
+          <article class="summary-card">
+            <h3>Inscrições aprovadas</h3>
+            <strong>{{ totalApproved() }}</strong>
+            <span>Alunos confirmados nas turmas</span>
+          </article>
+
+          <article class="summary-card">
+            <h3>Solicitações pendentes</h3>
+            <strong>{{ totalPending() }}</strong>
+            <span>Aguardando liberação do instrutor</span>
+          </article>
+        </section>
+
+        <section class="course-details">
+          <div>
+            <h3>Detalhes do curso</h3>
+            <dl>
+              <div>
+                <dt>Categoria</dt>
+                <dd>{{ current.CategoryName }}</dd>
+              </div>
+              <div>
+                <dt>Forum</dt>
+                <dd>{{ featureLabel(current.EnableForum) }}</dd>
+              </div>
+              <div>
+                <dt>Chat</dt>
+                <dd>{{ featureLabel(current.EnableChat) }}</dd>
+              </div>
+              <div *ngIf="current.EnrollmentInstructions">
+                <dt>Instruções para inscrição</dt>
+                <dd>{{ current.EnrollmentInstructions }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <article class="materials-info" *ngIf="materialsClassGroup() as materialsGroup">
+            <h4>Distribuição de materiais</h4>
+            <p>
+              O curso possui a turma <strong>{{ materialsGroup.Name }}</strong> marcada como distribuição de materiais.
+              Utilize essa turma para disponibilizar recursos assíncronos.
+            </p>
+          </article>
+        </section>
+
+        <section class="course-groups">
+          <header>
+            <h3>Turmas do curso</h3>
+            <div class="course-groups__actions">
+              <span>{{ current.ClassGroups.length }} turma(s)</span>
+              <button type="button" class="course-groups__create" (click)="goToCreateClassGroup()">
+                Criar turma
+              </button>
+            </div>
+          </header>
+
+          <ng-container *ngIf="current.ClassGroups.length; else emptyGroups">
+            <div class="groups-grid">
+              <article class="group-card" *ngFor="let group of current.ClassGroups">
+                <div class="group-card__header">
+                  <div>
+                    <h4>{{ group.Name }}</h4>
+                    <p *ngIf="group.Description">{{ group.Description }}</p>
+                  </div>
+                  <span class="badge" [class.badge--materials]="group.IsMaterialsDistribution">
+                    {{ group.IsMaterialsDistribution ? 'Materiais' : 'Turma interativa' }}
+                  </span>
+                </div>
+
+                <dl class="group-card__stats">
+                  <div>
+                    <dt>Capacidade</dt>
+                    <dd>{{ group.Capacity }}</dd>
+                  </div>
+                  <div>
+                    <dt>Aprovados</dt>
+                    <dd>{{ group.ApprovedEnrollments }}</dd>
+                  </div>
+                  <div>
+                    <dt>Pendentes</dt>
+                    <dd>{{ group.PendingEnrollments }}</dd>
+                  </div>
+                  <div>
+                    <dt>Requer aprovação</dt>
+                    <dd>{{ group.RequiresApproval ? 'Sim' : 'Não' }}</dd>
+                  </div>
+                  <div *ngIf="group.EnrollmentOpensAt">
+                    <dt>Inscrições</dt>
+                    <dd>{{ group.EnrollmentOpensAt | date:'dd/MM/yyyy HH:mm' }} - {{ group.EnrollmentClosesAt | date:'dd/MM/yyyy HH:mm' }}</dd>
+                  </div>
+                  <div *ngIf="group.StartsAt || group.EndsAt">
+                    <dt>Agenda</dt>
+                    <dd>
+                      <span *ngIf="group.StartsAt">De {{ group.StartsAt | date:'dd/MM/yyyy' }}</span>
+                      <span *ngIf="group.EndsAt"> até {{ group.EndsAt | date:'dd/MM/yyyy' }}</span>
+                    </dd>
+                  </div>
+                </dl>
+
+                <div class="group-card__occupancy">
+                  <label>Ocupação</label>
+                  <div class="progress">
+                    <span [style.width.%]="classGroupOccupancy(group)"></span>
+                  </div>
+                  <small>{{ group.ApprovedEnrollments }} de {{ group.Capacity }} alunos ({{ classGroupOccupancy(group) }}%)</small>
+                </div>
+
+                <footer class="group-card__actions">
+                  <a
+                    class="back-link"
+                    role="button"
+                    (click)="navigateToClassGroup(group)"
+                  >
+                    Gerenciar turma
+                  </a>
+                </footer>
+              </article>
+            </div>
+          </ng-container>
+        </section>
+
+        <app-course-activities [course]="current"></app-course-activities>
+        <app-course-contents [course]="current"></app-course-contents>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando informacoes do curso...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyGroups>
+  <div class="state state--info">Nenhuma turma cadastrada para este curso ainda.</div>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-manage.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter, map, switchMap } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
+
+import { CoursesService } from '../../core/services/courses.service';
+import { CourseDto, ClassGroupDto } from '../../core/api/courses.api';
+import { CourseActivitiesComponent } from './course-activities.component';
+import { CourseContentsComponent } from './course-contents.component';
+
+@Component({
+  selector: 'app-course-manage',
+  standalone: true,
+  imports: [CommonModule, RouterLink, CourseActivitiesComponent, CourseContentsComponent],
+  templateUrl: './course-manage.component.html',
+  styleUrl: './course-manage.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CourseManageComponent {
+  private readonly modeLabels: Record<number, string> = {
+    1: 'Turmas interativas',
+    2: 'Distribuição de materiais'
+  };
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly coursesService = inject(CoursesService);
+  private readonly router = inject(Router);
+  private readonly toastr = inject(ToastrService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly course = signal<CourseDto | null>(null);
+  readonly publishingCourse = signal(false);
+  readonly savingDraftDetails = signal(false);
+  readonly draftTitle = signal('');
+  readonly draftCategory = signal('');
+
+  readonly totalCapacity = computed(() => {
+    const current = this.course();
+    if (!current) {
+      return 0;
+    }
+    return current.ClassGroups.reduce((sum, group) => sum + (group.Capacity ?? 0), 0);
+  });
+
+  readonly totalApproved = computed(() => {
+    const current = this.course();
+    if (!current) {
+      return 0;
+    }
+    return current.ClassGroups.reduce((sum, group) => sum + (group.ApprovedEnrollments ?? 0), 0);
+  });
+
+  readonly totalPending = computed(() => {
+    const current = this.course();
+    if (!current) {
+      return 0;
+    }
+    return current.ClassGroups.reduce((sum, group) => sum + (group.PendingEnrollments ?? 0), 0);
+  });
+
+  readonly materialsClassGroup = computed(() => {
+    const current = this.course();
+    if (!current) {
+      return null;
+    }
+    return current.ClassGroups.find(group => group.IsMaterialsDistribution) ?? null;
+  });
+
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        map(params => params.get('courseId')),
+        filter((courseId): courseId is string => Boolean(courseId)),
+        switchMap(courseId => this.coursesService.getCourseById(courseId)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: course => {
+          this.course.set(course);
+          this.draftTitle.set(course.Title ?? '');
+          this.draftCategory.set(course.CategoryName ?? '');
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.course.set(null);
+          this.error.set('Nao foi possivel carregar os detalhes do curso.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  statusLabel(course: CourseDto | null): string {
+    if (!course) {
+      return '';
+    }
+    return course.IsPublished ? 'Publicado' : 'Rascunho';
+  }
+
+  modeLabel(course: CourseDto | null): string {
+    if (!course) {
+      return '';
+    }
+    return this.modeLabels[course.Mode] ?? 'Modalidade desconhecida';
+  }
+
+  featureLabel(enabled: boolean): string {
+    return enabled ? 'Ativo' : 'Desativado';
+  }
+
+  publishedLabel(course: CourseDto | null): string {
+    if (!course) {
+      return 'Nunca publicado';
+    }
+    if (!course.IsPublished || !course.PublishedAt) {
+      return 'Nunca publicado';
+    }
+    return new Date(course.PublishedAt).toLocaleDateString('pt-BR');
+  }
+
+  createdLabel(course: CourseDto | null): string {
+    if (!course) {
+      return '';
+    }
+    return new Date(course.CreatedAt).toLocaleDateString('pt-BR');
+  }
+
+  publishCourse(): void {
+    const current = this.course();
+    if (!current || current.IsPublished || this.publishingCourse()) {
+      return;
+    }
+
+    this.publishingCourse.set(true);
+    this.coursesService
+      .updateCourse(current.Id, {
+        Title: current.Title,
+        ShortDescription: current.ShortDescription,
+        DetailedDescription: current.DetailedDescription ?? undefined,
+        Mode: current.Mode,
+        CategoryName: current.CategoryName,
+        EnableForum: current.EnableForum,
+        EnableChat: current.EnableChat,
+        IsPublished: true,
+        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
+        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.publishingCourse.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.course.set({
+            ...current,
+            IsPublished: true,
+            PublishedAt: current.PublishedAt ?? new Date().toISOString()
+          });
+          this.toastr.success('Curso publicado com sucesso.');
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel publicar o curso.');
+        }
+      });
+  }
+
+  onDraftTitleChange(value: string): void {
+    this.draftTitle.set(value ?? '');
+  }
+
+  onDraftCategoryChange(value: string): void {
+    this.draftCategory.set(value ?? '');
+  }
+
+  saveDraftDetails(): void {
+    const current = this.course();
+    if (!current || current.IsPublished || this.savingDraftDetails()) {
+      return;
+    }
+
+    const title = (this.draftTitle() ?? '').trim();
+    const category = (this.draftCategory() ?? '').trim();
+    if (!title || !category) {
+      this.toastr.error('Informe titulo e categoria para salvar o rascunho.');
+      return;
+    }
+
+    this.savingDraftDetails.set(true);
+    this.coursesService
+      .updateCourse(current.Id, {
+        Title: title,
+        ShortDescription: current.ShortDescription,
+        DetailedDescription: current.DetailedDescription ?? undefined,
+        Mode: current.Mode,
+        CategoryName: category,
+        EnableForum: current.EnableForum,
+        EnableChat: current.EnableChat,
+        IsPublished: false,
+        EnrollmentInstructions: current.EnrollmentInstructions ?? undefined,
+        ThumbnailMediaId: current.ThumbnailMediaId ?? undefined
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.savingDraftDetails.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.course.set({
+            ...current,
+            Title: title,
+            CategoryName: category
+          });
+          this.toastr.success('Rascunho atualizado com sucesso.');
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel salvar as alteracoes do rascunho.');
+        }
+      });
+  }
+
+  goToCreateClassGroup(): void {
+    const course = this.course();
+    this.router.navigate(['/class-groups/create'], {
+      queryParams: course?.Id ? { courseId: course.Id } : undefined
+    });
+  }
+
+  classGroupOccupancy(group: ClassGroupDto): number {
+    if (!group.Capacity) {
+      return 0;
+    }
+    return Math.min(100, Math.round((group.ApprovedEnrollments / group.Capacity) * 100));
+  }
+
+  navigateToClassGroup(group: ClassGroupDto): void {
+    if (!group?.Id) {
+      return;
+    }
+    this.router.navigate(['/class-groups', group.Id, 'manage']);
+  }
+}
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.css
 ````css
 .forum {
@@ -29045,44 +29101,6 @@ export class CourseActivitiesComponent {
 .state--error {
   background: rgba(248, 113, 113, 0.18);
   color: #b91c1c;
-}
-````
-
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
-````json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "UploadsConfiguration" : {
-    "PathDir": "Uploads"
-  },
-  "Minio": {
-    "Endpoint": "https://minio.dadyilha.com.br",
-    "AccessKey": "admin",
-    "SecretKey": "admin123",
-    "Region": "us-east-1",
-    "BucketName": "meajudaai-development"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal_Development;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
-  },
-  "Jwt": {
-    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
-    "Issuer": "ProjetoFinal.Api",
-    "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 1202
-  },
-  "RhbkConfiguration": {
-    "Realm": "",
-    "ClientId": "",
-    "ClientSecret": "",
-    "KeycloakBaseUrl": "",
-    "RedirectUri": ""
-  }
 }
 ````
 
@@ -31298,7 +31316,7 @@ export class ActivitiesComponent {
                 <tbody>
                   <tr *ngFor="let enrollment of enrollments()">
                     <td>
-                      <span class="student-name">{{ enrollment.StudentName }}</span>
+                      <span class="student-name">{{ enrollmentStudentName(enrollment) }}</span>
                     </td>
                     <td>
                       <span class="status-badge" [class]="statusBadgeClass(enrollment.Status)">
@@ -31688,7 +31706,7 @@ export class ActivitiesComponent {
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.ts
 ````typescript
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -31724,7 +31742,7 @@ interface SubmissionAttachmentDraft {
   styleUrl: './course-activity-viewer.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CourseActivityViewerComponent {
+export class CourseActivityViewerComponent implements OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly activitiesService = inject(ActivitiesService);
@@ -31740,6 +31758,8 @@ export class CourseActivityViewerComponent {
   readonly activity = signal<ActivityDto | null>(null);
   readonly courseId = signal<string | null>(null);
   readonly downloading = signal<string | null>(null);
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
   readonly existingSubmission = signal<ActivitySubmissionDto | null>(null);
   readonly submissionLoading = signal(false);
   readonly submissionError = signal<string | null>(null);
@@ -31769,6 +31789,7 @@ export class CourseActivityViewerComponent {
     monitoria: 'Encaminhar para monitoria',
     proximo_modulo: 'Liberar proximo modulo'
   };
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg', 'mov', 'webm', 'avi'];
 
   constructor() {
     this.route.paramMap
@@ -31787,7 +31808,11 @@ export class CourseActivityViewerComponent {
       )
       .subscribe({
         next: activity => {
+          this.revokeVideoUrls();
+          this.videoUrls.set({});
+          this.videoLoading.set({});
           this.activity.set(activity);
+          this.preloadActivityVideos(activity.Attachments ?? []);
           this.error.set(null);
           this.loading.set(false);
           this.resetSubmissionState();
@@ -31801,6 +31826,10 @@ export class CourseActivityViewerComponent {
           this.loading.set(false);
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.revokeVideoUrls();
   }
 
   readonly backLink = computed(() => {
@@ -31818,6 +31847,25 @@ export class CourseActivityViewerComponent {
   downloadSubmissionAttachment(attachment: SubmissionAttachmentDto): void {
     const fallback = attachment.Media?.OriginalFileName ?? 'Envio do aluno';
     this.downloadMedia(attachment.MediaResourceId, fallback);
+  }
+
+  isVideoActivityAttachment(attachment: ActivityAttachmentDto): boolean {
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? attachment.Caption ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(mediaResourceId: string): string | null {
+    return this.videoUrls()[mediaResourceId] ?? null;
+  }
+
+  videoIsLoading(mediaResourceId: string): boolean {
+    return Boolean(this.videoLoading()[mediaResourceId]);
   }
 
   handleSubmissionFiles(event: Event): void {
@@ -31977,6 +32025,34 @@ export class CourseActivityViewerComponent {
       });
   }
 
+  private preloadActivityVideos(attachments: ActivityAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoActivityAttachment(attachment))
+      .forEach(attachment => this.loadActivityVideo(attachment.MediaResourceId));
+  }
+
+  private loadActivityVideo(mediaResourceId: string): void {
+    if (!mediaResourceId || this.videoIsLoading(mediaResourceId) || this.videoUrlFor(mediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [mediaResourceId]: true }));
+    this.mediaService
+      .download(mediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [mediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video do anexo.');
+        }
+      });
+  }
+
   private fetchStudentSubmission(activityId: string): void {
     const student = this.currentUser();
     if (!student) {
@@ -32070,461 +32146,11 @@ export class CourseActivityViewerComponent {
         Media: item.media
       }));
   }
-}
-````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.css
-````css
-.courses {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-}
-
-.courses__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.courses__header h2 {
-  margin: 0;
-  font-size: 1.6rem;
-  color: var(--surface-900);
-}
-
-.courses__actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.courses__count {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--surface-500);
-}
-
-.courses__create {
-  border: none;
-  border-radius: 999px;
-  padding: 0.6rem 1.35rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: transform 0.15s ease, opacity 0.2s ease;
-}
-
-.courses__create:hover {
-  transform: translateY(-1px);
-}
-
-@media (max-width: 640px) {
-  .courses__actions {
-    width: 100%;
-    justify-content: space-between;
+  private revokeVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
   }
-
-  .courses__create {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-.courses__filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  align-items: end;
-}
-
-.filter-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: var(--surface-500);
-}
-
-.filter-field input {
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 14px;
-  padding: 0.6rem 0.9rem;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--surface-900);
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.filter-field input:focus {
-  outline: none;
-  border-color: var(--accent-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
-.filter-reset {
-  border: none;
-  border-radius: 14px;
-  padding: 0.65rem 1rem;
-  background: rgba(148, 163, 184, 0.2);
-  color: var(--surface-600);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.filter-reset:hover {
-  background: rgba(148, 163, 184, 0.35);
-}
-
-.courses__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-}
-
-.course-card {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 22px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 24px 60px -48px rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(99, 102, 241, 0.08);
-}
-
-.course-card[data-status='Rascunho'] {
-  border: 1px dashed rgba(148, 163, 184, 0.8);
-  background: rgba(248, 250, 252, 0.9);
-}
-
-.course-card__header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-}
-
-.course-card__status {
-  border-radius: 999px;
-  padding: 0.25rem 0.75rem;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-}
-
-.course-card[data-status='Rascunho'] .course-card__status {
-  background: rgba(148, 163, 184, 0.25);
-  color: var(--surface-700);
-}
-
-.course-card h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  color: var(--surface-900);
-  line-height: 1.35;
-}
-
-.course-card__meta {
-  display: grid;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: var(--surface-500);
-}
-
-.course-card__meta strong {
-  color: var(--surface-900);
-}
-
-.course-card__footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 1.5rem;
-}
-
-.progress {
-  flex: 1;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.progress label {
-  font-size: 0.85rem;
-  color: var(--surface-500);
-}
-
-.progress__bar {
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.35);
-  overflow: hidden;
-}
-
-.progress__bar span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-}
-
-.stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-  color: var(--surface-500);
-}
-
-.stats strong {
-  font-size: 1.2rem;
-  color: var(--surface-900);
-}
-
-.course-card__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.course-card__action {
-  border: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.4rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.2s ease;
-}
-
-.course-card__action:hover {
-  transform: translateY(-1px);
-}
-
-.course-card__action[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.course-card__action--outlined {
-  background: transparent;
-  color: var(--accent-600);
-  border: 1px solid rgba(99, 102, 241, 0.4);
-}
-
-.course-card__action--secondary {
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-700);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.course-card__action--danger {
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.course-card__actions small {
-  font-size: 0.78rem;
-  color: var(--surface-500);
-}
-
-.enrollment-panel {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
-  z-index: 20;
-}
-
-.enrollment-panel__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(2px);
-}
-
-.enrollment-panel__content {
-  position: relative;
-  width: min(720px, 100%);
-  max-height: calc(100vh - 4rem);
-  overflow: auto;
-  background: #fff;
-  border-radius: 24px;
-  padding: 2rem;
-  box-shadow: 0 35px 80px -48px rgba(15, 23, 42, 0.8);
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.enrollment-panel__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-
-.enrollment-panel__header h3 {
-  margin: 0;
-  font-size: 1.6rem;
-}
-
-.enrollment-panel__header p {
-  margin: 0.25rem 0 0;
-  color: var(--surface-500);
-}
-
-.eyebrow {
-  font-size: 0.85rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-600);
-  margin: 0 0 0.35rem;
-}
-
-.enrollment-panel__close {
-  border: none;
-  background: rgba(148, 163, 184, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  cursor: pointer;
-  height: fit-content;
-}
-
-.group-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.group-option {
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 18px;
-  padding: 1rem 1.25rem;
-  cursor: pointer;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.group-option--selected {
-  border-color: var(--accent-500);
-  box-shadow: 0 10px 30px -20px rgba(99, 102, 241, 0.6);
-}
-
-.group-option header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.group-option header h4 {
-  margin: 0;
-}
-
-.group-option dl {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-.group-option dl dt {
-  font-weight: 600;
-  color: var(--surface-500);
-}
-
-.group-option dl dd {
-  margin: 0.15rem 0 0;
-  font-weight: 600;
-}
-
-.enrollment-code {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.enrollment-code input {
-  border-radius: 12px;
-  border: 1px solid rgba(99, 102, 241, 0.4);
-  padding: 0.6rem 0.9rem;
-}
-
-.input--invalid {
-  border-color: var(--danger-500, #f87171);
-}
-
-.error {
-  color: var(--danger-500, #f87171);
-  font-size: 0.85rem;
-}
-
-.enrollment-panel__submit {
-  border: none;
-  border-radius: 16px;
-  padding: 0.9rem 1.2rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  margin-top: 0.5rem;
-}
-
-.enrollment-panel__submit[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@media (max-width: 640px) {
-  .course-card__footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .stats {
-    justify-items: stretch;
-    text-align: center;
-  }
-}
-
-.courses__header .description {
-  margin: 0.25rem 0 0;
-  color: var(--surface-500);
-  font-size: 0.95rem;
-}
-
-.state {
-  padding: 1.5rem;
-  border-radius: 16px;
-  text-align: center;
-  font-weight: 500;
-  background: rgba(148, 163, 184, 0.15);
-  color: var(--surface-600);
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.18);
-  color: #b91c1c;
 }
 ````
 
@@ -32587,6 +32213,44 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.4);
   outline-offset: 2px;
+}
+````
+
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
+````json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "UploadsConfiguration" : {
+    "PathDir": "Uploads"
+  },
+  "Minio": {
+    "Endpoint": "https://minio.dadyilha.com.br",
+    "AccessKey": "admin",
+    "SecretKey": "admin123",
+    "Region": "us-east-1",
+    "BucketName": "meajudaai-development"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal_Development;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+  },
+  "Jwt": {
+    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
+    "Issuer": "ProjetoFinal.Api",
+    "Audience": "ProjetoFinal.Client",
+    "ExpiresInMinutes": 1202
+  },
+  "RhbkConfiguration": {
+    "Realm": "",
+    "ClientId": "",
+    "ClientSecret": "",
+    "KeycloakBaseUrl": "",
+    "RedirectUri": ""
+  }
 }
 ````
 
@@ -33008,7 +32672,9 @@ public class AutoMapperProfileDto : Profile
             .ForMember(dest => dest.PendingEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Pending)))
             .ForMember(dest => dest.Enrollments, opt => opt.MapFrom(src => src.Enrollments));
 
-        CreateMap<ClassEnrollment, ClassEnrollmentDto>().ReverseMap();
+        CreateMap<ClassEnrollment, ClassEnrollmentDto>()
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty))
+            .ReverseMap();
 
         CreateMap<CourseContent, CourseContentDto>()
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
@@ -33485,12 +33151,26 @@ dd{margin:4px 0 0;color:var(--color-text-muted)}
 
     <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
       <ul class="attachments-list">
-        <li *ngFor="let attachment of current.Attachments">
+        <li
+          *ngFor="let attachment of current.Attachments"
+          [class.attachment-item--video]="isVideoActivityAttachment(attachment)"
+        >
           <div>
             <strong>{{ attachment.Caption || 'Anexo' }}</strong>
             <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+            <div class="attachment-video" *ngIf="isVideoActivityAttachment(attachment)">
+              <video
+                *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl; else videoLoadingState"
+                controls
+                [src]="videoUrl"
+              ></video>
+              <ng-template #videoLoadingState>
+                <p class="muted">{{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando video...' : 'Video indisponivel.' }}</p>
+              </ng-template>
+            </div>
           </div>
           <button
+            *ngIf="!isVideoActivityAttachment(attachment)"
             type="button"
             class="button button--ghost"
             (click)="downloadAttachment(attachment)"
@@ -33677,6 +33357,461 @@ dd{margin:4px 0 0;color:var(--color-text-muted)}
 <ng-template #notReviewed>
   <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
 </ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.css
+````css
+.courses {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.courses__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.courses__header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--surface-900);
+}
+
+.courses__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.courses__count {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--surface-500);
+}
+
+.courses__create {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.35rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.courses__create:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .courses__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .courses__create {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.courses__filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--surface-500);
+}
+
+.filter-field input {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 14px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--surface-900);
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-field input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.filter-reset {
+  border: none;
+  border-radius: 14px;
+  padding: 0.65rem 1rem;
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--surface-600);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filter-reset:hover {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.courses__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.course-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 22px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 24px 60px -48px rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+.course-card[data-status='Rascunho'] {
+  border: 1px dashed rgba(148, 163, 184, 0.8);
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.course-card__header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.course-card__status {
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+}
+
+.course-card[data-status='Rascunho'] .course-card__status {
+  background: rgba(148, 163, 184, 0.25);
+  color: var(--surface-700);
+}
+
+.course-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--surface-900);
+  line-height: 1.35;
+}
+
+.course-card__meta {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--surface-500);
+}
+
+.course-card__meta strong {
+  color: var(--surface-900);
+}
+
+.course-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.progress {
+  flex: 1;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.progress label {
+  font-size: 0.85rem;
+  color: var(--surface-500);
+}
+
+.progress__bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  overflow: hidden;
+}
+
+.progress__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--surface-500);
+}
+
+.stats strong {
+  font-size: 1.2rem;
+  color: var(--surface-900);
+}
+
+.course-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.course-card__action {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.course-card__action:hover {
+  transform: translateY(-1px);
+}
+
+.course-card__action[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.course-card__action--outlined {
+  background: transparent;
+  color: var(--accent-600);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.course-card__action--secondary {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-700);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.course-card__action--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.course-card__actions small {
+  font-size: 0.78rem;
+  color: var(--surface-500);
+}
+
+.enrollment-panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  z-index: 20;
+}
+
+.enrollment-panel__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.enrollment-panel__content {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
+  background: #fff;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 35px 80px -48px rgba(15, 23, 42, 0.8);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.enrollment-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.enrollment-panel__header h3 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.enrollment-panel__header p {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-600);
+  margin: 0 0 0.35rem;
+}
+
+.enrollment-panel__close {
+  border: none;
+  background: rgba(148, 163, 184, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.group-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.group-option {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 18px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.group-option--selected {
+  border-color: var(--accent-500);
+  box-shadow: 0 10px 30px -20px rgba(99, 102, 241, 0.6);
+}
+
+.group-option header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.group-option header h4 {
+  margin: 0;
+}
+
+.group-option dl {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.group-option dl dt {
+  font-weight: 600;
+  color: var(--surface-500);
+}
+
+.group-option dl dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.enrollment-code {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.enrollment-code input {
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  padding: 0.6rem 0.9rem;
+}
+
+.input--invalid {
+  border-color: var(--danger-500, #f87171);
+}
+
+.error {
+  color: var(--danger-500, #f87171);
+  font-size: 0.85rem;
+}
+
+.enrollment-panel__submit {
+  border: none;
+  border-radius: 16px;
+  padding: 0.9rem 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.enrollment-panel__submit[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .course-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats {
+    justify-items: stretch;
+    text-align: center;
+  }
+}
+
+.courses__header .description {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+  font-size: 0.95rem;
+}
+
+.state {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--surface-600);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.html
@@ -33964,248 +34099,6 @@ dd{margin:4px 0 0;color:var(--color-text-muted)}
 </ng-template>
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
-
-import { ForumService } from '../../core/services/forum.service';
-import { CoursesService } from '../../core/services/courses.service';
-import { ForumThreadCreatePayload, ForumThreadListItem } from '../../core/api/forum.api';
-import { AuthService } from '../../core/services/auth.service';
-import { ClassGroupDto, CourseDto } from '../../core/api/courses.api';
-import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
-
-@Component({
-  selector: 'app-forum',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
-  templateUrl: './forum.component.html',
-  styleUrl: './forum.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ForumComponent {
-  private readonly forumService = inject(ForumService);
-  private readonly coursesService = inject(CoursesService);
-  private readonly authService = inject(AuthService);
-  private readonly toastr = inject(ToastrService);
-  private readonly fb = inject(FormBuilder);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
-  private courseLookup = new Map<string, string>();
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly threads = signal<ForumThreadListItem[]>([]);
-  readonly courses = signal<CourseDto[]>([]);
-  readonly isCreateVisible = signal(false);
-  readonly isSubmitting = signal(false);
-
-  readonly form = this.fb.group({
-    courseId: this.fb.nonNullable.control('', [Validators.required]),
-    classGroupId: this.fb.nonNullable.control('', [Validators.required]),
-    title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(180)]),
-    description: this.fb.control<string | null>('', [Validators.maxLength(1200)]),
-    isPinned: this.fb.nonNullable.control(false)
-  });
-
-  readonly availableClassGroups = computed<ClassGroupDto[]>(() => {
-    const courseId = this.form.controls.courseId.value;
-    const course = this.courses().find(item => item.Id === courseId);
-    return course?.ClassGroups ?? [];
-  });
-
-  readonly hasClassGroups = computed(() =>
-    this.courses().some(course =>
-      (course.ClassGroups ?? []).length > 0
-    )
-  );
-  readonly isInstructorUser = computed(() => this.authService.isInstructorRole());
-
-  constructor() {
-    this.loadCourses();
-
-    this.form.controls.courseId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.syncClassGroupSelection());
-  }
-
-  trackByThread(_: number, item: ForumThreadListItem): string {
-    return item.id;
-  }
-
-  openCreateForm(): void {
-    if (!this.isInstructorUser()) {
-      this.toastr.warning('Apenas instrutores podem criar topicos.');
-      return;
-    }
-
-    if (!this.hasClassGroups()) {
-      this.toastr.warning('Nenhum curso com turmas disponiveis para criar topico.');
-      return;
-    }
-
-    this.isCreateVisible.set(true);
-    const firstCourse = this.findFirstCourseWithGroups();
-    const initialCourseId = firstCourse?.Id ?? this.form.controls.courseId.value ?? '';
-
-    this.form.patchValue({
-      courseId: initialCourseId,
-      classGroupId: '',
-      title: '',
-      description: '',
-      isPinned: false
-    });
-    this.syncClassGroupSelection();
-  }
-
-  cancelCreate(): void {
-    this.isCreateVisible.set(false);
-    this.form.reset({
-      courseId: '',
-      classGroupId: '',
-      title: '',
-      description: '',
-      isPinned: false
-    });
-  }
-
-  submit(): void {
-    if (!this.isInstructorUser()) {
-      this.toastr.warning('Apenas instrutores podem criar topicos.');
-      return;
-    }
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const currentUser = this.authService.currentUser();
-    if (!currentUser) {
-      this.toastr.error('Usuario nao autenticado.');
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-    const classGroups = this.availableClassGroups();
-    if (!classGroups.some(group => group.Id === raw.classGroupId)) {
-      this.toastr.error('Selecione uma turma valida para criar o topico.');
-      return;
-    }
-
-    const payload: ForumThreadCreatePayload = {
-      ClassGroupId: raw.classGroupId,
-      CreatedById: currentUser.id,
-      Title: raw.title.trim(),
-      Description: raw.description?.trim() || undefined,
-      IsPinned: raw.isPinned
-    };
-
-    this.isSubmitting.set(true);
-
-    this.forumService
-      .createThread(payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.toastr.success('Topico criado com sucesso.');
-          this.isSubmitting.set(false);
-          this.cancelCreate();
-          this.loadThreads();
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel criar o topico.');
-          this.isSubmitting.set(false);
-        }
-      });
-  }
-
-  openThread(threadId: string): void {
-    if (!threadId) {
-      return;
-    }
-    this.router.navigate(['/forum/threads', threadId]);
-  }
-
-  private loadCourses(): void {
-    this.coursesService
-      .getCoursesDto()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: courses => {
-          this.courses.set(courses);
-          this.syncInitialSelections(courses);
-          this.loadThreads();
-        },
-        error: () => {
-          this.error.set('Nao foi possivel carregar os cursos.');
-          this.loading.set(false);
-        }
-      });
-  }
-
-  private loadThreads(): void {
-    const lookup = new Map(this.courses().map(course => [course.Id, course.Title] as const));
-    this.courseLookup = lookup;
-
-    this.forumService
-      .getThreads(lookup)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: threads => {
-          this.threads.set(threads);
-          this.error.set(null);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('Nao foi possivel carregar os topicos do forum.');
-          this.loading.set(false);
-        }
-      });
-  }
-
-  private syncInitialSelections(courses: CourseDto[]): void {
-    if (!courses.length) {
-      this.form.reset({ courseId: '', classGroupId: '' });
-      return;
-    }
-
-    const firstAvailable = this.findFirstCourseWithGroups();
-    if (firstAvailable) {
-      this.form.controls.courseId.setValue(firstAvailable.Id, { emitEvent: false });
-      const firstGroup = (firstAvailable.ClassGroups ?? [])[0];
-      this.form.controls.classGroupId.setValue(firstGroup?.Id ?? '', { emitEvent: false });
-    }
-
-    this.syncClassGroupSelection();
-  }
-
-  private syncClassGroupSelection(): void {
-    const groups = this.availableClassGroups();
-    if (!groups.length) {
-      this.form.controls.classGroupId.setValue('', { emitEvent: false });
-      return;
-    }
-
-    const currentGroupId = this.form.controls.classGroupId.value;
-    if (!currentGroupId || !groups.some(group => group.Id === currentGroupId)) {
-      this.form.controls.classGroupId.setValue(groups[0].Id, { emitEvent: false });
-    }
-  }
-
-  private findFirstCourseWithGroups(): CourseDto | undefined {
-    return this.courses().find(course =>
-      (course.ClassGroups ?? []).length > 0
-    );
-  }
-}
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/app.component.html
 ````html
 <ng-container *ngIf="isAuthenticated(); else authRoutes">
@@ -34404,385 +34297,6 @@ export class AppComponent {
     }
   }
 }
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/core/services/courses.service.ts
-````typescript
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { catchError, map, of, shareReplay, Observable, throwError, tap } from 'rxjs';
-
-import { environment } from '../../../environments/environment';
-import { CourseDto, CoursesFilter, mapClassGroupsFromCourses, mapCoursesResponse } from '../api/courses.api';
-import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
-import { toHttpParams } from '../utils/http-params.util';
-
-export interface CreateCoursePayload {
-  Title: string;
-  ShortDescription: string;
-  DetailedDescription?: string;
-  Mode: number;
-  CategoryName: string;
-  EnableForum: boolean;
-  EnableChat: boolean;
-  EnrollmentInstructions?: string;
-  ThumbnailMediaId?: string;
-}
-
-export interface UpdateCoursePayload {
-  Title: string;
-  ShortDescription: string;
-  DetailedDescription?: string;
-  Mode: number;
-  CategoryName: string;
-  EnableForum: boolean;
-  EnableChat: boolean;
-  IsPublished: boolean;
-  EnrollmentInstructions?: string;
-  ThumbnailMediaId?: string;
-}
-
-@Injectable({ providedIn: 'root' })
-export class CoursesService {
-  private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.baseUrl;
-  private cache$?: Observable<ApiPagedResponse<CourseDto>>;
-
-  getCourseCards(filter: CoursesFilter = {}) {
-    return this.fetchCoursesDto(filter).pipe(map(mapCoursesResponse));
-  }
-
-  getCoursesDto(filter: CoursesFilter = {}) {
-    return this.fetchCoursesDto(filter).pipe(map(response => normalizePagedResponse(response).items));
-  }
-
-  getClassGroupRows(forceRefresh = false) {
-    return this.fetchCoursesDto({}, forceRefresh).pipe(
-      map(response => normalizePagedResponse(response).items),
-      map(courses => mapClassGroupsFromCourses(courses))
-    );
-  }
-
-  getCourseById(courseId: string) {
-    return this.http.get<CourseDto>(`${this.baseUrl}/courses/${courseId}`).pipe(
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  createCourse(payload: CreateCoursePayload) {
-    return this.http.post<CourseDto>(`${this.baseUrl}/courses`, payload).pipe(
-      tap(() => this.invalidateCache()),
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  updateCourse(courseId: string, payload: UpdateCoursePayload) {
-    return this.http.put<void>(`${this.baseUrl}/courses/${courseId}`, payload).pipe(
-      tap(() => this.invalidateCache()),
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  deleteCourse(courseId: string) {
-    return this.http.delete<void>(`${this.baseUrl}/courses/${courseId}`).pipe(
-      tap(() => this.invalidateCache()),
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  private fetchCoursesDto(filter: CoursesFilter = {}, forceRefresh = false): Observable<ApiPagedResponse<CourseDto>> {
-    if (forceRefresh || !this.cache$ || Object.keys(filter).length) {
-      const params = toHttpParams({ PageSize: 50, ...filter });
-      const request = this.http
-        .get<ApiPagedResponse<CourseDto>>(`${this.baseUrl}/courses`, { params })
-        .pipe(
-          catchError(() => of<ApiPagedResponse<CourseDto>>({ dados: [] })),
-          shareReplay({ bufferSize: 1, refCount: true })
-        );
-
-      if (!forceRefresh && Object.keys(filter).length === 0) {
-        this.cache$ = request;
-      }
-
-      return request;
-    }
-
-    return this.cache$;
-  }
-
-  private invalidateCache(): void {
-    this.cache$ = undefined;
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.html
-````html
-<section class="courses">
-  <header class="courses__header">
-    <div>
-      <h2>Cursos disponiveis</h2>
-      <p class="description">Escolha sua proxima trilha de aprendizado filtrando por nome, categoria ou instrutor.</p>
-    </div>
-    <div class="courses__actions">
-      <div class="courses__count">
-        {{ filteredCourses().length }} resultado{{ filteredCourses().length === 1 ? '' : 's' }}
-      </div>
-      <button
-        *ngIf="isInstructorUser()"
-        type="button"
-        class="courses__create"
-        (click)="goToCreateCourse()"
-      >
-        <i class="bi bi-plus-lg" aria-hidden="true"></i>
-        Criar novo curso
-      </button>
-    </div>
-  </header>
-
-  <section class="courses__filters" aria-label="Filtros de cursos">
-    <label class="filter-field">
-      <span>Nome do curso</span>
-      <input
-        #titleInput
-        type="search"
-        placeholder="Busque por titulo"
-        [value]="titleFilter()"
-        (input)="onTitleFilterChange(titleInput.value)"
-      />
-    </label>
-
-    <label class="filter-field">
-      <span>Categoria</span>
-      <input
-        #categoryInput
-        type="search"
-        placeholder="Ex.: Computacao"
-        [value]="categoryFilter()"
-        (input)="onCategoryFilterChange(categoryInput.value)"
-      />
-    </label>
-
-    <label class="filter-field">
-      <span>Instrutor</span>
-      <input
-        #instructorInput
-        type="search"
-        placeholder="Digite o nome do instrutor"
-        [value]="instructorFilter()"
-        (input)="onInstructorFilterChange(instructorInput.value)"
-      />
-    </label>
-
-    <button type="button" class="filter-reset" (click)="resetFilters()">Limpar filtros</button>
-  </section>
-
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <ng-container *ngIf="filteredCourses().length; else emptyState">
-        <div class="courses__grid">
-          <article
-            *ngFor="let course of filteredCourses(); trackBy: trackByCourseId"
-            class="course-card"
-            [attr.data-status]="course.published ? 'Publicado' : 'Rascunho'"
-          >
-            <div class="course-card__header">
-              <span class="course-card__category">{{ course.category || 'Sem categoria' }}</span>
-              <span class="course-card__status">{{ course.published ? 'Publicado' : 'Rascunho' }}</span>
-            </div>
-
-            <h3>{{ course.title }}</h3>
-
-            <div class="course-card__meta">
-              <span>Instrutor: <strong>{{ course.instructor || 'Instrutor nao informado' }}</strong></span>
-              <span>Modalidade: {{ course.modeLabel }}</span>
-              <span *ngIf="course.publishedAt">Publicado em {{ course.publishedAt | date:'dd/MM/yyyy' }}</span>
-            </div>
-
-            <div class="course-card__footer">
-              <div class="progress">
-                <label>Ocupacao das turmas</label>
-                <div class="progress__bar">
-                  <span [style.width.%]="percentOccupied(course)"></span>
-                </div>
-                <small>
-                  {{ approvedEnrollments(course) }} aprovados · {{ course.classGroups }} turmas ·
-                  {{ percentOccupied(course) }}%
-                </small>
-              </div>
-              <div class="stats">
-                <span class="stats__label">Disponibilidade</span>
-                <strong>{{ availableSlots(course) ?? 'Ilimitado' }}</strong>
-              </div>
-            </div>
-
-            <div class="course-card__actions" *ngIf="isInstructorUser()">
-              <ng-container *ngIf="!course.published; else publishedActions">
-                <button
-                  type="button"
-                  class="course-card__action course-card__action--secondary"
-                  (click)="editDraftCourse(course.id)"
-                  [disabled]="isDeletingCourse(course.id)"
-                >
-                  Editar rascunho
-                </button>
-                <button
-                  type="button"
-                  class="course-card__action course-card__action--danger"
-                  (click)="deleteDraftCourse(course)"
-                  [disabled]="isDeletingCourse(course.id)"
-                >
-                  {{ isDeletingCourse(course.id) ? 'Excluindo...' : 'Excluir rascunho' }}
-                </button>
-                <small>Rascunhos podem ser editados e removidos antes da publicação.</small>
-              </ng-container>
-              <ng-template #publishedActions>
-              <button
-                type="button"
-                class="course-card__action course-card__action--secondary"
-                (click)="manageCourse(course.id)"
-              >
-                Gerenciar curso
-              </button>
-              <small>Atualize turmas, conteudos e atividades.</small>
-              </ng-template>
-            </div>
-
-            <div class="course-card__actions" *ngIf="canSubscribe(course)">
-              <button
-                type="button"
-                class="course-card__action"
-                [disabled]="isSubscribed(course.id) || isEnrolling(course.id)"
-                (click)="enrollInCourse(course)"
-              >
-                <ng-container *ngIf="isSubscribed(course.id); else enrollLabel">
-                  Inscrito
-                </ng-container>
-                <ng-template #enrollLabel>
-                  {{ isEnrolling(course.id) ? 'Inscrevendo...' : 'Inscrever-se' }}
-                </ng-template>
-              </button>
-              <small>Distribuicao de materiais liberada apos a inscricao.</small>
-            </div>
-
-            <div class="course-card__actions" *ngIf="canRequestInteractiveEnrollment(course)">
-              <button
-                type="button"
-                class="course-card__action course-card__action--outlined"
-                [disabled]="isInteractiveEnrolled(course.id)"
-                (click)="openInteractiveEnrollment(course)"
-              >
-                {{ isInteractiveEnrolled(course.id) ? 'Solicitacao enviada' : 'Selecionar turma' }}
-              </button>
-              <small>
-                {{ isInteractiveEnrolled(course.id) ? 'Voce já solicitou vaga neste curso.' : 'Escolha uma turma interativa e envie sua solicitacao.' }}
-              </small>
-            </div>
-          </article>
-        </div>
-      </ng-container>
-    </ng-container>
-  </ng-container>
-</section>
-
-<section class="enrollment-panel" *ngIf="enrollmentPanelCourse() as selectedCourse">
-  <div class="enrollment-panel__overlay" (click)="closeInteractiveEnrollment()"></div>
-  <div class="enrollment-panel__content">
-    <header class="enrollment-panel__header">
-      <div>
-        <p class="eyebrow">Inscricao em turma interativa</p>
-        <h3>{{ selectedCourse.Title }}</h3>
-        <p>{{ selectedCourse.ShortDescription }}</p>
-      </div>
-      <button type="button" class="enrollment-panel__close" (click)="closeInteractiveEnrollment()">Fechar</button>
-    </header>
-
-    <ng-container *ngIf="!enrollmentPanelLoading(); else enrollmentLoadingState">
-      <ng-container *ngIf="!enrollmentPanelError(); else enrollmentErrorState">
-        <ng-container *ngIf="interactiveGroups().length; else enrollmentEmptyState">
-          <div class="group-options">
-            <article
-              *ngFor="let group of interactiveGroups(); trackBy: trackByGroup"
-              class="group-option"
-              [class.group-option--selected]="selectedClassGroupId() === group.Id"
-              (click)="selectClassGroup(group.Id)"
-            >
-              <header>
-                <div>
-                  <h4>{{ group.Name }}</h4>
-                  <p *ngIf="group.Description">{{ group.Description }}</p>
-                </div>
-                <span class="badge">
-                  {{ group.RequiresApproval ? 'Aprovação' : 'Entrada imediata' }}
-                </span>
-              </header>
-              <dl>
-                <div>
-                  <dt>Vagas</dt>
-                  <dd>{{ group.ApprovedEnrollments }}/{{ group.Capacity }}</dd>
-                </div>
-                <div>
-                  <dt>Inscrições</dt>
-                  <dd>{{ group.RequiresEnrollmentCode ? 'Código obrigatório' : 'Aberta' }}</dd>
-                </div>
-                <div>
-                  <dt>Chat</dt>
-                  <dd>{{ group.EnableChat ? 'Ativo' : 'Desativado' }}</dd>
-                </div>
-              </dl>
-            </article>
-          </div>
-
-          <div class="enrollment-code" *ngIf="requiresCodeForSelection()">
-            <label for="enrollmentCode">Codigo de inscricao da turma</label>
-            <input
-              #codeInput
-              id="enrollmentCode"
-              type="text"
-              [value]="enrollmentCode()"
-              (input)="onEnrollmentCodeChange(codeInput.value)"
-              [class.input--invalid]="enrollmentCodeError()"
-            />
-            <small class="error" *ngIf="enrollmentCodeError()">{{ enrollmentCodeError() }}</small>
-          </div>
-
-          <button
-            type="button"
-            class="enrollment-panel__submit"
-            [disabled]="enrollmentSubmitting()"
-            (click)="submitClassGroupEnrollment()"
-          >
-            {{ enrollmentSubmitting() ? 'Enviando...' : enrollmentActionLabel() }}
-          </button>
-        </ng-container>
-      </ng-container>
-    </ng-container>
-  </div>
-</section>
-
-<ng-template #loadingState>
-  <div class="state state--info">Carregando cursos...</div>
-</ng-template>
-
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
-
-<ng-template #emptyState>
-  <div class="state">Nenhum curso encontrado com os filtros informados.</div>
-</ng-template>
-
-<ng-template #enrollmentLoadingState>
-  <div class="state state--info">Carregando turmas...</div>
-</ng-template>
-
-<ng-template #enrollmentErrorState>
-  <div class="state state--error">{{ enrollmentPanelError() }}</div>
-</ng-template>
-
-<ng-template #enrollmentEmptyState>
-  <div class="state">Este curso ainda nao possui turmas ativas.</div>
-</ng-template>
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.ts
@@ -35217,6 +34731,627 @@ export class DashboardComponent {
     }
   }
 }
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
+
+import { ForumService } from '../../core/services/forum.service';
+import { CoursesService } from '../../core/services/courses.service';
+import { ForumThreadCreatePayload, ForumThreadListItem } from '../../core/api/forum.api';
+import { AuthService } from '../../core/services/auth.service';
+import { ClassGroupDto, CourseDto } from '../../core/api/courses.api';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
+
+@Component({
+  selector: 'app-forum',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent],
+  templateUrl: './forum.component.html',
+  styleUrl: './forum.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ForumComponent {
+  private readonly forumService = inject(ForumService);
+  private readonly coursesService = inject(CoursesService);
+  private readonly authService = inject(AuthService);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private courseLookup = new Map<string, string>();
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly threads = signal<ForumThreadListItem[]>([]);
+  readonly courses = signal<CourseDto[]>([]);
+  readonly isCreateVisible = signal(false);
+  readonly isSubmitting = signal(false);
+
+  readonly form = this.fb.group({
+    courseId: this.fb.nonNullable.control('', [Validators.required]),
+    classGroupId: this.fb.nonNullable.control('', [Validators.required]),
+    title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(180)]),
+    description: this.fb.control<string | null>('', [Validators.maxLength(1200)]),
+    isPinned: this.fb.nonNullable.control(false)
+  });
+
+  readonly availableClassGroups = computed<ClassGroupDto[]>(() => {
+    const courseId = this.form.controls.courseId.value;
+    const course = this.courses().find(item => item.Id === courseId);
+    return course?.ClassGroups ?? [];
+  });
+
+  readonly hasClassGroups = computed(() =>
+    this.courses().some(course =>
+      (course.ClassGroups ?? []).length > 0
+    )
+  );
+  readonly isInstructorUser = computed(() => this.authService.isInstructorRole());
+
+  constructor() {
+    this.loadCourses();
+
+    this.form.controls.courseId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncClassGroupSelection());
+  }
+
+  trackByThread(_: number, item: ForumThreadListItem): string {
+    return item.id;
+  }
+
+  openCreateForm(): void {
+    if (!this.isInstructorUser()) {
+      this.toastr.warning('Apenas instrutores podem criar topicos.');
+      return;
+    }
+
+    if (!this.hasClassGroups()) {
+      this.toastr.warning('Nenhum curso com turmas disponiveis para criar topico.');
+      return;
+    }
+
+    this.isCreateVisible.set(true);
+    const firstCourse = this.findFirstCourseWithGroups();
+    const initialCourseId = firstCourse?.Id ?? this.form.controls.courseId.value ?? '';
+
+    this.form.patchValue({
+      courseId: initialCourseId,
+      classGroupId: '',
+      title: '',
+      description: '',
+      isPinned: false
+    });
+    this.syncClassGroupSelection();
+  }
+
+  cancelCreate(): void {
+    this.isCreateVisible.set(false);
+    this.form.reset({
+      courseId: '',
+      classGroupId: '',
+      title: '',
+      description: '',
+      isPinned: false
+    });
+  }
+
+  submit(): void {
+    if (!this.isInstructorUser()) {
+      this.toastr.warning('Apenas instrutores podem criar topicos.');
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      this.toastr.error('Usuario nao autenticado.');
+      return;
+    }
+
+    const raw = this.form.getRawValue();
+    const classGroups = this.availableClassGroups();
+    if (!classGroups.some(group => group.Id === raw.classGroupId)) {
+      this.toastr.error('Selecione uma turma valida para criar o topico.');
+      return;
+    }
+
+    const payload: ForumThreadCreatePayload = {
+      ClassGroupId: raw.classGroupId,
+      CreatedById: currentUser.id,
+      Title: raw.title.trim(),
+      Description: raw.description?.trim() || undefined,
+      IsPinned: raw.isPinned
+    };
+
+    this.isSubmitting.set(true);
+
+    this.forumService
+      .createThread(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Topico criado com sucesso.');
+          this.isSubmitting.set(false);
+          this.cancelCreate();
+          this.loadThreads();
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel criar o topico.');
+          this.isSubmitting.set(false);
+        }
+      });
+  }
+
+  openThread(threadId: string): void {
+    if (!threadId) {
+      return;
+    }
+    this.router.navigate(['/forum/threads', threadId]);
+  }
+
+  private loadCourses(): void {
+    this.coursesService
+      .getCoursesDto()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: courses => {
+          this.courses.set(courses);
+          this.syncInitialSelections(courses);
+          this.loadThreads();
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar os cursos.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  private loadThreads(): void {
+    const lookup = new Map(this.courses().map(course => [course.Id, course.Title] as const));
+    this.courseLookup = lookup;
+
+    this.forumService
+      .getThreads(lookup)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: threads => {
+          this.threads.set(threads);
+          this.error.set(null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar os topicos do forum.');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  private syncInitialSelections(courses: CourseDto[]): void {
+    if (!courses.length) {
+      this.form.reset({ courseId: '', classGroupId: '' });
+      return;
+    }
+
+    const firstAvailable = this.findFirstCourseWithGroups();
+    if (firstAvailable) {
+      this.form.controls.courseId.setValue(firstAvailable.Id, { emitEvent: false });
+      const firstGroup = (firstAvailable.ClassGroups ?? [])[0];
+      this.form.controls.classGroupId.setValue(firstGroup?.Id ?? '', { emitEvent: false });
+    }
+
+    this.syncClassGroupSelection();
+  }
+
+  private syncClassGroupSelection(): void {
+    const groups = this.availableClassGroups();
+    if (!groups.length) {
+      this.form.controls.classGroupId.setValue('', { emitEvent: false });
+      return;
+    }
+
+    const currentGroupId = this.form.controls.classGroupId.value;
+    if (!currentGroupId || !groups.some(group => group.Id === currentGroupId)) {
+      this.form.controls.classGroupId.setValue(groups[0].Id, { emitEvent: false });
+    }
+  }
+
+  private findFirstCourseWithGroups(): CourseDto | undefined {
+    return this.courses().find(course =>
+      (course.ClassGroups ?? []).length > 0
+    );
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/services/courses.service.ts
+````typescript
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { catchError, map, of, shareReplay, Observable, throwError, tap } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
+import { CourseDto, CoursesFilter, mapClassGroupsFromCourses, mapCoursesResponse } from '../api/courses.api';
+import { ApiPagedResponse, normalizePagedResponse } from '../api/api.types';
+import { toHttpParams } from '../utils/http-params.util';
+
+export interface CreateCoursePayload {
+  Title: string;
+  ShortDescription: string;
+  DetailedDescription?: string;
+  Mode: number;
+  CategoryName: string;
+  EnableForum: boolean;
+  EnableChat: boolean;
+  EnrollmentInstructions?: string;
+  ThumbnailMediaId?: string;
+}
+
+export interface UpdateCoursePayload {
+  Title: string;
+  ShortDescription: string;
+  DetailedDescription?: string;
+  Mode: number;
+  CategoryName: string;
+  EnableForum: boolean;
+  EnableChat: boolean;
+  IsPublished: boolean;
+  EnrollmentInstructions?: string;
+  ThumbnailMediaId?: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class CoursesService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.baseUrl;
+  private cache$?: Observable<ApiPagedResponse<CourseDto>>;
+
+  getCourseCards(filter: CoursesFilter = {}) {
+    return this.fetchCoursesDto(filter).pipe(map(mapCoursesResponse));
+  }
+
+  getCoursesDto(filter: CoursesFilter = {}) {
+    return this.fetchCoursesDto(filter).pipe(map(response => normalizePagedResponse(response).items));
+  }
+
+  getClassGroupRows(forceRefresh = false) {
+    return this.fetchCoursesDto({}, forceRefresh).pipe(
+      map(response => normalizePagedResponse(response).items),
+      map(courses => mapClassGroupsFromCourses(courses))
+    );
+  }
+
+  getCourseById(courseId: string) {
+    return this.http.get<CourseDto>(`${this.baseUrl}/courses/${courseId}`).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  createCourse(payload: CreateCoursePayload) {
+    return this.http.post<CourseDto>(`${this.baseUrl}/courses`, payload).pipe(
+      tap(() => this.invalidateCache()),
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  updateCourse(courseId: string, payload: UpdateCoursePayload) {
+    return this.http.put<void>(`${this.baseUrl}/courses/${courseId}`, payload).pipe(
+      tap(() => this.invalidateCache()),
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  deleteCourse(courseId: string) {
+    return this.http.delete<void>(`${this.baseUrl}/courses/${courseId}`).pipe(
+      tap(() => this.invalidateCache()),
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  private fetchCoursesDto(filter: CoursesFilter = {}, forceRefresh = false): Observable<ApiPagedResponse<CourseDto>> {
+    if (forceRefresh || !this.cache$ || Object.keys(filter).length) {
+      const params = toHttpParams({ PageSize: 50, ...filter });
+      const request = this.http
+        .get<ApiPagedResponse<CourseDto>>(`${this.baseUrl}/courses`, { params })
+        .pipe(
+          catchError(() => of<ApiPagedResponse<CourseDto>>({ dados: [] })),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+
+      if (!forceRefresh && Object.keys(filter).length === 0) {
+        this.cache$ = request;
+      }
+
+      return request;
+    }
+
+    return this.cache$;
+  }
+
+  private invalidateCache(): void {
+    this.cache$ = undefined;
+  }
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.html
+````html
+<section class="courses">
+  <header class="courses__header">
+    <div>
+      <h2>Cursos disponiveis</h2>
+      <p class="description">Escolha sua proxima trilha de aprendizado filtrando por nome, categoria ou instrutor.</p>
+    </div>
+    <div class="courses__actions">
+      <div class="courses__count">
+        {{ filteredCourses().length }} resultado{{ filteredCourses().length === 1 ? '' : 's' }}
+      </div>
+      <button
+        *ngIf="isInstructorUser()"
+        type="button"
+        class="courses__create"
+        (click)="goToCreateCourse()"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        Criar novo curso
+      </button>
+    </div>
+  </header>
+
+  <section class="courses__filters" aria-label="Filtros de cursos">
+    <label class="filter-field">
+      <span>Nome do curso</span>
+      <input
+        #titleInput
+        type="search"
+        placeholder="Busque por titulo"
+        [value]="titleFilter()"
+        (input)="onTitleFilterChange(titleInput.value)"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Categoria</span>
+      <input
+        #categoryInput
+        type="search"
+        placeholder="Ex.: Computacao"
+        [value]="categoryFilter()"
+        (input)="onCategoryFilterChange(categoryInput.value)"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Instrutor</span>
+      <input
+        #instructorInput
+        type="search"
+        placeholder="Digite o nome do instrutor"
+        [value]="instructorFilter()"
+        (input)="onInstructorFilterChange(instructorInput.value)"
+      />
+    </label>
+
+    <button type="button" class="filter-reset" (click)="resetFilters()">Limpar filtros</button>
+  </section>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="filteredCourses().length; else emptyState">
+        <div class="courses__grid">
+          <article
+            *ngFor="let course of filteredCourses(); trackBy: trackByCourseId"
+            class="course-card"
+            [attr.data-status]="course.published ? 'Publicado' : 'Rascunho'"
+          >
+            <div class="course-card__header">
+              <span class="course-card__category">{{ course.category || 'Sem categoria' }}</span>
+              <span class="course-card__status">{{ course.published ? 'Publicado' : 'Rascunho' }}</span>
+            </div>
+
+            <h3>{{ course.title }}</h3>
+
+            <div class="course-card__meta">
+              <span>Instrutor: <strong>{{ course.instructor || 'Instrutor nao informado' }}</strong></span>
+              <span>Modalidade: {{ course.modeLabel }}</span>
+              <span *ngIf="course.publishedAt">Publicado em {{ course.publishedAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <div class="course-card__footer">
+              <div class="progress">
+                <label>Ocupacao das turmas</label>
+                <div class="progress__bar">
+                  <span [style.width.%]="percentOccupied(course)"></span>
+                </div>
+                <small>
+                  {{ approvedEnrollments(course) }} aprovados · {{ course.classGroups }} turmas ·
+                  {{ percentOccupied(course) }}%
+                </small>
+              </div>
+              <div class="stats">
+                <span class="stats__label">Disponibilidade</span>
+                <strong>{{ availableSlots(course) ?? 'Ilimitado' }}</strong>
+              </div>
+            </div>
+
+            <div class="course-card__actions" *ngIf="isInstructorUser()">
+              <ng-container *ngIf="!course.published; else publishedActions">
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--secondary"
+                  (click)="editDraftCourse(course.id)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  Editar rascunho
+                </button>
+                <button
+                  type="button"
+                  class="course-card__action course-card__action--danger"
+                  (click)="deleteDraftCourse(course)"
+                  [disabled]="isDeletingCourse(course.id)"
+                >
+                  {{ isDeletingCourse(course.id) ? 'Excluindo...' : 'Excluir rascunho' }}
+                </button>
+                <small>Rascunhos podem ser editados e removidos antes da publicação.</small>
+              </ng-container>
+              <ng-template #publishedActions>
+              <button
+                type="button"
+                class="course-card__action course-card__action--secondary"
+                (click)="manageCourse(course.id)"
+              >
+                Gerenciar curso
+              </button>
+              <small>Atualize turmas, conteudos e atividades.</small>
+              </ng-template>
+            </div>
+
+            <div class="course-card__actions" *ngIf="canSubscribe(course)">
+              <button
+                type="button"
+                class="course-card__action"
+                [disabled]="isSubscribed(course.id) || isEnrolling(course.id)"
+                (click)="enrollInCourse(course)"
+              >
+                <ng-container *ngIf="isSubscribed(course.id); else enrollLabel">
+                  Inscrito
+                </ng-container>
+                <ng-template #enrollLabel>
+                  {{ isEnrolling(course.id) ? 'Inscrevendo...' : 'Inscrever-se' }}
+                </ng-template>
+              </button>
+              <small>Distribuicao de materiais liberada apos a inscricao.</small>
+            </div>
+
+            <div class="course-card__actions" *ngIf="canRequestInteractiveEnrollment(course)">
+              <button
+                type="button"
+                class="course-card__action course-card__action--outlined"
+                [disabled]="isInteractiveEnrolled(course.id)"
+                (click)="openInteractiveEnrollment(course)"
+              >
+                {{ isInteractiveEnrolled(course.id) ? 'Solicitacao enviada' : 'Selecionar turma' }}
+              </button>
+              <small>
+                {{ isInteractiveEnrolled(course.id) ? 'Voce já solicitou vaga neste curso.' : 'Escolha uma turma interativa e envie sua solicitacao.' }}
+              </small>
+            </div>
+          </article>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<section class="enrollment-panel" *ngIf="enrollmentPanelCourse() as selectedCourse">
+  <div class="enrollment-panel__overlay" (click)="closeInteractiveEnrollment()"></div>
+  <div class="enrollment-panel__content">
+    <header class="enrollment-panel__header">
+      <div>
+        <p class="eyebrow">Inscricao em turma interativa</p>
+        <h3>{{ selectedCourse.Title }}</h3>
+        <p>{{ selectedCourse.ShortDescription }}</p>
+      </div>
+      <button type="button" class="enrollment-panel__close" (click)="closeInteractiveEnrollment()">Fechar</button>
+    </header>
+
+    <ng-container *ngIf="!enrollmentPanelLoading(); else enrollmentLoadingState">
+      <ng-container *ngIf="!enrollmentPanelError(); else enrollmentErrorState">
+        <ng-container *ngIf="interactiveGroups().length; else enrollmentEmptyState">
+          <div class="group-options">
+            <article
+              *ngFor="let group of interactiveGroups(); trackBy: trackByGroup"
+              class="group-option"
+              [class.group-option--selected]="selectedClassGroupId() === group.Id"
+              (click)="selectClassGroup(group.Id)"
+            >
+              <header>
+                <div>
+                  <h4>{{ group.Name }}</h4>
+                  <p *ngIf="group.Description">{{ group.Description }}</p>
+                </div>
+                <span class="badge">
+                  {{ group.RequiresApproval ? 'Aprovação' : 'Entrada imediata' }}
+                </span>
+              </header>
+              <dl>
+                <div>
+                  <dt>Vagas</dt>
+                  <dd>{{ group.ApprovedEnrollments }}/{{ group.Capacity }}</dd>
+                </div>
+                <div>
+                  <dt>Inscrições</dt>
+                  <dd>{{ group.RequiresEnrollmentCode ? 'Código obrigatório' : 'Aberta' }}</dd>
+                </div>
+                <div>
+                  <dt>Chat</dt>
+                  <dd>{{ group.EnableChat ? 'Ativo' : 'Desativado' }}</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+
+          <div class="enrollment-code" *ngIf="requiresCodeForSelection()">
+            <label for="enrollmentCode">Codigo de inscricao da turma</label>
+            <input
+              #codeInput
+              id="enrollmentCode"
+              type="text"
+              [value]="enrollmentCode()"
+              (input)="onEnrollmentCodeChange(codeInput.value)"
+              [class.input--invalid]="enrollmentCodeError()"
+            />
+            <small class="error" *ngIf="enrollmentCodeError()">{{ enrollmentCodeError() }}</small>
+          </div>
+
+          <button
+            type="button"
+            class="enrollment-panel__submit"
+            [disabled]="enrollmentSubmitting()"
+            (click)="submitClassGroupEnrollment()"
+          >
+            {{ enrollmentSubmitting() ? 'Enviando...' : enrollmentActionLabel() }}
+          </button>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando cursos...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state">Nenhum curso encontrado com os filtros informados.</div>
+</ng-template>
+
+<ng-template #enrollmentLoadingState>
+  <div class="state state--info">Carregando turmas...</div>
+</ng-template>
+
+<ng-template #enrollmentErrorState>
+  <div class="state state--error">{{ enrollmentPanelError() }}</div>
+</ng-template>
+
+<ng-template #enrollmentEmptyState>
+  <div class="state">Este curso ainda nao possui turmas ativas.</div>
+</ng-template>
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.ts
@@ -35810,6 +35945,13 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Listagem de cursos do instrutor evoluida com status real do card e acoes de rascunho: editar e excluir com confirmacao.
 - Gerenciamento de rascunho recebeu formulario de edicao rapida para `Nome do curso` e `Categoria` com persistencia via API.
 - Validacoes executadas: `dotnet build ProjetoFinal.sln` e `npm run build` (apenas warnings conhecidos).
+
+### 2026-03-22 (ajustes finais de UX e dados)
+- Anexos de video em atividades agora sao reproduzidos inline no `course-activity-viewer` (sem acao de baixar para video), com preload autenticado do blob.
+- Refinado estilo do player de atividade para o mesmo padrao do viewer de conteudo, reduzindo impacto visual e mantendo responsividade.
+- Corrigido backend de atividades para incluir `MediaResource` no include de anexos, viabilizando deteccao de tipo de arquivo no frontend.
+- Corrigido backend de turmas para retornar nome de aluno nas inscricoes via include de `Student` + mapeamento explicito em `ClassEnrollmentDto`.
+- Validacao tecnica executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
 ````
 
 ## File: docs/transcription.md
@@ -36168,6 +36310,26 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 11:30:56] User: Na edição do rascunho, deve=se permitir alterar o nome e categoria
 
 [2026-03-22 11:30:56] Assistant: Adicionei no gerenciamento do curso em rascunho um bloco de edicao rapida para titulo e categoria com botao de salvar, persistindo via updateCourse (mantendo IsPublished=false), e validei com dotnet build e npm run build.
+
+[2026-03-22 11:38:07] User: Na parte de professor em http://localhost:4200/courses/3629b68c-b245-47d0-b472-7fa8a9e510a0/activities/f96991d4-221c-4510-99aa-a02eed163300 eu quero que no lugar do botão baixar quando for vídeo esteja disponível o player do vídeo.
+
+[2026-03-22 11:38:07] Assistant: Ajustei a tela de visualizacao da atividade para detectar anexos de video e renderizar player inline no lugar do botao de baixar, com preload do blob autenticado, cache por anexo e limpeza de URLs, e validei com dotnet build e npm run build.
+
+[2026-03-22 11:40:25] User: Em http://localhost:4200/class-groups/923035ab-8f59-45a2-a371-6eec7a9a7278/manage Na tabela de inscrições, o nome do aluno não está aparecendo
+
+[2026-03-22 11:40:25] Assistant: Corrigi a tabela de inscricoes para usar fallback de nome do aluno com cache local e busca em Users quando StudentName vem vazio, ajustando o carregamento inicial e a exibicao na tela, com validacao em dotnet build e npm run build.
+
+[2026-03-22 11:42:14] User: No lugar do nome do aluno exibiu o nome Aluno
+
+[2026-03-22 11:42:14] Assistant: Corrigi na origem para retornar StudentName preenchido nas inscricoes da turma, adicionando include de Enrollments.Student no repositorio de ClassGroup e mapeamento explicito de Student.FullName em ClassEnrollmentDto, mantendo fallback no frontend e validando com dotnet build e npm run build.
+
+[2026-03-22 11:45:08] User: http://localhost:4200/courses/3629b68c-b245-47d0-b472-7fa8a9e510a0/activities/f96991d4-221c-4510-99aa-a02eed163300 nesse link, quando é vídeo ainda só exibe o botão baixar
+
+[2026-03-22 11:45:08] Assistant: Corrigi o backend para incluir MediaResource nos anexos de atividade (ThenInclude de attachment.MediaResource), permitindo ao frontend identificar video e exibir player no lugar de baixar; validado com dotnet build e npm run build.
+
+[2026-03-22 11:49:06] User: Funcionou, mas deixe um player igual que é feito em conteúdo, o vídeo ficou grande demais na tela
+
+[2026-03-22 11:49:06] Assistant: Ajustei o CSS do player de anexos da atividade para seguir o mesmo padrao visual do viewer de conteudo (item em coluna, video responsivo com max-height e bordas equivalentes), validando com dotnet build e npm run build.
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/app.routes.ts
@@ -36493,6 +36655,12 @@ export const routes: Routes = [
 - Fluxo de publicacao de curso rascunho implementado na tela de gerenciamento com botao dedicado.
 - Cursos rascunho na listagem do instrutor agora suportam edicao e exclusao.
 - Edicao de rascunho no gerenciamento passou a permitir alterar titulo e categoria com salvamento imediato.
+
+### Data: 2026-03-22 (incremental)
+### Resumo
+- Visualizacao de atividade passou a renderizar player para anexos de video, substituindo o fluxo de download nesses casos.
+- Repositorio de atividades atualizado para retornar metadados completos de media nos anexos (`ThenInclude` de `MediaResource`).
+- Gerenciamento de turma: nomes de alunos em inscricoes estabilizados com includes no backend e fallback no frontend.
 ````
 
 ## File: docs/memoria_projeto.md
@@ -36936,4 +37104,11 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Listagem de cursos para instrutor passou a exibir status real (Publicado/Rascunho) e acoes para rascunho: `Editar rascunho` e `Excluir rascunho` com confirmacao.
 - Em curso rascunho, adicionado bloco de edicao rapida para alterar `Nome do curso` e `Categoria`, persistindo via update sem publicar.
 - Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+## 2026-03-22 (mídia de atividade e nomes de inscrição)
+- `course-activity-viewer`: anexos de atividade em video passaram a exibir player inline no lugar do botao de download.
+- Player de video da atividade ajustado para o mesmo padrao visual do viewer de conteudo (layout compacto, responsivo e com altura maxima).
+- Backend de atividades corrigido para incluir `ActivityAttachment.MediaResource` no retorno de atividade, permitindo identificar tipo de anexo no frontend.
+- Tabela de inscricoes da turma corrigida para resolver nomes de alunos com fallback confiavel.
+- Backend de turmas ajustado para incluir `Enrollments.Student` e mapear `ClassEnrollmentDto.StudentName` por `Student.FullName`.
 ````

@@ -437,3 +437,10 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Listagem de cursos para instrutor passou a exibir status real (Publicado/Rascunho) e acoes para rascunho: `Editar rascunho` e `Excluir rascunho` com confirmacao.
 - Em curso rascunho, adicionado bloco de edicao rapida para alterar `Nome do curso` e `Categoria`, persistindo via update sem publicar.
 - Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+## 2026-03-22 (mídia de atividade e nomes de inscrição)
+- `course-activity-viewer`: anexos de atividade em video passaram a exibir player inline no lugar do botao de download.
+- Player de video da atividade ajustado para o mesmo padrao visual do viewer de conteudo (layout compacto, responsivo e com altura maxima).
+- Backend de atividades corrigido para incluir `ActivityAttachment.MediaResource` no retorno de atividade, permitindo identificar tipo de anexo no frontend.
+- Tabela de inscricoes da turma corrigida para resolver nomes de alunos com fallback confiavel.
+- Backend de turmas ajustado para incluir `Enrollments.Student` e mapear `ClassEnrollmentDto.StudentName` por `Student.FullName`.

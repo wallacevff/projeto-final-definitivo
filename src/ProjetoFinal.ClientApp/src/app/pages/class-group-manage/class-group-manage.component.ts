@@ -167,6 +167,7 @@ export class ClassGroupManageComponent {
           this.classGroup.set(group);
           this.course.set(course);
           this.hydrateStudentNamesFromEnrollments(group.Enrollments ?? []);
+          this.ensureStudentNames((group.Enrollments ?? []).map(item => item.StudentId));
           this.error.set(null);
           this.loading.set(false);
           this.reloadThreads();
@@ -665,20 +666,39 @@ export class ClassGroupManageComponent {
     return this.studentNames().get(submission.StudentId) ?? submission.StudentName ?? 'Aluno';
   }
 
+  enrollmentStudentName(enrollment: ClassEnrollmentDto): string {
+    const cachedName = this.studentNames().get(enrollment.StudentId)?.trim();
+    const enrollmentName = enrollment.StudentName?.trim();
+    return cachedName || enrollmentName || 'Aluno';
+  }
+
   private hydrateStudentNamesFromEnrollments(enrollments: ClassEnrollmentDto[]): void {
     if (!enrollments?.length) {
       return;
     }
     const current = new Map(this.studentNames());
     enrollments.forEach(enrollment => {
-      current.set(enrollment.StudentId, enrollment.StudentName);
+      const name = enrollment.StudentName?.trim();
+      if (name) {
+        current.set(enrollment.StudentId, name);
+      }
     });
     this.studentNames.set(current);
   }
 
   private ensureStudentNames(studentIds: string[]): void {
     const cache = this.studentNames();
-    const pending = Array.from(new Set(studentIds.filter(id => !!id && !cache.has(id))));
+    const pending = Array.from(
+      new Set(
+        studentIds.filter(id => {
+          if (!id) {
+            return false;
+          }
+          const cached = cache.get(id);
+          return !cached || !cached.trim();
+        })
+      )
+    );
     if (!pending.length) {
       return;
     }

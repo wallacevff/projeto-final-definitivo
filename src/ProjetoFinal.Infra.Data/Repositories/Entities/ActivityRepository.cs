@@ -20,7 +20,8 @@ public class ActivityRepository(AppDbContext context)
             .Include(activity => activity.ClassGroup)
             .Include(activity => activity.Audiences)
                 .ThenInclude(audience => audience.ClassGroup)
-            .Include(activity => activity.Attachments);
+            .Include(activity => activity.Attachments)
+                .ThenInclude(attachment => attachment.MediaResource);
     }
 
     protected override IQueryable<Activity> ApplyIncludesList(IQueryable<Activity> query)

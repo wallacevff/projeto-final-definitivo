@@ -25,12 +25,26 @@
 
     <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
       <ul class="attachments-list">
-        <li *ngFor="let attachment of current.Attachments">
+        <li
+          *ngFor="let attachment of current.Attachments"
+          [class.attachment-item--video]="isVideoActivityAttachment(attachment)"
+        >
           <div>
             <strong>{{ attachment.Caption || 'Anexo' }}</strong>
             <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+            <div class="attachment-video" *ngIf="isVideoActivityAttachment(attachment)">
+              <video
+                *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl; else videoLoadingState"
+                controls
+                [src]="videoUrl"
+              ></video>
+              <ng-template #videoLoadingState>
+                <p class="muted">{{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando video...' : 'Video indisponivel.' }}</p>
+              </ng-template>
+            </div>
           </div>
           <button
+            *ngIf="!isVideoActivityAttachment(attachment)"
             type="button"
             class="button button--ghost"
             (click)="downloadAttachment(attachment)"

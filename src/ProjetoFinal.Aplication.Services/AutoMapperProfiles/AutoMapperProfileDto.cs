@@ -44,7 +44,9 @@ public class AutoMapperProfileDto : Profile
             .ForMember(dest => dest.PendingEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Pending)))
             .ForMember(dest => dest.Enrollments, opt => opt.MapFrom(src => src.Enrollments));
 
-        CreateMap<ClassEnrollment, ClassEnrollmentDto>().ReverseMap();
+        CreateMap<ClassEnrollment, ClassEnrollmentDto>()
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty))
+            .ReverseMap();
 
         CreateMap<CourseContent, CourseContentDto>()
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
