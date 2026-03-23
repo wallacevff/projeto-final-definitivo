@@ -295,3 +295,11 @@
 - Validacao executada com dotnet build ProjetoFinal.sln e 
 pm.cmd run build.
 
+
+### Data: 2026-03-23 (ajustes finais de UX do chat)
+### Resumo
+- O chat flutuante passou a forcar a rolagem ate a ultima mensagem tambem em mensagens recebidas via SignalR, com sincronizacao apos o render do Angular.
+- A janela do chat foi ampliada verticalmente para aumentar o espaco util da conversa sem perder a estrutura lateral de turmas e participantes.
+- Validacao executada com dotnet build ProjetoFinal.sln e 
+pm.cmd run build (mantidos apenas warnings conhecidos e locks quando a API local esta em execucao).
+

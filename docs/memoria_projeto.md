@@ -525,3 +525,10 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Validacao: dotnet build ProjetoFinal.sln e 
 pm.cmd run build executados com sucesso.
 
+
+## 2026-03-23 (ajustes de scroll e altura do chat)
+- Scroll automatico do chat reforcado para mensagens recebidas, com efeito reativo observando a lista ordenada e scroll disparado apos o render final.
+- Area util da conversa aumentada com painel mais alto e compactacao leve do cabecalho, banner de presenca e composer.
+- Validacao: dotnet build ProjetoFinal.sln e 
+pm.cmd run build executados com sucesso; o build da solucao pode emitir warnings de lock quando ProjetoFinal.Api esta em execucao.
+

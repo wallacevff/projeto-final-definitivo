@@ -465,3 +465,15 @@ pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 [2026-03-22 22:37:37] Assistant: Reestruturei a area de mensagens do chat para um viewport com conteudo ancorado no rodape, semelhante ao comportamento do ChatGPT: a conversa permanece apoiada embaixo quando ha poucas mensagens, renderiza a lista em ordem cronologica e usa uma ancora inferior para rolar ate a ultima mensagem de forma consistente. Validei com dotnet build ProjetoFinal.sln e 
 pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 
+
+[2026-03-23 12:06:23] User: Quando recebo mensagem no chat, a rolagem deve ser automatica
+
+[2026-03-23 12:06:23] Assistant: Reforcei a rolagem automatica do chat para mensagens recebidas, adicionando um efeito reativo que acompanha mudancas na lista ordenada com o chat aberto e empilhando o scroll apos o render final via equestAnimationFrame. Validei com 
+pm.cmd run build; o dotnet build ProjetoFinal.sln concluiu sem erros, mas com warnings de lock no ProjetoFinal.Api em execucao e o warning conhecido NU1903 do AutoMapper.
+
+
+[2026-03-23 12:08:39] User: O espaco da conversa do chat esta muito pequeno, aumente a autura dele
+
+[2026-03-23 12:08:39] Assistant: Aumentei a altura util do chat flutuante ampliando o painel e compactando um pouco cabecalho, banner de presenca e composer, para sobrar mais area para a conversa. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+

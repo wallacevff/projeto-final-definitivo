@@ -112,6 +112,16 @@ export class FloatingChatComponent {
 
       this.loadRooms();
     });
+
+    effect(() => {
+      if (!this.isOpen() || this.loadingMessages() || !this.selectedClassGroupId()) {
+        return;
+      }
+
+      this.selectedParticipantId();
+      this.orderedMessages().length;
+      this.scheduleScrollToBottom();
+    });
   }
 
   toggleOpen(): void {
@@ -398,18 +408,22 @@ export class FloatingChatComponent {
 
   private scheduleScrollToBottom(): void {
     setTimeout(() => {
-      const anchor = this.messagesBottomAnchor()?.nativeElement;
-      if (anchor) {
-        anchor.scrollIntoView({ block: 'end' });
-        return;
-      }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const anchor = this.messagesBottomAnchor()?.nativeElement;
+          if (anchor) {
+            anchor.scrollIntoView({ block: 'end' });
+            return;
+          }
 
-      const container = this.messagesContainer()?.nativeElement;
-      if (!container) {
-        return;
-      }
+          const container = this.messagesContainer()?.nativeElement;
+          if (!container) {
+            return;
+          }
 
-      container.scrollTop = container.scrollHeight;
+          container.scrollTop = container.scrollHeight;
+        });
+      });
     });
   }
 

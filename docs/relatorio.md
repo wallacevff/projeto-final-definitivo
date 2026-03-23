@@ -229,3 +229,10 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Validacao concluida com dotnet build ProjetoFinal.sln e 
 pm.cmd run build.
 
+
+### 2026-03-23 (scroll automatico e altura do chat)
+- Reforcada a rolagem automatica do chat para acompanhar mensagens recebidas, nao apenas carregamento inicial e envios locais.
+- Ampliada a altura do widget e reduzido o consumo vertical das areas fixas para deixar mais espaco para a conversa.
+- Validacao concluida com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas warnings conhecidos e locks da API local em execucao.
+
