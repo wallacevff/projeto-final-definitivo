@@ -11,10 +11,19 @@ export class ChatMessagesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.baseUrl;
 
-  getMessages(classGroupId: string, pageSize = 100) {
+  getMessages(classGroupId: string, recipientId?: string | null, pageSize = 100) {
+    const params: { [key: string]: string | number } = {
+      ClassGroupId: classGroupId,
+      PageSize: pageSize
+    };
+
+    if (recipientId) {
+      params['RecipientId'] = recipientId;
+    }
+
     return this.http
       .get<ApiPagedResponse<ChatMessageDto>>(`${this.baseUrl}/chat/messages`, {
-        params: { ClassGroupId: classGroupId, PageSize: pageSize }
+        params
       })
       .pipe(
         map(response => normalizePagedResponse(response).items),

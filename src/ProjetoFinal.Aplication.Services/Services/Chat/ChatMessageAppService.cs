@@ -38,6 +38,7 @@ public class ChatMessageAppService : IChatMessageAppService
     public async Task<ChatMessageDto> SendAsync(ChatMessageCreateDto dto, CancellationToken cancellationToken = default)
     {
         await EnsureSenderCanAccessClassGroupAsync(dto.ClassGroupId, dto.SenderId, cancellationToken);
+        await EnsureRecipientCanAccessClassGroupAsync(dto.ClassGroupId, dto.SenderId, dto.RecipientId, cancellationToken);
         var entity = _mapper.MapFrom<ChatMessage>(dto);
         entity.SentAt = DateTime.UtcNow;
         var created = await _chatMessageRepository.AddAsync(entity, cancellationToken);
@@ -116,6 +117,45 @@ public class ChatMessageAppService : IChatMessageAppService
         if (enrollment is null)
         {
             throw new BusinessException("Voce nao possui acesso a este chat.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task EnsureRecipientCanAccessClassGroupAsync(
+        Guid classGroupId,
+        Guid senderId,
+        Guid? recipientId,
+        CancellationToken cancellationToken)
+    {
+        if (recipientId is null || recipientId == Guid.Empty)
+        {
+            return;
+        }
+
+        if (recipientId == senderId)
+        {
+            throw new BusinessException("Selecione outro participante para a conversa individual.", ECodigo.MaRequisicao);
+        }
+
+        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        if (classGroup is null)
+        {
+            throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (classGroup.Course?.InstructorId == recipientId)
+        {
+            return;
+        }
+
+        var recipientEnrollment = await _classEnrollmentRepository.FirstOrDefaultByPredicateAsync(
+            item => item.ClassGroupId == classGroupId
+                    && item.StudentId == recipientId
+                    && item.Status == EnrollmentStatus.Approved,
+            cancellationToken);
+
+        if (recipientEnrollment is null)
+        {
+            throw new BusinessException("Participante da conversa nao pertence a esta turma.", ECodigo.NaoPermitido);
         }
     }
 }

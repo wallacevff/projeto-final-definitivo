@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
-import { ChatMessageDto, ChatPresenceUserDto } from '../../../core/api/chat.api';
-import { CourseDto } from '../../../core/api/courses.api';
+import { ChatMessageDto, ChatParticipant, ChatPresenceUserDto } from '../../../core/api/chat.api';
+import { ClassEnrollmentDto, CourseDto } from '../../../core/api/courses.api';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatMessagesService } from '../../../core/services/chat-messages.service';
 import { ChatRealtimeService } from '../../../core/services/chat-realtime.service';
@@ -15,6 +15,12 @@ interface ChatRoom {
   classGroupId: string;
   classGroupName: string;
   courseTitle: string;
+  participants: ChatParticipant[];
+}
+
+interface ChatConversation {
+  type: 'group' | 'direct';
+  participant?: ChatParticipant;
 }
 
 @Component({
@@ -33,6 +39,8 @@ export class FloatingChatComponent {
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
+  private readonly messagesContainer = viewChild<ElementRef<HTMLDivElement>>('messagesContainer');
+  private readonly messagesBottomAnchor = viewChild<ElementRef<HTMLDivElement>>('messagesBottomAnchor');
 
   readonly currentUser = this.authService.currentUser;
   readonly isVisible = computed(() => !!this.currentUser());
@@ -42,6 +50,7 @@ export class FloatingChatComponent {
   readonly sendingMessage = signal(false);
   readonly rooms = signal<ChatRoom[]>([]);
   readonly selectedClassGroupId = signal<string | null>(null);
+  readonly selectedParticipantId = signal<string | null>(null);
   readonly messages = signal<ChatMessageDto[]>([]);
   readonly onlineUsers = signal<ChatPresenceUserDto[]>([]);
 
@@ -49,6 +58,35 @@ export class FloatingChatComponent {
     const currentId = this.selectedClassGroupId();
     return this.rooms().find(room => room.classGroupId === currentId) ?? null;
   });
+
+  readonly selectedConversation = computed<ChatConversation>(() => {
+    const room = this.selectedRoom();
+    const participantId = this.selectedParticipantId();
+    const participant = room?.participants.find(item => item.userId === participantId);
+    return participant ? { type: 'direct', participant } : { type: 'group' };
+  });
+
+  readonly orderedMessages = computed(() => this.sortMessages(this.messages()));
+
+  readonly selectedConversationTitle = computed(() => {
+    const conversation = this.selectedConversation();
+    return conversation.type === 'group'
+      ? 'Canal da turma'
+      : `Conversa com ${conversation.participant?.userName || 'o aluno'}`;
+  });
+
+  readonly selectedConversationSubtitle = computed(() => {
+    const conversation = this.selectedConversation();
+    if (conversation.type === 'group') {
+      return 'Mensagem visivel para todos os participantes da turma.';
+    }
+
+    const status = conversation.participant && this.isParticipantOnline(conversation.participant.userId)
+      ? 'online'
+      : 'offline';
+    return `${conversation.participant?.roleLabel || 'Participante'} • ${status}`;
+  });
+
   readonly onlineUsersLabel = computed(() => this.onlineUsers().map(user => user.UserName).join(', '));
 
   readonly form = this.fb.group({
@@ -67,6 +105,7 @@ export class FloatingChatComponent {
         this.messages.set([]);
         this.onlineUsers.set([]);
         this.selectedClassGroupId.set(null);
+        this.selectedParticipantId.set(null);
         void this.chatRealtimeService.disconnect();
         return;
       }
@@ -87,14 +126,39 @@ export class FloatingChatComponent {
     return message.SenderId === this.currentUser()?.id;
   }
 
+  isParticipantOnline(userId: string): boolean {
+    return this.onlineUsers().some(user => user.UserId === userId);
+  }
+
   selectRoom(room: ChatRoom): void {
     if (this.selectedClassGroupId() === room.classGroupId) {
       return;
     }
 
     this.selectedClassGroupId.set(room.classGroupId);
-    this.loadMessages(room.classGroupId);
+    this.selectedParticipantId.set(null);
+    this.loadMessages(room.classGroupId, null);
     void this.connectRealtime(room.classGroupId);
+  }
+
+  selectGroupConversation(): void {
+    const classGroupId = this.selectedClassGroupId();
+    if (!classGroupId) {
+      return;
+    }
+
+    this.selectedParticipantId.set(null);
+    this.loadMessages(classGroupId, null);
+  }
+
+  selectDirectConversation(participant: ChatParticipant): void {
+    const classGroupId = this.selectedClassGroupId();
+    if (!classGroupId || this.selectedParticipantId() === participant.userId) {
+      return;
+    }
+
+    this.selectedParticipantId.set(participant.userId);
+    this.loadMessages(classGroupId, participant.userId);
   }
 
   sendMessage(): void {
@@ -120,6 +184,7 @@ export class FloatingChatComponent {
       .sendMessage({
         ClassGroupId: room.classGroupId,
         SenderId: user.id,
+        RecipientId: this.selectedParticipantId() ?? undefined,
         Message: message
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -138,6 +203,10 @@ export class FloatingChatComponent {
 
   trackByRoom(_: number, room: ChatRoom): string {
     return room.classGroupId;
+  }
+
+  trackByParticipant(_: number, participant: ChatParticipant): string {
+    return participant.userId;
   }
 
   trackByMessage(_: number, message: ChatMessageDto): string {
@@ -168,7 +237,8 @@ export class FloatingChatComponent {
 
         const nextRoom = rooms[0];
         this.selectedClassGroupId.set(nextRoom.classGroupId);
-        this.loadMessages(nextRoom.classGroupId);
+        this.selectedParticipantId.set(null);
+        this.loadMessages(nextRoom.classGroupId, null);
         void this.connectRealtime(nextRoom.classGroupId);
       },
       error: () => {
@@ -178,18 +248,18 @@ export class FloatingChatComponent {
     });
   }
 
-  private loadMessages(classGroupId: string): void {
+  private loadMessages(classGroupId: string, participantId: string | null): void {
     this.loadingMessages.set(true);
     this.messages.set([]);
-    this.onlineUsers.set([]);
 
     this.chatMessagesService
-      .getMessages(classGroupId)
+      .getMessages(classGroupId, participantId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: messages => {
-          this.messages.set(this.sortMessages(messages));
+          this.messages.set(messages);
           this.loadingMessages.set(false);
+          this.scheduleScrollToBottom();
         },
         error: () => {
           this.loadingMessages.set(false);
@@ -212,8 +282,7 @@ export class FloatingChatComponent {
   }
 
   private upsertMessage(message: ChatMessageDto): void {
-    const selectedClassGroupId = this.selectedClassGroupId();
-    if (selectedClassGroupId && message.ClassGroupId !== selectedClassGroupId) {
+    if (!this.isMessageForCurrentConversation(message)) {
       return;
     }
 
@@ -225,12 +294,35 @@ export class FloatingChatComponent {
       } else {
         next.push(message);
       }
-      return this.sortMessages(next);
+      return next;
     });
+
+    this.scheduleScrollToBottom();
   }
 
   private removeMessage(messageId: string): void {
     this.messages.update(current => current.filter(message => message.Id !== messageId));
+  }
+
+  private isMessageForCurrentConversation(message: ChatMessageDto): boolean {
+    if (message.ClassGroupId !== this.selectedClassGroupId()) {
+      return false;
+    }
+
+    const participantId = this.selectedParticipantId();
+    const currentUserId = this.currentUser()?.id;
+    if (!participantId) {
+      return !message.RecipientId;
+    }
+
+    if (!currentUserId) {
+      return false;
+    }
+
+    return (
+      (message.SenderId === currentUserId && message.RecipientId === participantId) ||
+      (message.SenderId === participantId && message.RecipientId === currentUserId)
+    );
   }
 
   private mapInstructorRooms(courses: CourseDto[]): ChatRoom[] {
@@ -240,7 +332,8 @@ export class FloatingChatComponent {
         .map(group => ({
           classGroupId: group.Id,
           classGroupName: group.Name,
-          courseTitle: course.Title
+          courseTitle: course.Title,
+          participants: this.mapParticipants(course, group.Enrollments ?? [], this.currentUser()?.id ?? '')
         }))
     );
   }
@@ -253,12 +346,87 @@ export class FloatingChatComponent {
         .map(group => ({
           classGroupId: group.Id,
           classGroupName: group.Name,
-          courseTitle: course.Title
+          courseTitle: course.Title,
+          participants: this.mapParticipants(course, group.Enrollments ?? [], studentId)
         }))
     );
   }
 
+  private mapParticipants(course: CourseDto, enrollments: ClassEnrollmentDto[], currentUserId: string): ChatParticipant[] {
+    const participants = new Map<string, ChatParticipant>();
+
+    if (course.InstructorId && course.InstructorId !== currentUserId) {
+      participants.set(course.InstructorId, {
+        userId: course.InstructorId,
+        userName: course.InstructorName || 'Professor',
+        roleLabel: 'Professor'
+      });
+    }
+
+    enrollments
+      .filter(enrollment => enrollment.Status === 2)
+      .forEach(enrollment => {
+        if (enrollment.StudentId === currentUserId || participants.has(enrollment.StudentId)) {
+          return;
+        }
+
+        participants.set(enrollment.StudentId, {
+          userId: enrollment.StudentId,
+          userName: enrollment.StudentName || 'Aluno',
+          roleLabel: 'Aluno'
+        });
+      });
+
+    return [...participants.values()].sort((a, b) => a.userName.localeCompare(b.userName, 'pt-BR'));
+  }
+
   private sortMessages(messages: ChatMessageDto[]): ChatMessageDto[] {
-    return [...messages].sort((a, b) => new Date(a.SentAt).getTime() - new Date(b.SentAt).getTime());
+    return [...messages].sort((a, b) => {
+      const sentAtDiff = this.parseSentAt(a.SentAt) - this.parseSentAt(b.SentAt);
+      if (sentAtDiff !== 0) {
+        return sentAtDiff;
+      }
+
+      const sentAtTextDiff = (a.SentAt ?? '').localeCompare(b.SentAt ?? '', 'pt-BR');
+      if (sentAtTextDiff !== 0) {
+        return sentAtTextDiff;
+      }
+
+      return a.Id.localeCompare(b.Id, 'pt-BR');
+    });
+  }
+
+  private scheduleScrollToBottom(): void {
+    setTimeout(() => {
+      const anchor = this.messagesBottomAnchor()?.nativeElement;
+      if (anchor) {
+        anchor.scrollIntoView({ block: 'end' });
+        return;
+      }
+
+      const container = this.messagesContainer()?.nativeElement;
+      if (!container) {
+        return;
+      }
+
+      container.scrollTop = container.scrollHeight;
+    });
+  }
+
+  private parseSentAt(value: string | null | undefined): number {
+    if (!value) {
+      return Number.MIN_SAFE_INTEGER;
+    }
+
+    const parsed = Date.parse(value);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+
+    const normalized = value.includes('Z') || /[+-]\d{2}:\d{2}$/.test(value)
+      ? value
+      : `${value}Z`;
+    const normalizedParsed = Date.parse(normalized);
+    return Number.isNaN(normalizedParsed) ? Number.MIN_SAFE_INTEGER : normalizedParsed;
   }
 }

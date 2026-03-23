@@ -97,6 +97,8 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<ChatMessage, ChatMessageDto>()
             .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender != null ? src.Sender.FullName : string.Empty))
+            .ForMember(dest => dest.RecipientName, opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.FullName : null))
+            .ForMember(dest => dest.IsDirectMessage, opt => opt.MapFrom(src => src.RecipientId != null))
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
     }
 }

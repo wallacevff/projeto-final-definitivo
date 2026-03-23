@@ -271,3 +271,27 @@
 - Mensagens do chat agora passam pelo controller autenticado, validam acesso a turma e sao retransmitidas em tempo real para o grupo do SignalR.
 - Historico do chat passou a retornar nome do remetente, permitindo renderizacao adequada no widget.
 - Validacao executada com `npm.cmd run build` e build alternativo da API; o build completo da solucao segue bloqueado por lock da API em execucao.
+
+### Data: 2026-03-22 (chat coletivo + individual)
+### Resumo
+- O chat da branch `feat/chat-flutuante-online` agora suporta tanto o canal da turma inteira quanto conversas individuais entre participantes da mesma turma.
+- A persistencia do backend passou a diferenciar mensagens coletivas e privadas via `RecipientId` opcional, com grupos SignalR separados para a turma e para cada participante.
+- O widget flutuante ganhou seletor de conversa, exibindo `Turma inteira` e os participantes da turma, com historico filtrado e envio em tempo real para cada modo.
+- Migration manual adicionada para refletir a nova coluna `RecipientId` em `ChatMessages`.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`.
+
+### Data: 2026-03-22 (historico do chat corrigido)
+### Resumo
+- Corrigido o filtro backend do historico para nao reaproveitar `SenderId` como contexto da conversa; o historico agora usa `CurrentUserId` para resolver corretamente canal coletivo e DM.
+- Alteracao de esquema aplicada diretamente no banco local porque o `dotnet ef` do ambiente falhou ao carregar `System.Runtime 10.0.0.0`.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`.
+
+### Data: 2026-03-22 (refinos finais do chat flutuante)
+### Resumo
+- O chat da branch eat/chat-flutuante-online foi refinado para exibir nomes reais dos alunos nas conversas individuais, apos incluir o relacionamento Student no carregamento das matriculas por curso.
+- O widget ganhou ajustes de layout para ampliar a area principal da conversa, reduzir a pressao visual das colunas laterais e melhorar a leitura geral.
+- A lista de mensagens passou a usar um viewport ancorado no rodape, com ordenacao cronologica por envio e rolagem automatica consistente para a ultima mensagem, em comportamento semelhante ao ChatGPT.
+- .gitignore atualizado para ignorar qualquer pasta rtifacts no repositorio.
+- Validacao executada com dotnet build ProjetoFinal.sln e 
+pm.cmd run build.
+

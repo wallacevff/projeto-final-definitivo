@@ -28,7 +28,8 @@ public class CourseRepository : DefaultRepository<Course, CourseFilter, Guid>, I
             .AsSplitQuery()
             .Include(course => course.Instructor)
             .Include(course => course.ClassGroups)
-                .ThenInclude(group => group.Enrollments);
+                .ThenInclude(group => group.Enrollments)
+                .ThenInclude(enrollment => enrollment.Student);
     }
 
     protected override IQueryable<Course> ApplyIncludesList(IQueryable<Course> query)

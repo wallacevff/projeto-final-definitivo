@@ -122,6 +122,22 @@
 
 [2026-03-22 21:23:30] Assistant: Criei a branch `feat/chat-flutuante-online` e iniciei a implementacao de um chat flutuante por turma com SignalR, presenca online/offline simples no grupo aberto, controller protegido para mensagens, hub autenticado de chat e widget global no shell do Angular. Validei com `npm.cmd run build` e com build alternativo da API em `artifacts/api-build`; o `dotnet build ProjetoFinal.sln` permaneceu bloqueado por uma instancia local de `ProjetoFinal.Api` usando os binarios em `src/ProjetoFinal.Api/bin/Debug/net8.0`.
 
+[2026-03-22 22:05:33] User: Eu quero que possa haver uma conversa coma turma inteira e individual
+
+[2026-03-22 22:05:33] Assistant: Estendi o chat da branch `feat/chat-flutuante-online` para suportar dois modos dentro da mesma turma: canal coletivo e conversa individual entre participantes da turma. No backend, as mensagens passaram a aceitar `RecipientId` opcional, o controller/hub segregam broadcasts entre canal da turma e grupos privados por participante, e uma migration manual foi adicionada para criar a coluna `RecipientId`. No frontend, o widget flutuante agora alterna entre `Turma inteira` e participantes da turma, carregando historico filtrado por conversa e mantendo tempo real via SignalR. Validacoes executadas: `dotnet build ProjetoFinal.sln` e `npm.cmd run build`, ambos com sucesso; permanecem apenas warnings conhecidos de `NU1903` do `AutoMapper` e budgets/seletores do Angular.
+
+[2026-03-22 22:06:33] User: Adicione ao .gitignore a pasta artifacts independente da sua localização
+
+[2026-03-22 22:06:33] Assistant: Atualizei o `.gitignore` para ignorar qualquer pasta `artifacts` em qualquer nivel do repositorio usando a regra `**/artifacts/`.
+
+[2026-03-22 22:08:24] User: Nao foi possivel carregar o historico do chat.
+
+[2026-03-22 22:08:24] Assistant: Corrigi o backend do historico para separar `CurrentUserId` de `SenderId` no filtro de chat, evitando que a busca reutilizasse o remetente como contexto da conversa. Alem disso, apliquei diretamente no banco local a alteracao estrutural de `RecipientId` em `ChatMessages` porque o `dotnet ef` do ambiente falhou no tooling (`System.Runtime 10.0.0.0`). Validei com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`, ambos com sucesso, restando apenas warnings conhecidos do projeto.
+
+[2026-03-22 22:16:17] User: Nas conversas individuais, deve aparecer o nome do aluno
+
+[2026-03-22 22:16:17] Assistant: Ajustei o chat flutuante para explicitar o nome do aluno na conversa individual: o cabecalho agora mostra `Conversa com <nome>`, o estado vazio repete o nome do aluno selecionado e o rotulo do composer tambem passa a citar esse nome. Validei com `npm.cmd run build`.
+
 [2026-01-06 02:05:00] Assistant: Ajustei filtros no frontend e adicionei validacoes no backend para impedir acesso a cursos/turmas de outros instrutores.
 
 [2026-01-06 02:20:00] User: Fui testar e me deparei com esse erro... TaskCanceledException...
@@ -413,3 +429,39 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 21:02:49] User: Access to fetch at 'http://localhost:5179/hubs/forum/negotiate?negotiateVersion=1' from origin 'http://localhost:4200' has been blocked by CORS policy...
 
 [2026-03-22 21:02:49] Assistant: Corrigi a politica de CORS da API para o SignalR com credenciais, trocando o `AllowAnyOrigin` por uma politica que ecoa a origem e permite credenciais. Isso desbloqueia a negociacao do hub entre `http://localhost:4200` e `http://localhost:5179`. Revalidei com build alternativo da API em `artifacts/api-build`.
+
+[2026-03-22 22:22:06] User: Melhore o visual da conversa, pode diminuir as letras, mas aumente o visual da conversa.
+
+[2026-03-22 22:22:06] Assistant: Ajustei o layout do chat flutuante para priorizar a area da conversa, reduzindo tipografia e dimensoes das colunas laterais, ampliando painel, bolhas e area de mensagens. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-22 22:24:12] User: Ainda nao mostra o nome do aluno no chat individual, apenas Aluno
+
+[2026-03-22 22:24:12] Assistant: Corrigi o carregamento das turmas no backend para incluir o relacionamento Student nas matriculas retornadas por cursos, garantindo que StudentName chegue preenchido ao chat e substitua o fallback generico Aluno. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-22 22:29:28] User: A conversa no chat nao esta ordenada, ela tem que esta de cima para baixo, a parte de baixo e o texto mais atual e a barra de rolagem tem que acompanhar
+
+[2026-03-22 22:29:28] Assistant: Ajustei o chat para manter a ordenacao cronologica de cima para baixo e rolar automaticamente ate a mensagem mais recente sempre que o historico carregar ou entrar nova mensagem. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-22 22:32:38] User: A conversa deve esta por ordem de envio
+
+[2026-03-22 22:32:38] Assistant: Ajustei a ordenacao do chat para seguir explicitamente o SentAt das mensagens, com desempate estavel, mantendo a exibicao em ordem cronologica de envio. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-22 22:35:11] User: Ainda falta detalhes, a ultima mensagem enviada esta no topo, era pra ser a ordem invertida
+
+[2026-03-22 22:35:11] Assistant: Endureci a ordenacao do chat no frontend para normalizar SentAt antes de comparar, com fallback textual estavel, evitando que mensagens permane�am na ordem original da API quando o navegador nao interpretar o timestamp corretamente. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-22 22:37:37] User: Ainda nao. Faca algo parecido com o chatgpt
+
+[2026-03-22 22:37:37] Assistant: Reestruturei a area de mensagens do chat para um viewport com conteudo ancorado no rodape, semelhante ao comportamento do ChatGPT: a conversa permanece apoiada embaixo quando ha poucas mensagens, renderiza a lista em ordem cronologica e usa uma ancora inferior para rolar ate a ultima mensagem de forma consistente. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+

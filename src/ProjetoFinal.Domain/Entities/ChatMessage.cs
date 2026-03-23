@@ -7,6 +7,7 @@ public class ChatMessage : AuditableEntity
 {
     public Guid ClassGroupId { get; set; }
     public Guid SenderId { get; set; }
+    public Guid? RecipientId { get; set; }
     public Guid? ReplyToMessageId { get; set; }
     public Guid? MediaResourceId { get; set; }
     public string Message { get; set; } = string.Empty;
@@ -15,6 +16,7 @@ public class ChatMessage : AuditableEntity
 
     public ClassGroup? ClassGroup { get; set; }
     public User? Sender { get; set; }
+    public User? Recipient { get; set; }
     public ChatMessage? ReplyTo { get; set; }
     public MediaResource? MediaResource { get; set; }
     public ICollection<ChatMessage> Replies { get; set; } = new List<ChatMessage>();

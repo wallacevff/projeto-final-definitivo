@@ -6,6 +6,7 @@ public class ChatMessageCreateDto
 {
     public Guid ClassGroupId { get; set; }
     public Guid SenderId { get; set; }
+    public Guid? RecipientId { get; set; }
     public Guid? ReplyToMessageId { get; set; }
     public Guid? MediaResourceId { get; set; }
     public string Message { get; set; } = string.Empty;

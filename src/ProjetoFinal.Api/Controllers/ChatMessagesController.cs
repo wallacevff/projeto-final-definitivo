@@ -45,10 +45,10 @@ public class ChatMessagesController : ControllerBase
     {
         dto.SenderId = ResolveCurrentUserId();
         await EnsureUserCanAccessClassGroupAsync(dto.ClassGroupId, cancellationToken);
+        await EnsureParticipantCanAccessClassGroupAsync(dto.ClassGroupId, dto.RecipientId, cancellationToken);
 
         var message = await _service.SendAsync(dto, cancellationToken);
-        await _chatHub.Clients.Group(ChatHub.BuildClassGroupGroup(message.ClassGroupId))
-            .SendAsync("MessageReceived", message, cancellationToken);
+        await BroadcastMessageAsync("MessageReceived", message, cancellationToken);
 
         return message;
     }
@@ -62,8 +62,7 @@ public class ChatMessagesController : ControllerBase
         await EnsureUserOwnsMessageAsync(messageId, cancellationToken);
 
         var message = await _service.UpdateAsync(messageId, dto, cancellationToken);
-        await _chatHub.Clients.Group(ChatHub.BuildClassGroupGroup(message.ClassGroupId))
-            .SendAsync("MessageUpdated", message, cancellationToken);
+        await BroadcastMessageAsync("MessageUpdated", message, cancellationToken);
 
         return message;
     }
@@ -77,8 +76,19 @@ public class ChatMessagesController : ControllerBase
         var message = await _service.GetByIdAsync(messageId, cancellationToken);
         await _service.DeleteAsync(messageId, cancellationToken);
 
-        await _chatHub.Clients.Group(ChatHub.BuildClassGroupGroup(message.ClassGroupId))
-            .SendAsync("MessageDeleted", messageId, cancellationToken);
+        if (message.RecipientId is null || message.RecipientId == Guid.Empty)
+        {
+            await _chatHub.Clients.Group(ChatHub.BuildClassGroupGroup(message.ClassGroupId))
+                .SendAsync("MessageDeleted", messageId, cancellationToken);
+        }
+        else
+        {
+            var senderGroup = ChatHub.BuildParticipantGroup(message.ClassGroupId, message.SenderId);
+            var recipientGroup = ChatHub.BuildParticipantGroup(message.ClassGroupId, message.RecipientId.Value);
+
+            await _chatHub.Clients.Groups(senderGroup, recipientGroup)
+                .SendAsync("MessageDeleted", messageId, cancellationToken);
+        }
 
         return NoContent();
     }
@@ -94,6 +104,8 @@ public class ChatMessagesController : ControllerBase
         }
 
         await EnsureUserCanAccessClassGroupAsync(filter.ClassGroupId.Value, cancellationToken);
+        await EnsureParticipantCanAccessClassGroupAsync(filter.ClassGroupId.Value, filter.RecipientId, cancellationToken);
+        filter.CurrentUserId = ResolveCurrentUserId();
         return await _service.GetMessagesAsync(filter, cancellationToken);
     }
 
@@ -156,6 +168,60 @@ public class ChatMessagesController : ControllerBase
         {
             throw new BusinessException("Voce nao possui acesso a este chat.", ECodigo.NaoPermitido);
         }
+    }
+
+    private async Task EnsureParticipantCanAccessClassGroupAsync(
+        Guid classGroupId,
+        Guid? participantId,
+        CancellationToken cancellationToken)
+    {
+        if (participantId is null || participantId == Guid.Empty)
+        {
+            return;
+        }
+
+        var currentUserId = ResolveCurrentUserId();
+        if (participantId == currentUserId)
+        {
+            throw new BusinessException("Selecione outro participante para a conversa individual.", ECodigo.MaRequisicao);
+        }
+
+        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        if (classGroup is null)
+        {
+            throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (classGroup.Course?.InstructorId == participantId)
+        {
+            return;
+        }
+
+        var participantEnrollment = await _classEnrollmentRepository.FirstOrDefaultByPredicateAsync(
+            item => item.ClassGroupId == classGroupId
+                    && item.StudentId == participantId
+                    && item.Status == EnrollmentStatus.Approved,
+            cancellationToken);
+
+        if (participantEnrollment is null)
+        {
+            throw new BusinessException("Participante da conversa nao pertence a esta turma.", ECodigo.NaoPermitido);
+        }
+    }
+
+    private async Task BroadcastMessageAsync(string eventName, ChatMessageDto message, CancellationToken cancellationToken)
+    {
+        if (message.RecipientId is null || message.RecipientId == Guid.Empty)
+        {
+            await _chatHub.Clients.Group(ChatHub.BuildClassGroupGroup(message.ClassGroupId))
+                .SendAsync(eventName, message, cancellationToken);
+            return;
+        }
+
+        var senderGroup = ChatHub.BuildParticipantGroup(message.ClassGroupId, message.SenderId);
+        var recipientGroup = ChatHub.BuildParticipantGroup(message.ClassGroupId, message.RecipientId.Value);
+        await _chatHub.Clients.Groups(senderGroup, recipientGroup)
+            .SendAsync(eventName, message, cancellationToken);
     }
 
     private Guid ResolveCurrentUserId()

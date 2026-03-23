@@ -26,6 +26,7 @@ public class ChatHub(
 
         var groupName = BuildClassGroupGroup(parsedClassGroupId);
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        await Groups.AddToGroupAsync(Context.ConnectionId, BuildParticipantGroup(parsedClassGroupId, ResolveCurrentUserId()));
 
         var users = presenceTracker.Register(parsedClassGroupId, ResolveCurrentUserId(), ResolveCurrentUserName(), Context.ConnectionId);
         await Clients.Group(groupName).SendAsync("PresenceSnapshot", users);
@@ -40,6 +41,7 @@ public class ChatHub(
 
         var groupName = BuildClassGroupGroup(parsedClassGroupId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, BuildParticipantGroup(parsedClassGroupId, ResolveCurrentUserId()));
         var snapshot = presenceTracker.Unregister(Context.ConnectionId);
         if (snapshot is not null)
         {
@@ -61,6 +63,11 @@ public class ChatHub(
     public static string BuildClassGroupGroup(Guid classGroupId)
     {
         return $"chat-class-group-{classGroupId:N}";
+    }
+
+    public static string BuildParticipantGroup(Guid classGroupId, Guid userId)
+    {
+        return $"chat-class-group-{classGroupId:N}-participant-{userId:N}";
     }
 
     private async Task EnsureUserCanAccessClassGroupAsync(Guid classGroupId)

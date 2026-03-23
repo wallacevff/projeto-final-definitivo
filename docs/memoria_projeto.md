@@ -502,3 +502,26 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Frontend ganhou widget global flutuante no `app.component`, servicos REST/SignalR de chat e listagem de turmas com chat habilitado para aluno matriculado ou professor dono do curso.
 - Validacao: `npm.cmd run build` com sucesso e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\` com sucesso.
 - Observacao: `dotnet build ProjetoFinal.sln` continuou falhando por lock da instancia em execucao de `ProjetoFinal.Api` sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.
+
+## 2026-03-22 (chat coletivo e individual por turma)
+- Chat evoluido para dois modos por turma: conversa com a turma inteira e conversa individual entre participantes daquela mesma turma.
+- `ChatMessage` agora possui `RecipientId` opcional; quando nulo, a mensagem pertence ao canal coletivo, e quando preenchido, representa uma conversa privada bilateral.
+- `ChatHub` passou a adicionar o usuario tambem a um grupo privado por turma/participante, permitindo broadcast isolado de DMs sem perder a presenca coletiva da turma.
+- Widget flutuante do Angular agora exibe a opcao `Turma inteira` e a lista de participantes elegiveis da turma, alternando historico e envio conforme a conversa selecionada.
+- Migration manual adicionada em `src/ProjetoFinal.Infra.Data/Migrations/20260322215000_AddChatDirectMessages.cs` para criar `RecipientId` em `ChatMessages`, indice e FK para `Users`.
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm.cmd run build` executados com sucesso.
+
+## 2026-03-22 (correcao do historico do chat)
+- Filtro do historico ajustado para usar `CurrentUserId` separado de `SenderId`, evitando distorcao na consulta do canal coletivo e das conversas individuais.
+- Banco local atualizado manualmente com a coluna `RecipientId`, indice e FK em `ChatMessages`, contornando falha do `dotnet ef` no ambiente (`System.Runtime 10.0.0.0` ausente no tooling).
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm.cmd run build` executados com sucesso.
+
+## 2026-03-22 (refinos visuais e de ordenacao do chat)
+- .gitignore passou a ignorar qualquer pasta rtifacts via regra **/artifacts/.
+- Repositorio de cursos passou a incluir Enrollments -> Student, garantindo nomes reais dos alunos nas conversas individuais do chat.
+- Widget flutuante do chat foi refinado visualmente com painel maior, laterais mais compactas, conversa principal mais ampla e tipografia reduzida.
+- Layout do chat foi reorganizado para listar participantes da turma com mais clareza e mostrar o nome real do participante no cabecalho, estado vazio e rotulo da conversa individual.
+- Conversa passou a usar viewport ancorado no rodape, com ordenacao cronologica por SentAt e rolagem automatica ate a ultima mensagem, aproximando o comportamento do padrao do ChatGPT.
+- Validacao: dotnet build ProjetoFinal.sln e 
+pm.cmd run build executados com sucesso.
+

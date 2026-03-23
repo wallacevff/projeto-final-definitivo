@@ -9,11 +9,14 @@ public class ChatMessageDto
     public Guid ClassGroupId { get; set; }
     public Guid SenderId { get; set; }
     public string SenderName { get; set; } = string.Empty;
+    public Guid? RecipientId { get; set; }
+    public string? RecipientName { get; set; }
     public Guid? ReplyToMessageId { get; set; }
     public Guid? MediaResourceId { get; set; }
     public string Message { get; set; } = string.Empty;
     public DateTime SentAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsSystemMessage { get; set; }
+    public bool IsDirectMessage { get; set; }
     public MediaResourceDto? Media { get; set; }
 }

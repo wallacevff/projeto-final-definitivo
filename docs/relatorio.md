@@ -208,3 +208,24 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Frontend ganhou widget flutuante global no shell principal, lista de turmas com chat habilitado, historico via REST e atualizacao em tempo real via SignalR.
 - Validacao concluida com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
 - Restricao de ambiente: `dotnet build ProjetoFinal.sln` permaneceu bloqueado por lock do processo `ProjetoFinal.Api` (PID 29908) sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.
+
+### 2026-03-22 (chat da turma e conversa individual)
+- O chat flutuante foi expandido para suportar dois contextos por turma: canal coletivo e conversa individual entre participantes da turma.
+- Backend ajustado para persistir `RecipientId` opcional em `ChatMessages`, validando que o destinatario tambem pertence a turma e separando o broadcast entre grupo da turma e grupos privados por participante.
+- Frontend atualizado para alternar entre `Turma inteira` e participantes listados da turma, carregando historico filtrado por conversa e enviando mensagens no contexto selecionado.
+- Adicionada migration manual `20260322215000_AddChatDirectMessages.cs` e atualizado `AppDbContextModelSnapshot.cs`.
+- Validacao concluida com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`.
+
+### 2026-03-22 (correcao do historico do chat)
+- Corrigido o filtro de historico do backend para usar `CurrentUserId` separado de `SenderId`, resolvendo falha de carregamento do canal e das conversas individuais.
+- Estrutura de banco atualizada diretamente no ambiente local com `RecipientId` em `ChatMessages`, incluindo indice e FK, devido falha do `dotnet ef` causada pelo tooling local.
+- Revalidado com `dotnet build ProjetoFinal.sln` e `npm.cmd run build`.
+
+### 2026-03-22 (acabamento do chat flutuante)
+- Ajustado o carregamento de cursos para incluir Enrollments -> Student, corrigindo a exibicao do nome real dos alunos nas conversas individuais do chat.
+- Atualizado .gitignore para ignorar pastas rtifacts em qualquer nivel do repositorio.
+- Refinado o visual do widget de chat com painel mais amplo, colunas laterais mais enxutas e maior destaque para a area de conversa.
+- Reestruturada a renderizacao das mensagens para um viewport ancorado no rodape, mantendo a conversa em ordem cronologica de envio e rolando automaticamente para a ultima mensagem.
+- Validacao concluida com dotnet build ProjetoFinal.sln e 
+pm.cmd run build.
+

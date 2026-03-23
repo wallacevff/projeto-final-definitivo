@@ -326,6 +326,9 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<Guid?>("ReplyToMessageId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("RecipientId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -347,6 +350,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.HasIndex("MediaResourceId");
 
                     b.HasIndex("ReplyToMessageId");
+
+                    b.HasIndex("RecipientId");
 
                     b.HasIndex("SenderId");
 
@@ -1364,6 +1369,11 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasForeignKey("ReplyToMessageId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ProjetoFinal.Domain.Entities.User", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId")
@@ -1373,6 +1383,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Navigation("ClassGroup");
 
                     b.Navigation("MediaResource");
+
+                    b.Navigation("Recipient");
 
                     b.Navigation("ReplyTo");
 

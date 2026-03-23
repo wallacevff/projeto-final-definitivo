@@ -34,6 +34,11 @@ public class ChatMessageMap : IContextEntityMap<ChatMessage>
             .HasForeignKey(p => p.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(p => p.Recipient)
+            .WithMany()
+            .HasForeignKey(p => p.RecipientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(p => p.ReplyTo)
             .WithMany(p => p.Replies)
             .HasForeignKey(p => p.ReplyToMessageId)
