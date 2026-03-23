@@ -96,6 +96,7 @@ public class AutoMapperProfileDto : Profile
         CreateMap<MediaResource, MediaResourceDto>().ReverseMap();
 
         CreateMap<ChatMessage, ChatMessageDto>()
+            .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender != null ? src.Sender.FullName : string.Empty))
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
     }
 }

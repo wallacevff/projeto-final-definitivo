@@ -118,6 +118,10 @@
 
 [2026-01-06 02:05:00] User: Detectei um problema, criei outro professor. E estao aparecendo cursos de outro professor na tela de cursos do professor logado. Esse comportamento nao deve acontecer. Professor somente pode ver e gerenciar seus proprios cursos e turmas.
 
+[2026-03-22 21:23:30] User: Crie uma outra branch pra implementação dessa funcionalidade e inicie a imlementação
+
+[2026-03-22 21:23:30] Assistant: Criei a branch `feat/chat-flutuante-online` e iniciei a implementacao de um chat flutuante por turma com SignalR, presenca online/offline simples no grupo aberto, controller protegido para mensagens, hub autenticado de chat e widget global no shell do Angular. Validei com `npm.cmd run build` e com build alternativo da API em `artifacts/api-build`; o `dotnet build ProjetoFinal.sln` permaneceu bloqueado por uma instancia local de `ProjetoFinal.Api` usando os binarios em `src/ProjetoFinal.Api/bin/Debug/net8.0`.
+
 [2026-01-06 02:05:00] Assistant: Ajustei filtros no frontend e adicionei validacoes no backend para impedir acesso a cursos/turmas de outros instrutores.
 
 [2026-01-06 02:20:00] User: Fui testar e me deparei com esse erro... TaskCanceledException...

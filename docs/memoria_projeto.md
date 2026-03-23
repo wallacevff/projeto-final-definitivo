@@ -493,3 +493,12 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 - Politica de CORS da API ajustada para suportar negociacao do SignalR com credenciais entre `localhost:4200` e `localhost:5179`.
 - `AllowAnyOrigin` foi substituido por politica com `SetIsOriginAllowed(_ => true)` e `AllowCredentials()`, evitando resposta com `Access-Control-Allow-Origin: *` em chamadas com credenciais.
 - Validacao: `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.
+
+## 2026-03-22 (branch e inicio do chat flutuante)
+- Branch dedicada criada para a funcionalidade: `feat/chat-flutuante-online`.
+- Backend recebeu uma primeira base de chat em tempo real com `ChatHub`, rastreador de presenca em memoria por turma e broadcast de mensagens do controller para o grupo SignalR correspondente.
+- DTO de chat passou a expor `SenderName` e `UpdatedAt`, e o repositório de mensagens agora inclui remetente/midia para hidratar historico e eventos em tempo real.
+- Controller de `chat/messages` foi protegido com autenticacao, passou a resolver o usuario logado no backend e validar acesso a turma antes de listar/enviar mensagens.
+- Frontend ganhou widget global flutuante no `app.component`, servicos REST/SignalR de chat e listagem de turmas com chat habilitado para aluno matriculado ou professor dono do curso.
+- Validacao: `npm.cmd run build` com sucesso e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\` com sucesso.
+- Observacao: `dotnet build ProjetoFinal.sln` continuou falhando por lock da instancia em execucao de `ProjetoFinal.Api` sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.

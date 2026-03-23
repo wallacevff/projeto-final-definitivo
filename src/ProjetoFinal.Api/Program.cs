@@ -21,6 +21,7 @@ app.Use(async (context, next) =>
 });
 app.MapControllers();
 app.MapHub<ForumHub>("/hubs/forum");
+app.MapHub<ChatHub>("/hubs/chat");
 app.UseAngularFrontend();
 await DataSeeder.SeedAsync(app);
 app.Run();

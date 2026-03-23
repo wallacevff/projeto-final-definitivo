@@ -3,6 +3,7 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from './core/services/auth.service';
+import { FloatingChatComponent } from './shared/components/floating-chat/floating-chat.component';
 
 interface NavItem {
   label: string;
@@ -14,7 +15,7 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, FloatingChatComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

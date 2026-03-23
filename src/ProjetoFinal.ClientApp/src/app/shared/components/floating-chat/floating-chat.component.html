@@ -1,0 +1,75 @@
+<ng-container *ngIf="isVisible()">
+  <section class="floating-chat" [class.floating-chat--open]="isOpen()">
+    <button type="button" class="floating-chat__launcher" (click)="toggleOpen()" aria-label="Abrir chat">
+      <span class="floating-chat__launcher-icon"><i class="bi bi-chat-dots"></i></span>
+      <span class="floating-chat__launcher-text">Chat</span>
+      <span class="floating-chat__launcher-count" *ngIf="onlineUsers().length">{{ onlineUsers().length }}</span>
+    </button>
+
+    <div class="floating-chat__panel" *ngIf="isOpen()">
+      <header class="floating-chat__header">
+        <div>
+          <strong>Chat ao vivo</strong>
+          <p *ngIf="selectedRoom() as room">{{ room.courseTitle }} · {{ room.classGroupName }}</p>
+          <p *ngIf="!selectedRoom()">Selecione uma turma</p>
+        </div>
+        <button type="button" class="floating-chat__close" (click)="toggleOpen()" aria-label="Fechar chat">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </header>
+
+      <div class="floating-chat__body">
+        <aside class="floating-chat__rooms">
+          <div class="floating-chat__state" *ngIf="loadingRooms()">Carregando turmas...</div>
+          <div class="floating-chat__state" *ngIf="!loadingRooms() && !rooms().length">Nenhuma turma com chat disponivel.</div>
+
+          <button
+            *ngFor="let room of rooms(); trackBy: trackByRoom"
+            type="button"
+            class="floating-chat__room"
+            [class.floating-chat__room--active]="room.classGroupId === selectedClassGroupId()"
+            (click)="selectRoom(room)"
+          >
+            <strong>{{ room.classGroupName }}</strong>
+            <span>{{ room.courseTitle }}</span>
+          </button>
+        </aside>
+
+        <section class="floating-chat__conversation">
+          <div class="floating-chat__presence" *ngIf="selectedRoom()">
+            <strong>{{ onlineUsers().length }} online</strong>
+            <span>{{ onlineUsersLabel() || 'Aguardando usuarios conectados' }}</span>
+          </div>
+
+          <div class="floating-chat__messages">
+            <div class="floating-chat__state" *ngIf="loadingMessages()">Carregando mensagens...</div>
+            <div class="floating-chat__state" *ngIf="!loadingMessages() && !messages().length">Nenhuma mensagem ainda.</div>
+
+            <article
+              *ngFor="let message of messages(); trackBy: trackByMessage"
+              class="floating-chat__message"
+              [class.floating-chat__message--own]="isOwnMessage(message)"
+            >
+              <div class="floating-chat__message-meta">
+                <strong>{{ message.SenderName || 'Usuario' }}</strong>
+                <span>{{ message.SentAt | date: 'dd/MM HH:mm' }}</span>
+              </div>
+              <p [innerHTML]="message.Message"></p>
+            </article>
+          </div>
+
+          <form class="floating-chat__composer" [formGroup]="form" (ngSubmit)="sendMessage()" *ngIf="selectedRoom()">
+            <textarea
+              formControlName="message"
+              rows="3"
+              placeholder="Escreva sua mensagem..."
+            ></textarea>
+            <button type="submit" [disabled]="sendingMessage() || form.invalid">
+              {{ sendingMessage() ? 'Enviando...' : 'Enviar' }}
+            </button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </section>
+</ng-container>

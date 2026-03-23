@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using ProjetoFinal.Api.Hubs;
 using Microsoft.OpenApi.Models;
 using ProjetoFinal.Api.Utils;
 using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
@@ -126,6 +127,7 @@ public static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddRealtime(this WebApplicationBuilder builder)
     {
+        builder.Services.AddSingleton<ChatPresenceTracker>();
         builder.Services.AddSignalR()
             .AddJsonProtocol(options =>
             {

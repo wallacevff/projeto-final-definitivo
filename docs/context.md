@@ -263,3 +263,11 @@
 - Corrigida a politica CORS da API para suportar negociacao do SignalR com credenciais em ambiente local.
 - Ajuste necessario para o fluxo `localhost:4200` -> `localhost:5179/hubs/forum/negotiate`.
 - Validacao executada com build alternativo da API.
+
+### Data: 2026-03-22 (branch do chat flutuante)
+### Resumo
+- Branch `feat/chat-flutuante-online` aberta para a funcionalidade de chat flutuante.
+- Primeira implementacao conecta um widget global do Angular a um `ChatHub` autenticado com presenca simples online/offline por turma aberta.
+- Mensagens do chat agora passam pelo controller autenticado, validam acesso a turma e sao retransmitidas em tempo real para o grupo do SignalR.
+- Historico do chat passou a retornar nome do remetente, permitindo renderizacao adequada no widget.
+- Validacao executada com `npm.cmd run build` e build alternativo da API; o build completo da solucao segue bloqueado por lock da API em execucao.

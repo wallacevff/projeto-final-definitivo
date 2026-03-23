@@ -9,6 +9,7 @@ public interface IChatMessageAppService
 {
     Task<ChatMessageDto> SendAsync(ChatMessageCreateDto dto, CancellationToken cancellationToken = default);
     Task<ChatMessageDto> UpdateAsync(Guid messageId, ChatMessageUpdateDto dto, CancellationToken cancellationToken = default);
+    Task<ChatMessageDto> GetByIdAsync(Guid messageId, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid messageId, CancellationToken cancellationToken = default);
     Task<PagedResultDto<ChatMessageDto>> GetMessagesAsync(ChatMessageFilter filter, CancellationToken cancellationToken = default);
 }

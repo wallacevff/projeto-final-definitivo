@@ -20,6 +20,7 @@ public class ClassGroupRepository : DefaultRepository<ClassGroup, ClassGroupFilt
     protected override IQueryable<ClassGroup> ApplyIncludes(IQueryable<ClassGroup> query)
     {
         return query
+            .Include(group => group.Course)
             .Include(group => group.Enrollments)
             .ThenInclude(enrollment => enrollment.Student);
     }
@@ -27,6 +28,7 @@ public class ClassGroupRepository : DefaultRepository<ClassGroup, ClassGroupFilt
     protected override IQueryable<ClassGroup> ApplyIncludesList(IQueryable<ClassGroup> query)
     {
         return query
+            .Include(group => group.Course)
             .Include(group => group.Enrollments)
             .ThenInclude(enrollment => enrollment.Student);
     }

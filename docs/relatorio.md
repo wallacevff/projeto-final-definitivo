@@ -199,3 +199,12 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 - Corrigida a politica CORS da API para permitir negociacao do hub com credenciais entre frontend e backend em ambientes com origens distintas.
 - Substituido o uso de `AllowAnyOrigin` por politica com `SetIsOriginAllowed(_ => true)` + `AllowCredentials()`, eliminando o erro de preflight com `Access-Control-Allow-Origin: *`.
 - Revalidado com `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
+
+### 2026-03-22 (inicio do chat flutuante)
+- Criada a branch `feat/chat-flutuante-online` para isolar a implementacao do chat global.
+- Backend recebeu `ChatHub` autenticado, rastreamento simples de presenca online/offline por turma e broadcasts de `MessageReceived`, `MessageUpdated`, `MessageDeleted` e `PresenceSnapshot`.
+- Controller de chat foi endurecido para usar o usuario autenticado e validar acesso apenas para professor dono da turma, administrador ou aluno com matricula aprovada.
+- DTO/repositorio de mensagens agora retornam nome do remetente e dados hidratados para historico e tempo real.
+- Frontend ganhou widget flutuante global no shell principal, lista de turmas com chat habilitado, historico via REST e atualizacao em tempo real via SignalR.
+- Validacao concluida com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
+- Restricao de ambiente: `dotnet build ProjetoFinal.sln` permaneceu bloqueado por lock do processo `ProjetoFinal.Api` (PID 29908) sobre `src/ProjetoFinal.Api/bin/Debug/net8.0`.
