@@ -245,3 +245,21 @@
 ### Resumo
 - Grid de `Meus cursos` teve a largura dos cards ampliada para reduzir quebra de linha nos valores de `Vagas ocupadas` e `Matriculado em`.
 - Validacao executada com `npm.cmd run build`.
+
+### Data: 2026-03-22 (forum realtime)
+### Resumo
+- SignalR adicionado ao backend e frontend para atualizar posts do forum em tempo real por topico.
+- `forum-thread` agora combina carga inicial via REST com eventos `PostCreated` vindos do hub.
+- Validacao executada com `npm.cmd run build` e build alternativo da API.
+
+### Data: 2026-03-22 (ajuste de compatibilidade do hub)
+### Resumo
+- Serializacao do SignalR alinhada ao padrao `PascalCase` do restante da API para o frontend consumir o mesmo formato de DTO.
+- Metodos do hub simplificados para reduzir risco de falha no `invoke` do cliente.
+- Validacao executada com `npm.cmd run build` e build alternativo da API.
+
+### Data: 2026-03-22 (CORS do SignalR)
+### Resumo
+- Corrigida a politica CORS da API para suportar negociacao do SignalR com credenciais em ambiente local.
+- Ajuste necessario para o fluxo `localhost:4200` -> `localhost:5179/hubs/forum/negotiate`.
+- Validacao executada com build alternativo da API.

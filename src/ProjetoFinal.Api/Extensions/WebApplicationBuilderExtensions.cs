@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProjetoFinal.Api.Utils;
 using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
 
 namespace ProjetoFinal.Api.Extensions;
@@ -57,7 +58,8 @@ public static class WebApplicationBuilderExtensions
             options.AddDefaultPolicy(op => op
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowAnyOrigin()));
+                .SetIsOriginAllowed(_ => true)
+                .AllowCredentials()));
         return builder;
     }
 
@@ -90,6 +92,20 @@ public static class WebApplicationBuilderExtensions
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromMinutes(1)
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrWhiteSpace(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         builder.Services.AddAuthorization();
@@ -105,6 +121,17 @@ public static class WebApplicationBuilderExtensions
         {
             options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB para uploads de arquivos
         });
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddRealtime(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddSignalR()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = new PascalCaseNamingPolicy();
+                options.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
         return builder;
     }
 }

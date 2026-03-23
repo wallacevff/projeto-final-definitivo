@@ -8,9 +8,10 @@ public static class WebApplicationExtensions
     public static WebApplication UseCors(this WebApplication app)
     {
         app.UseCors(options =>
-            options.AllowAnyOrigin()
+            options.SetIsOriginAllowed(_ => true)
                 .AllowAnyMethod()
-                .AllowAnyHeader());
+                .AllowAnyHeader()
+                .AllowCredentials());
         return app;
     }
 

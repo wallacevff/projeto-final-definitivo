@@ -18,6 +18,7 @@ public static class WebApplicationBuilderFactory
         builder.AddSwaggerBuilder();
         builder.AddCorsBuilder();
         builder.AddJwtAuthentication();
+        builder.AddRealtime();
         builder.ConfigureRequestBodySize();
 
         return builder.Build();

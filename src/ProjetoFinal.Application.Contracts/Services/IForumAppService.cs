@@ -14,6 +14,7 @@ public interface IForumAppService
     Task<PagedResultDto<ForumThreadDto>> GetThreadsAsync(ForumThreadFilter filter, CancellationToken cancellationToken = default);
 
     Task<ForumPostDto> CreatePostAsync(ForumPostCreateDto dto, CancellationToken cancellationToken = default);
+    Task<ForumPostDto> GetPostByIdAsync(Guid postId, CancellationToken cancellationToken = default);
     Task UpdatePostAsync(Guid postId, ForumPostUpdateDto dto, CancellationToken cancellationToken = default);
     Task DeletePostAsync(Guid postId, CancellationToken cancellationToken = default);
     Task<PagedResultDto<ForumPostDto>> GetPostsAsync(ForumPostFilter filter, CancellationToken cancellationToken = default);

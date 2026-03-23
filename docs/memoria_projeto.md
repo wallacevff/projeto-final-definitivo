@@ -476,3 +476,20 @@ Observação próximo encontro: retomar os itens abaixo na abertura da próxima 
 ## 2026-03-22 (largura ampliada dos cards)
 - Cards de `Meus cursos` tiveram a largura minima e maxima ampliadas no grid para acomodar melhor os valores de data e ocupacao sem quebra desnecessaria.
 - Validacao: `npm.cmd run build` executado com sucesso.
+
+## 2026-03-22 (forum em tempo real com SignalR)
+- Backend passou a expor hub autenticado `ForumHub` com grupos por topico (`threadId`) e suporte a token JWT via query string em rotas `/hubs`.
+- Publicacao de posts no forum agora retorna o DTO hidratado e dispara broadcast `PostCreated` para os clientes conectados ao topico.
+- Frontend ganhou servico de tempo real para o forum e a tela `forum-thread` passou a conectar/desconectar do hub conforme o topico aberto, inserindo mensagens e respostas em tempo real com deduplicacao local.
+- Dependencia adicionada no frontend: `@microsoft/signalr`.
+- Validacao: `npm.cmd run build` executado com sucesso e API compilada com `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.
+
+## 2026-03-22 (correcao de compatibilidade do SignalR)
+- Hub do forum ajustado para serializar payloads com o mesmo `PascalCase` da API REST, evitando divergencia de nomes de propriedades entre REST e eventos em tempo real.
+- Metodos do hub simplificados para assinatura mais direta (`JoinThread` e `LeaveThread`), reduzindo risco de binding inconsistente na invocacao do cliente.
+- Validacao: `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.
+
+## 2026-03-22 (correcao de CORS para SignalR local)
+- Politica de CORS da API ajustada para suportar negociacao do SignalR com credenciais entre `localhost:4200` e `localhost:5179`.
+- `AllowAnyOrigin` foi substituido por politica com `SetIsOriginAllowed(_ => true)` e `AllowCredentials()`, evitando resposta com `Access-Control-Allow-Origin: *` em chamadas com credenciais.
+- Validacao: `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=...\\artifacts\\api-build\\`.

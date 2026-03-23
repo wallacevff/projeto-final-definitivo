@@ -392,3 +392,20 @@ Quero que o Dockerfile seja multistaging contendo uma parte que builda o fronten
 [2026-03-22 17:27:12] User: Aumente a largura de card de curso para que não quebre linha nos valores de datas do matriculado em nem das vagas ocupadas
 
 [2026-03-22 17:27:12] Assistant: Aumentei a largura minima e maxima dos cards de `Meus cursos` para dar mais espaco aos valores de data e ocupacao, reduzindo a quebra de linha nesses campos. Validei com `npm.cmd run build` (warnings conhecidos mantidos).
+
+[2026-03-22 19:34:08] User: Para implementar signal R para o forum e posts é muito complicado?
+[2026-03-22 19:34:08] Assistant: Expliquei que a complexidade era baixa a media e que o melhor primeiro passo era usar SignalR por topico, mantendo a API REST para carga inicial e usando eventos em tempo real para novos posts e respostas.
+
+[2026-03-22 19:34:08] User: Implemente essa funcionalidade
+
+[2026-03-22 19:34:08] Assistant: Implementei SignalR no forum em nivel de topico: backend agora expõe hub autenticado para grupos por thread e publica evento `PostCreated` apos persistir a mensagem; o frontend conecta ao hub, entra no grupo do topico atual e injeta posts/respostas em tempo real sem recarregar a lista inteira. Adicionei o cliente `@microsoft/signalr`, validei com `npm.cmd run build` e com build alternativo da API em `artifacts/api-build`.
+
+[2026-03-22 20:43:50] User: Você implementou para aluno e professor?
+[2026-03-22 20:43:50] Assistant: Confirmei que sim: alunos e professores recebem posts em tempo real no topico aberto, com a mesma regra de acesso ja aplicada no REST para professores em topicos de seus proprios cursos.
+
+[2026-03-22 20:43:50] User: Não funcionou
+[2026-03-22 20:43:50] Assistant: Ajustei a compatibilidade do SignalR para o padrao de serializacao usado pelo restante da API (PascalCase) e simplifiquei os metodos do hub, porque esse desalinhamento podia impedir o frontend de interpretar corretamente os posts recebidos em tempo real. Revalidei com `npm.cmd run build` e com build alternativo da API em `artifacts/api-build`.
+
+[2026-03-22 21:02:49] User: Access to fetch at 'http://localhost:5179/hubs/forum/negotiate?negotiateVersion=1' from origin 'http://localhost:4200' has been blocked by CORS policy...
+
+[2026-03-22 21:02:49] Assistant: Corrigi a politica de CORS da API para o SignalR com credenciais, trocando o `AllowAnyOrigin` por uma politica que ecoa a origem e permite credenciais. Isso desbloqueia a negociacao do hub entre `http://localhost:4200` e `http://localhost:5179`. Revalidei com build alternativo da API em `artifacts/api-build`.

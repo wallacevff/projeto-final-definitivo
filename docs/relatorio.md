@@ -182,3 +182,20 @@ Plataforma EAD com duas modalidades de curso: turmas interativas e distribuicao 
 ### 2026-03-22 (cards mais largos para datas e ocupacao)
 - Ampliada a largura minima e maxima dos cards do grid de `Meus cursos` para reduzir quebras de linha nos valores dos campos de data e ocupacao.
 - Validacao concluida com `npm.cmd run build` (warnings Angular conhecidos mantidos).
+
+### 2026-03-22 (SignalR no forum)
+- Implementado hub autenticado para o forum com grupos por topico, permitindo broadcast de novos posts/respostas sem recarregar a pagina.
+- Ajustado backend para aceitar JWT em conexoes SignalR (`access_token` em `/hubs`) e para retornar/broadcastar o `ForumPostDto` ja hidratado apos o POST.
+- Criado servico de tempo real no Angular e integrada a tela `forum-thread`, que agora recebe novas mensagens em tempo real com deduplicacao local.
+- Adicionada dependencia `@microsoft/signalr` no frontend.
+- Validacao concluida com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
+
+### 2026-03-22 (correcao de compatibilidade do SignalR)
+- Corrigido o hub do forum para serializar eventos em `PascalCase`, compatibilizando os eventos em tempo real com o mesmo contrato usado pela API REST e pelo frontend atual.
+- Simplificada a assinatura dos metodos `JoinThread` e `LeaveThread` no hub para reduzir risco de falha na invocacao pelo cliente SignalR.
+- Revalidado com `npm.cmd run build` e `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.
+
+### 2026-03-22 (correcao de CORS do SignalR)
+- Corrigida a politica CORS da API para permitir negociacao do hub com credenciais entre frontend e backend em ambientes com origens distintas.
+- Substituido o uso de `AllowAnyOrigin` por politica com `SetIsOriginAllowed(_ => true)` + `AllowCredentials()`, eliminando o erro de preflight com `Access-Control-Allow-Origin: *`.
+- Revalidado com `dotnet build src/ProjetoFinal.Api/ProjetoFinal.Api.csproj -p:OutDir=D:\\Dev\\Wallacevff\\projeto-final-definitivo\\artifacts\\api-build\\`.

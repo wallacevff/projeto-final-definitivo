@@ -120,6 +120,17 @@ public class ForumAppService : IForumAppService
         return _mapper.MapFrom<ForumPostDto>(created);
     }
 
+    public async Task<ForumPostDto> GetPostByIdAsync(Guid postId, CancellationToken cancellationToken = default)
+    {
+        var post = await _postRepository.GetByIdAsync(postId, cancellationToken);
+        if (post is null)
+        {
+            throw new BusinessException("Mensagem nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        return _mapper.MapFrom<ForumPostDto>(post);
+    }
+
     public async Task UpdatePostAsync(Guid postId, ForumPostUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var post = await _postRepository.FindAsync(postId, cancellationToken);

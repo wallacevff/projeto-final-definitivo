@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using ProjetoFinal.Api.Services;
 using ProjetoFinal.Api.Extensions;
 using ProjetoFinal.Api.Factories;
+using ProjetoFinal.Api.Hubs;
 
 var app = WebApplicationBuilderFactory.CreateWebApplication(args);
 app.UseCors();
@@ -19,6 +20,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.MapControllers();
+app.MapHub<ForumHub>("/hubs/forum");
 app.UseAngularFrontend();
 await DataSeeder.SeedAsync(app);
 app.Run();

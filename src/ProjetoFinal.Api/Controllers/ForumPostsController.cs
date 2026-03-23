@@ -1,7 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using ProjetoFinal.Api.Hubs;
 using ProjetoFinal.Application.Contracts.Dto;
 using ProjetoFinal.Application.Contracts.Dto.Forum;
 using ProjetoFinal.Application.Contracts.Services;
@@ -23,21 +25,24 @@ public class ForumPostsController : ControllerBase
     private readonly ICourseAppService _courseService;
     private readonly IForumPostRepository _postRepository;
     private readonly IForumThreadRepository _threadRepository;
+    private readonly IHubContext<ForumHub> _hubContext;
 
     public ForumPostsController(
         IForumAppService service,
         ICourseAppService courseService,
         IForumPostRepository postRepository,
-        IForumThreadRepository threadRepository)
+        IForumThreadRepository threadRepository,
+        IHubContext<ForumHub> hubContext)
     {
         _service = service;
         _courseService = courseService;
         _postRepository = postRepository;
         _threadRepository = threadRepository;
+        _hubContext = hubContext;
     }
 
     [HttpPost]
-    public Task<ForumPostDto> CreateAsync(
+    public async Task<ForumPostDto> CreateAsync(
         [FromBody] ForumPostCreateDto dto,
         CancellationToken cancellationToken = default)
     {
@@ -48,7 +53,12 @@ public class ForumPostsController : ControllerBase
         }
 
         dto.AuthorId = userId;
-        return CreatePostInternalAsync(dto, cancellationToken);
+        var createdPost = await CreatePostInternalAsync(dto, cancellationToken);
+        await _hubContext.Clients
+            .Group(ForumHub.BuildThreadGroup(createdPost.ThreadId))
+            .SendAsync("PostCreated", createdPost, cancellationToken);
+
+        return createdPost;
     }
 
     [HttpPut("{postId:guid}")]
@@ -194,6 +204,7 @@ public class ForumPostsController : ControllerBase
             await EnsureInstructorOwnsCourseAsync(thread.CourseId, cancellationToken);
         }
 
-        return await _service.CreatePostAsync(dto, cancellationToken);
+        var created = await _service.CreatePostAsync(dto, cancellationToken);
+        return await _service.GetPostByIdAsync(created.Id, cancellationToken);
     }
 }

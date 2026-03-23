@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ForumService } from '../../core/services/forum.service';
 import { ForumPostsService } from '../../core/services/forum-posts.service';
+import { ForumRealtimeService } from '../../core/services/forum-realtime.service';
 import { ForumPostDto, ForumThreadDto } from '../../core/api/forum.api';
 import { AuthService } from '../../core/services/auth.service';
 import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
@@ -34,6 +35,7 @@ export class ForumThreadComponent {
   @ViewChild('replySection') replySection?: ElementRef<HTMLElement>;
   private readonly forumService = inject(ForumService);
   private readonly postsService = inject(ForumPostsService);
+  private readonly forumRealtimeService = inject(ForumRealtimeService);
   private readonly authService = inject(AuthService);
   private readonly toastr = inject(ToastrService);
   private readonly route = inject(ActivatedRoute);
@@ -56,6 +58,10 @@ export class ForumThreadComponent {
   readonly threadTitle = computed(() => this.thread()?.Title ?? 'Discussao');
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      void this.forumRealtimeService.disconnect();
+    });
+
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -124,11 +130,11 @@ export class ForumThreadComponent {
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: post => {
           this.toastr.success('Mensagem enviada.');
           this.form.reset({ message: '' });
           this.replyTarget.set(null);
-          this.loadPosts(currentThread.Id);
+          this.appendPost(post);
           this.isSubmitting.set(false);
         },
         error: () => {
@@ -163,6 +169,7 @@ export class ForumThreadComponent {
           this.posts.set(this.buildPostTree(posts));
           this.loading.set(false);
           this.error.set(null);
+          void this.connectRealtime(thread.Id);
         },
         error: () => {
           this.error.set('Nao foi possivel carregar a discussao.');
@@ -171,31 +178,73 @@ export class ForumThreadComponent {
       });
   }
 
-  private loadPosts(threadId: string): void {
-    this.postsService
-      .getPosts({ ThreadId: threadId })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: posts => {
-          this.posts.set(this.buildPostTree(posts));
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel carregar as mensagens.');
-        }
+  private async connectRealtime(threadId: string): Promise<void> {
+    try {
+      await this.forumRealtimeService.connectToThread(threadId, post => {
+        this.appendPost(post);
       });
+    } catch {
+      this.toastr.warning('Conexao em tempo real do forum indisponivel no momento.');
+    }
+  }
+
+  private appendPost(post: ForumPostDto): void {
+    this.posts.update(current => {
+      const next = this.clonePostTree(current);
+      if (this.insertPost(next, this.mapPost(post))) {
+        this.sortPostTree(next);
+      }
+      return next;
+    });
+  }
+
+  private insertPost(posts: ForumPostView[], post: ForumPostView): boolean {
+    if (this.containsPost(posts, post.id)) {
+      return false;
+    }
+
+    if (post.parentId) {
+      const parent = this.findPost(posts, post.parentId);
+      if (parent) {
+        parent.replies.push(post);
+        return true;
+      }
+    }
+
+    posts.push(post);
+    return true;
+  }
+
+  private containsPost(posts: ForumPostView[], postId: string): boolean {
+    return posts.some(post => post.id === postId || this.containsPost(post.replies, postId));
+  }
+
+  private findPost(posts: ForumPostView[], postId: string): ForumPostView | null {
+    for (const post of posts) {
+      if (post.id === postId) {
+        return post;
+      }
+
+      const reply = this.findPost(post.replies, postId);
+      if (reply) {
+        return reply;
+      }
+    }
+
+    return null;
+  }
+
+  private clonePostTree(posts: ForumPostView[]): ForumPostView[] {
+    return posts.map(post => ({
+      ...post,
+      replies: this.clonePostTree(post.replies)
+    }));
   }
 
   private buildPostTree(posts: ForumPostDto[]): ForumPostView[] {
     const map = new Map<string, ForumPostView>();
     posts.forEach(post => {
-      map.set(post.Id, {
-        id: post.Id,
-        authorName: post.AuthorName || 'Usuario',
-        message: post.Message,
-        createdAt: post.CreatedAt,
-        replies: [],
-        parentId: post.ParentPostId
-      });
+      map.set(post.Id, this.mapPost(post));
     });
 
     const roots: ForumPostView[] = [];
@@ -207,12 +256,23 @@ export class ForumThreadComponent {
       }
     });
 
-    const sortByDate = (items: ForumPostView[]) => {
-      items.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      items.forEach(item => sortByDate(item.replies));
-    };
-
-    sortByDate(roots);
+    this.sortPostTree(roots);
     return roots;
+  }
+
+  private sortPostTree(items: ForumPostView[]): void {
+    items.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    items.forEach(item => this.sortPostTree(item.replies));
+  }
+
+  private mapPost(post: ForumPostDto): ForumPostView {
+    return {
+      id: post.Id,
+      authorName: post.AuthorName || 'Usuario',
+      message: post.Message,
+      createdAt: post.CreatedAt,
+      replies: [],
+      parentId: post.ParentPostId
+    };
   }
 }
