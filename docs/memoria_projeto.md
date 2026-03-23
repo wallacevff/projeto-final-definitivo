@@ -532,3 +532,11 @@ pm.cmd run build executados com sucesso.
 - Validacao: dotnet build ProjetoFinal.sln e 
 pm.cmd run build executados com sucesso; o build da solucao pode emitir warnings de lock quando ProjetoFinal.Api esta em execucao.
 
+
+## 2026-03-23 (alerta sonoro e ordenacao fina do chat)
+- Adicionado alerta sonoro discreto para mensagens recebidas de outros usuarios, sem tocar para mensagens proprias e silenciando quando a aba esta em foco na conversa aberta.
+- O som passou a usar Web Audio no frontend e so fica disponivel apos a primeira interacao do usuario com a pagina, respeitando restricoes do navegador.
+- Ordenacao do chat refinada para comparar SentAt explicitamente ate segundos e milissegundos, reduzindo empates e inversoes em mensagens muito proximas.
+- Validacao: dotnet build ProjetoFinal.sln e 
+pm.cmd run build executados com sucesso.
+

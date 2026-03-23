@@ -303,3 +303,11 @@ pm.cmd run build.
 - Validacao executada com dotnet build ProjetoFinal.sln e 
 pm.cmd run build (mantidos apenas warnings conhecidos e locks quando a API local esta em execucao).
 
+
+### Data: 2026-03-23 (som e ordenacao do chat)
+### Resumo
+- O chat flutuante ganhou alerta sonoro para mensagens recebidas de terceiros, com supressao para mensagens proprias e quando a conversa correspondente ja esta aberta com a aba em foco.
+- A ordenacao das mensagens passou a considerar explicitamente segundos e milissegundos do SentAt, evitando inversoes em eventos quase simultaneos.
+- Validacao executada com dotnet build ProjetoFinal.sln e 
+pm.cmd run build.
+

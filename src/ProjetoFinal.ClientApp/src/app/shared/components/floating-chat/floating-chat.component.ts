@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ChatMessageDto, ChatParticipant, ChatPresenceUserDto } from '../../../core/api/chat.api';
 import { ClassEnrollmentDto, CourseDto } from '../../../core/api/courses.api';
 import { AuthService } from '../../../core/services/auth.service';
+import { ChatNotificationService } from '../../../core/services/chat-notification.service';
 import { ChatMessagesService } from '../../../core/services/chat-messages.service';
 import { ChatRealtimeService } from '../../../core/services/chat-realtime.service';
 import { CoursesService } from '../../../core/services/courses.service';
@@ -34,6 +35,7 @@ interface ChatConversation {
 export class FloatingChatComponent {
   private readonly authService = inject(AuthService);
   private readonly coursesService = inject(CoursesService);
+  private readonly chatNotificationService = inject(ChatNotificationService);
   private readonly chatMessagesService = inject(ChatMessagesService);
   private readonly chatRealtimeService = inject(ChatRealtimeService);
   private readonly toastr = inject(ToastrService);
@@ -281,7 +283,7 @@ export class FloatingChatComponent {
   private async connectRealtime(classGroupId: string): Promise<void> {
     try {
       await this.chatRealtimeService.connectToClassGroup(classGroupId, {
-        onMessageReceived: message => this.upsertMessage(message),
+        onMessageReceived: message => this.handleIncomingMessage(message),
         onMessageUpdated: message => this.upsertMessage(message),
         onMessageDeleted: messageId => this.removeMessage(messageId),
         onPresenceSnapshot: users => this.onlineUsers.set(users)
@@ -308,6 +310,19 @@ export class FloatingChatComponent {
     });
 
     this.scheduleScrollToBottom();
+  }
+
+  private handleIncomingMessage(message: ChatMessageDto): void {
+    const currentUserId = this.currentUser()?.id;
+    const isOwnMessage = !!currentUserId && message.SenderId === currentUserId;
+
+    this.upsertMessage(message);
+
+    if (isOwnMessage || this.shouldSilenceNotification(message)) {
+      return;
+    }
+
+    this.chatNotificationService.playIncomingMessage();
   }
 
   private removeMessage(messageId: string): void {
@@ -392,9 +407,14 @@ export class FloatingChatComponent {
 
   private sortMessages(messages: ChatMessageDto[]): ChatMessageDto[] {
     return [...messages].sort((a, b) => {
-      const sentAtDiff = this.parseSentAt(a.SentAt) - this.parseSentAt(b.SentAt);
-      if (sentAtDiff !== 0) {
-        return sentAtDiff;
+      const leftTimestamp = this.getTimestampParts(a.SentAt);
+      const rightTimestamp = this.getTimestampParts(b.SentAt);
+
+      for (let index = 0; index < leftTimestamp.length; index += 1) {
+        const partDiff = leftTimestamp[index] - rightTimestamp[index];
+        if (partDiff !== 0) {
+          return partDiff;
+        }
       }
 
       const sentAtTextDiff = (a.SentAt ?? '').localeCompare(b.SentAt ?? '', 'pt-BR');
@@ -427,20 +447,50 @@ export class FloatingChatComponent {
     });
   }
 
-  private parseSentAt(value: string | null | undefined): number {
+  private shouldSilenceNotification(message: ChatMessageDto): boolean {
+    const document = globalThis.document;
+    if (!document || document.visibilityState !== 'visible' || !document.hasFocus()) {
+      return false;
+    }
+
+    return this.isOpen() && this.isMessageForCurrentConversation(message);
+  }
+
+  private getTimestampParts(value: string | null | undefined): number[] {
     if (!value) {
-      return Number.MIN_SAFE_INTEGER;
+      return [0, 0, 0, 0, 0, 0, 0];
     }
 
-    const parsed = Date.parse(value);
-    if (!Number.isNaN(parsed)) {
-      return parsed;
+    const match = value.match(
+      /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,7}))?(?:Z|[+-]\d{2}:\d{2})?$/
+    );
+
+    if (match) {
+      const fractional = (match[7] ?? '').padEnd(3, '0').slice(0, 3);
+      return [
+        Number.parseInt(match[1], 10),
+        Number.parseInt(match[2], 10),
+        Number.parseInt(match[3], 10),
+        Number.parseInt(match[4], 10),
+        Number.parseInt(match[5], 10),
+        Number.parseInt(match[6], 10),
+        Number.parseInt(fractional || '0', 10)
+      ];
     }
 
-    const normalized = value.includes('Z') || /[+-]\d{2}:\d{2}$/.test(value)
-      ? value
-      : `${value}Z`;
-    const normalizedParsed = Date.parse(normalized);
-    return Number.isNaN(normalizedParsed) ? Number.MIN_SAFE_INTEGER : normalizedParsed;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    return [
+      parsed.getUTCFullYear(),
+      parsed.getUTCMonth() + 1,
+      parsed.getUTCDate(),
+      parsed.getUTCHours(),
+      parsed.getUTCMinutes(),
+      parsed.getUTCSeconds(),
+      parsed.getUTCMilliseconds()
+    ];
   }
 }

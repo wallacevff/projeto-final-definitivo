@@ -236,3 +236,10 @@ pm.cmd run build.
 - Validacao concluida com dotnet build ProjetoFinal.sln e 
 pm.cmd run build, mantendo apenas warnings conhecidos e locks da API local em execucao.
 
+
+### 2026-03-23 (alerta sonoro e ordenacao precisa no chat)
+- Implementado alerta sonoro de mensagem recebida no frontend com regras de silencio para envio proprio e para conversa aberta em aba focada.
+- Refinada a ordenacao das mensagens usando SentAt ate segundos e milissegundos.
+- Validacao concluida com dotnet build ProjetoFinal.sln e 
+pm.cmd run build.
+

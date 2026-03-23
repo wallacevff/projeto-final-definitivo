@@ -477,3 +477,15 @@ pm.cmd run build; o dotnet build ProjetoFinal.sln concluiu sem erros, mas com wa
 [2026-03-23 12:08:39] Assistant: Aumentei a altura util do chat flutuante ampliando o painel e compactando um pouco cabecalho, banner de presenca e composer, para sobrar mais area para a conversa. Validei com dotnet build ProjetoFinal.sln e 
 pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 
+
+[2026-03-23 12:13:00] User: Dá pra ter um alerta sonoro quando uma mensagem chega?
+
+[2026-03-23 12:13:00] Assistant: Implementei alerta sonoro discreto para mensagens recebidas de outros usuarios no chat, sem tocar para mensagens proprias e silenciando quando a aba esta em foco na conversa atualmente aberta. O som usa Web Audio e so fica ativo apos a primeira interacao do usuario com a pagina, respeitando as restricoes do navegador. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
+
+[2026-03-23 12:18:12] User: O chat ainda tem problema, com a ordem das mensagens. Me ajude com o seguinte. Utilize os segundos e milissegundos para ordenar as mensagens
+
+[2026-03-23 12:18:12] Assistant: Ajustei a ordenacao do chat para comparar explicitamente SentAt ate segundos e milissegundos, em vez de depender apenas do parse generico da data. Validei com dotnet build ProjetoFinal.sln e 
+pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
+
