@@ -269,9 +269,11 @@ public partial class DefaultRepository<TEntity, TFilter, TKey>(AppDbContext cont
         }
         else
         {
+            var pageNumber = filter.PageNumber > 0 ? filter.PageNumber : 1;
+            var pageSize = filter.PageSize > 0 ? filter.PageSize : int.MaxValue;
             result = await query
-                    .Skip((filter.PageNumber - 1) * filter.PageSize)
-                    .Take(filter.PageSize).ToListAsync(cancellationToken)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize).ToListAsync(cancellationToken)
                 ;
         }
 
@@ -291,9 +293,11 @@ public partial class DefaultRepository<TEntity, TFilter, TKey>(AppDbContext cont
         }
         else
         {
+            var pageNumber = filter.PageNumber > 0 ? filter.PageNumber : 1;
+            var pageSize = filter.PageSize > 0 ? filter.PageSize : int.MaxValue;
             result = await query
-                    .Skip((filter.PageNumber - 1) * filter.PageSize)
-                    .Take(filter.PageSize).ToListAsync(cancellationToken)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize).ToListAsync(cancellationToken)
                 ;
         }
 

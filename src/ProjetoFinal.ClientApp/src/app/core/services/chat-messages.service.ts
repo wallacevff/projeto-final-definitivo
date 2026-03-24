@@ -14,6 +14,7 @@ export class ChatMessagesService {
   getMessages(classGroupId: string, recipientId?: string | null, pageSize = 100) {
     const params: { [key: string]: string | number } = {
       ClassGroupId: classGroupId,
+      PageNumber: 1,
       PageSize: pageSize
     };
 

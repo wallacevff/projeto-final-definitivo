@@ -57,4 +57,21 @@ public class ClassGroupRepository : DefaultRepository<ClassGroup, ClassGroupFilt
 
         return groupInfo.Approved < groupInfo.Capacity;
     }
+
+    public Task<ClassGroupChatAccessInfo?> GetChatAccessInfoAsync(
+        Guid classGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        return _context.ClassGroups
+            .AsNoTracking()
+            .Where(group => group.Id == classGroupId)
+            .Select(group => new ClassGroupChatAccessInfo
+            {
+                Id = group.Id,
+                EnableChat = group.EnableChat,
+                CourseId = group.CourseId,
+                InstructorId = group.Course != null ? group.Course.InstructorId : Guid.Empty
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

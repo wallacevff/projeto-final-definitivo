@@ -37,6 +37,10 @@ public class ChatMessageAppService : IChatMessageAppService
 
     public async Task<ChatMessageDto> SendAsync(ChatMessageCreateDto dto, CancellationToken cancellationToken = default)
     {
+        dto.RecipientId = NormalizeOptionalGuid(dto.RecipientId);
+        dto.ReplyToMessageId = NormalizeOptionalGuid(dto.ReplyToMessageId);
+        dto.MediaResourceId = NormalizeOptionalGuid(dto.MediaResourceId);
+
         await EnsureSenderCanAccessClassGroupAsync(dto.ClassGroupId, dto.SenderId, cancellationToken);
         await EnsureRecipientCanAccessClassGroupAsync(dto.ClassGroupId, dto.SenderId, dto.RecipientId, cancellationToken);
         var entity = _mapper.MapFrom<ChatMessage>(dto);
@@ -92,7 +96,7 @@ public class ChatMessageAppService : IChatMessageAppService
 
     private async Task EnsureSenderCanAccessClassGroupAsync(Guid classGroupId, Guid senderId, CancellationToken cancellationToken)
     {
-        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        var classGroup = await _classGroupRepository.GetChatAccessInfoAsync(classGroupId, cancellationToken);
         if (classGroup is null)
         {
             throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
@@ -103,7 +107,7 @@ public class ChatMessageAppService : IChatMessageAppService
             throw new BusinessException("O chat desta turma esta desabilitado.", ECodigo.NaoPermitido);
         }
 
-        if (classGroup.Course?.InstructorId == senderId)
+        if (classGroup.InstructorId == senderId)
         {
             return;
         }
@@ -136,13 +140,13 @@ public class ChatMessageAppService : IChatMessageAppService
             throw new BusinessException("Selecione outro participante para a conversa individual.", ECodigo.MaRequisicao);
         }
 
-        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        var classGroup = await _classGroupRepository.GetChatAccessInfoAsync(classGroupId, cancellationToken);
         if (classGroup is null)
         {
             throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
         }
 
-        if (classGroup.Course?.InstructorId == recipientId)
+        if (classGroup.InstructorId == recipientId)
         {
             return;
         }
@@ -157,5 +161,10 @@ public class ChatMessageAppService : IChatMessageAppService
         {
             throw new BusinessException("Participante da conversa nao pertence a esta turma.", ECodigo.NaoPermitido);
         }
+    }
+
+    private static Guid? NormalizeOptionalGuid(Guid? value)
+    {
+        return value is null || value == Guid.Empty ? null : value;
     }
 }

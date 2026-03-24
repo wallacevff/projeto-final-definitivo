@@ -59,7 +59,8 @@ public class ExceptionHandlingMidleware(RequestDelegate next, ILogger<ExceptionH
             }
         }
 
-        _logger.LogError(exception, "Ocorreu um erro interno");
+        var rootCause = exception.GetBaseException();
+        _logger.LogError(exception, "Ocorreu um erro interno. Causa raiz: {RootCauseMessage}", rootCause.Message);
         context.Response.StatusCode = ECodigoValue.ErroInterno;
         var responseEx = new MessageDto(exception);
         await context.Response.WriteAsJsonAsync(responseEx, options: new JsonSerializerOptions()

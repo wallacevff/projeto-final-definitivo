@@ -311,3 +311,11 @@ pm.cmd run build (mantidos apenas warnings conhecidos e locks quando a API local
 - Validacao executada com dotnet build ProjetoFinal.sln e 
 pm.cmd run build.
 
+
+### Data: 2026-03-24 (robustez de persistencia e acesso do chat)
+### Resumo
+- Backend do chat endurecido para normalizar GUIDs opcionais vazios antes do `SaveChanges`, reduzindo falhas por violacao de FK em mensagens com destinatario, resposta ou midia opcionais.
+- Controller, hub e app service passaram a reutilizar uma consulta otimizada de acesso (`GetChatAccessInfoAsync`) contendo apenas `EnableChat`, `CourseId` e `InstructorId`.
+- Cliente REST do chat passou a enviar `PageNumber=1`, e o repositorio base agora aplica fallback para `PageNumber/PageSize` invalidos em consultas paginadas.
+- Middleware de excecao passou a logar a causa raiz da falha interna para acelerar a triagem em ambientes fora do desenvolvimento.
+- Ha uma alteracao local relevante em `Migrations/` que recria o historico como `Initial`; isso nao deve ser publicado sem decisao explicita sobre compatibilidade de banco.

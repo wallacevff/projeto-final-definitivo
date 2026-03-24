@@ -131,7 +131,7 @@ public class ChatMessagesController : ControllerBase
 
     private async Task EnsureUserCanAccessClassGroupAsync(Guid classGroupId, CancellationToken cancellationToken)
     {
-        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        var classGroup = await _classGroupRepository.GetChatAccessInfoAsync(classGroupId, cancellationToken);
         if (classGroup is null)
         {
             throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
@@ -153,7 +153,7 @@ public class ChatMessagesController : ControllerBase
             throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
         }
 
-        if (IsInstructor() && classGroup.Course?.InstructorId == userId)
+        if (IsInstructor() && classGroup.InstructorId == userId)
         {
             return;
         }
@@ -186,13 +186,13 @@ public class ChatMessagesController : ControllerBase
             throw new BusinessException("Selecione outro participante para a conversa individual.", ECodigo.MaRequisicao);
         }
 
-        var classGroup = await _classGroupRepository.GetByIdAsync(classGroupId, cancellationToken);
+        var classGroup = await _classGroupRepository.GetChatAccessInfoAsync(classGroupId, cancellationToken);
         if (classGroup is null)
         {
             throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
         }
 
-        if (classGroup.Course?.InstructorId == participantId)
+        if (classGroup.InstructorId == participantId)
         {
             return;
         }

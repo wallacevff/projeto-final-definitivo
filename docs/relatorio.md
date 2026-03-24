@@ -243,3 +243,10 @@ pm.cmd run build, mantendo apenas warnings conhecidos e locks da API local em ex
 - Validacao concluida com dotnet build ProjetoFinal.sln e 
 pm.cmd run build.
 
+
+### 2026-03-24 (robustez de persistencia e paginacao do chat)
+- Normalizados `Guid.Empty` opcionais no envio de mensagens de chat para evitar falhas de FK ao persistir `RecipientId`, `ReplyToMessageId` e `MediaResourceId`.
+- `ChatMessagesService` passou a explicitar `PageNumber=1`, e `DefaultRepository` ganhou fallback seguro para pagina e tamanho quando os filtros chegam vazios ou invalidos.
+- Fluxo de autorizacao ao chat foi otimizado com `GetChatAccessInfoAsync`, evitando carregar a entidade completa de turma/curso em controller, hub e app service.
+- Middleware de excecao passou a registrar `GetBaseException()` no log, melhorando a investigacao de erros internos em homologacao/producao.
+- Risco pendente: existe um reset local das migrations para um novo `Initial`; a publicacao dessa alteracao exige decisao consciente porque afeta a linha historica de banco do projeto.

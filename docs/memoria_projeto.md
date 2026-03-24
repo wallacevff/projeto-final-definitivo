@@ -540,3 +540,10 @@ pm.cmd run build executados com sucesso; o build da solucao pode emitir warnings
 - Validacao: dotnet build ProjetoFinal.sln e 
 pm.cmd run build executados com sucesso.
 
+
+## 2026-03-24 (endurecimento do backend de chat)
+- Chat recebeu normalizacao de GUIDs opcionais (`RecipientId`, `ReplyToMessageId`, `MediaResourceId`) antes da persistencia para evitar `Guid.Empty` quebrando FKs no banco.
+- Historico REST do chat passou a enviar `PageNumber=1` explicitamente, enquanto a base generica de repositorios agora trata paginacao ausente ou invalida com fallback seguro.
+- Validacao de acesso ao chat em controller, hub e app service foi otimizada com consulta enxuta de turma/instrutor (`GetChatAccessInfoAsync`), reduzindo carga de includes desnecessarios.
+- Middleware global de excecao passou a registrar a causa raiz (`GetBaseException`) no log de erro interno, facilitando diagnostico em homologacao/producao.
+- Observacao: o diretorio `src/ProjetoFinal.Infra.Data/Migrations` esta com um reset local do historico para um novo `Initial`, o que precisa de avaliacao cuidadosa antes de ser versionado.

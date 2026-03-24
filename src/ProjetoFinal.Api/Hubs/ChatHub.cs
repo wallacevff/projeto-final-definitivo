@@ -72,7 +72,7 @@ public class ChatHub(
 
     private async Task EnsureUserCanAccessClassGroupAsync(Guid classGroupId)
     {
-        var classGroup = await classGroupRepository.GetByIdAsync(classGroupId);
+        var classGroup = await classGroupRepository.GetChatAccessInfoAsync(classGroupId);
         if (classGroup is null)
         {
             throw new BusinessException("Turma nao encontrada.", ECodigo.NaoEncontrado);
@@ -94,7 +94,7 @@ public class ChatHub(
             throw new BusinessException("Usuario nao identificado.", ECodigo.NaoAutenticado);
         }
 
-        if (IsInstructor() && classGroup.Course?.InstructorId == userId)
+        if (IsInstructor() && classGroup.InstructorId == userId)
         {
             return;
         }
