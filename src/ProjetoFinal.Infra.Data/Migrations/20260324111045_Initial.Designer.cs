@@ -12,8 +12,8 @@ using ProjetoFinal.Infra.Data.Contexts;
 namespace ProjetoFinal.Infra.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260103170626_AddContentVideoAnnotations")]
-    partial class AddContentVideoAnnotations
+    [Migration("20260324111045_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -206,8 +206,14 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Property<Guid>("ActivityId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("ApplicationScore")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("ClassGroupId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CommunicationScore")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -225,6 +231,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("FeedbackTags")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<DateTime?>("GradedAt")
                         .HasColumnType("datetime2");
 
@@ -233,6 +243,13 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("MasteryScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecommendedAction")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<decimal?>("Score")
                         .HasPrecision(10, 2)
@@ -309,6 +326,9 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<Guid?>("RecipientId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ReplyToMessageId")
                         .HasColumnType("uniqueidentifier");
 
@@ -331,6 +351,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.HasIndex("ClassGroupId");
 
                     b.HasIndex("MediaResourceId");
+
+                    b.HasIndex("RecipientId");
 
                     b.HasIndex("ReplyToMessageId");
 
@@ -1345,6 +1367,11 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasForeignKey("MediaResourceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("ProjetoFinal.Domain.Entities.User", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ProjetoFinal.Domain.Entities.ChatMessage", "ReplyTo")
                         .WithMany("Replies")
                         .HasForeignKey("ReplyToMessageId")
@@ -1359,6 +1386,8 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     b.Navigation("ClassGroup");
 
                     b.Navigation("MediaResource");
+
+                    b.Navigation("Recipient");
 
                     b.Navigation("ReplyTo");
 

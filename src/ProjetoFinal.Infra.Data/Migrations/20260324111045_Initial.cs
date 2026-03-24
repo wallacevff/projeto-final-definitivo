@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjetoFinal.Infra.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -186,6 +186,7 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClassGroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RecipientId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ReplyToMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     MediaResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
@@ -220,6 +221,12 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         principalTable: "MediaResources",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_Users_RecipientId",
+                        column: x => x.RecipientId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ChatMessages_Users_SenderId",
                         column: x => x.SenderId,
@@ -568,6 +575,11 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     GradedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Score = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: true),
                     Feedback = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    MasteryScore = table.Column<int>(type: "int", nullable: true),
+                    ApplicationScore = table.Column<int>(type: "int", nullable: true),
+                    CommunicationScore = table.Column<int>(type: "int", nullable: true),
+                    FeedbackTags = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RecommendedAction = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
                     TextAnswer = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -601,6 +613,40 @@ namespace ProjetoFinal.Infra.Data.Migrations
                     table.ForeignKey(
                         name: "FK_ActivitySubmissions_Users_StudentId",
                         column: x => x.StudentId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContentVideoAnnotations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ContentAttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TimeMarkerSeconds = table.Column<double>(type: "float", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    EditedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContentVideoAnnotations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContentVideoAnnotations_ContentAttachments_ContentAttachmentId",
+                        column: x => x.ContentAttachmentId,
+                        principalTable: "ContentAttachments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ContentVideoAnnotations_Users_CreatedById",
+                        column: x => x.CreatedById,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -787,6 +833,11 @@ namespace ProjetoFinal.Infra.Data.Migrations
                 column: "MediaResourceId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_RecipientId",
+                table: "ChatMessages",
+                column: "RecipientId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_ReplyToMessageId",
                 table: "ChatMessages",
                 column: "ReplyToMessageId");
@@ -826,6 +877,16 @@ namespace ProjetoFinal.Infra.Data.Migrations
                 name: "IX_ContentAttachments_MediaResourceId",
                 table: "ContentAttachments",
                 column: "MediaResourceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentVideoAnnotations_ContentAttachmentId",
+                table: "ContentVideoAnnotations",
+                column: "ContentAttachmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentVideoAnnotations_CreatedById",
+                table: "ContentVideoAnnotations",
+                column: "CreatedById");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CourseContents_AuthorId",
@@ -977,7 +1038,7 @@ namespace ProjetoFinal.Infra.Data.Migrations
                 name: "ClassEnrollments");
 
             migrationBuilder.DropTable(
-                name: "ContentAttachments");
+                name: "ContentVideoAnnotations");
 
             migrationBuilder.DropTable(
                 name: "CourseSubscriptions");
@@ -987,6 +1048,9 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "VideoAnnotations");
+
+            migrationBuilder.DropTable(
+                name: "ContentAttachments");
 
             migrationBuilder.DropTable(
                 name: "ForumPosts");

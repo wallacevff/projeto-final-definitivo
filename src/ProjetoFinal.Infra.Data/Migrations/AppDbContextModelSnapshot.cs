@@ -323,10 +323,10 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<Guid?>("ReplyToMessageId")
+                    b.Property<Guid?>("RecipientId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("RecipientId")
+                    b.Property<Guid?>("ReplyToMessageId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SenderId")
@@ -349,9 +349,9 @@ namespace ProjetoFinal.Infra.Data.Migrations
 
                     b.HasIndex("MediaResourceId");
 
-                    b.HasIndex("ReplyToMessageId");
-
                     b.HasIndex("RecipientId");
+
+                    b.HasIndex("ReplyToMessageId");
 
                     b.HasIndex("SenderId");
 
@@ -1364,14 +1364,14 @@ namespace ProjetoFinal.Infra.Data.Migrations
                         .HasForeignKey("MediaResourceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("ProjetoFinal.Domain.Entities.ChatMessage", "ReplyTo")
-                        .WithMany("Replies")
-                        .HasForeignKey("ReplyToMessageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("ProjetoFinal.Domain.Entities.User", "Recipient")
                         .WithMany()
                         .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjetoFinal.Domain.Entities.ChatMessage", "ReplyTo")
+                        .WithMany("Replies")
+                        .HasForeignKey("ReplyToMessageId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ProjetoFinal.Domain.Entities.User", "Sender")
