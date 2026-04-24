@@ -319,3 +319,39 @@ pm.cmd run build.
 - Cliente REST do chat passou a enviar `PageNumber=1`, e o repositorio base agora aplica fallback para `PageNumber/PageSize` invalidos em consultas paginadas.
 - Middleware de excecao passou a logar a causa raiz da falha interna para acelerar a triagem em ambientes fora do desenvolvimento.
 - Ha uma alteracao local relevante em `Migrations/` que recria o historico como `Initial`; isso nao deve ser publicado sem decisao explicita sobre compatibilidade de banco.
+
+### Data: 2026-04-24
+### Resumo
+- Integracao inicial com IA adicionada no backend usando provedor compativel com OpenAI/DeepSeek configurado por `AiProvider`.
+- Nova API `ai-insights` exposta para gerar resumo de conteudo e consolidar duvidas frequentes do forum para o dashboard do professor.
+- Frontend ganhou card `Resumo com IA` no `course-content-viewer` e secao `Duvidas frequentes com IA` no dashboard do instrutor.
+- A chave do provedor nao foi gravada no repositorio; a API passou a suportar `user-secrets` para configuracao local segura.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build` (mantendo warnings conhecidos de `NU1903` do AutoMapper e budgets/seletores do Angular).
+
+### Data: 2026-04-24
+### Resumo
+- Solucao migrada de `net8.0` para `net10.0` em todos os projetos backend (`Api`, `IoC`, `Infra`, `Domain`, `Contracts`, `Application Services`).
+- Criado `global.json` fixando o SDK `10.0.104` para padronizar a compilacao local e evitar uso acidental de outra versao instalada.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`, ambos com sucesso.
+- Permanecem warnings de vulnerabilidade em dependencias NuGet legadas (`AutoMapper`, `Azure.Identity`, `Microsoft.Data.SqlClient`, `Microsoft.Extensions.Caching.Memory`, entre outras) e warnings conhecidos de budget/seletores no Angular.
+
+### Data: 2026-04-24
+### Resumo
+- Corrigida a inicializacao da API em bancos legados que ja possuem schema criado, mas nao possuem historico do EF alinhado com a migration unica `20260324111045_Initial`.
+- `DataSeeder` agora detecta schema existente sem `__EFMigrationsHistory`, cria a tabela de historico e registra a migration baseline antes de chamar `MigrateAsync`.
+- O ajuste evita o erro `There is already an object named 'MediaResources' in the database` durante a subida da API.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### Data: 2026-04-24
+### Resumo
+- Corrigida a configuracao do `AppDbContext` para ler a connection string via `configuration.GetConnectionString("DefaultConnection")` em vez de depender de bind manual da secao `ConnectionStrings`.
+- `DataSeeder` tambem passou a validar explicitamente se o `AppDbContext` recebeu uma connection string antes de tentar abrir conexao para checar tabelas.
+- O ajuste evita a excecao `The ConnectionString property has not been initialized` no startup.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### Data: 2026-04-24
+### Resumo
+- Corrigido o helper `TableExistsAsync` do `DataSeeder`, que estava descartando a conexao compartilhada do EF Core via `await using var connection = context.Database.GetDbConnection()`.
+- A partir da segunda checagem de tabela, o `DbContext` passava a reutilizar uma conexao ja descartada, gerando novamente `The ConnectionString property has not been initialized`.
+- O helper agora abre e fecha a conexao apenas quando necessario, sem descartar o objeto compartilhado retornado pelo EF.
+- Validacao executada com `dotnet build ProjetoFinal.sln`.

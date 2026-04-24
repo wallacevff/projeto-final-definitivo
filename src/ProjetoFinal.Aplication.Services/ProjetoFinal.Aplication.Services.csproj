@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net8.0\Microsoft.AspNetCore.dll"/>
+        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net10.0\Microsoft.AspNetCore.dll"/>
     </ItemGroup>
 
     <ItemGroup>

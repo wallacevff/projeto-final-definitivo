@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ProjetoFinal.Domain.Entities;
 using ProjetoFinal.Domain.Enums;
 using ProjetoFinal.Domain.Shared.Security;
@@ -8,6 +9,9 @@ namespace ProjetoFinal.Api.Services;
 
 public static class DataSeeder
 {
+    private const string InitialMigrationId = "20260324111045_Initial";
+    private const string InitialMigrationProductVersion = "8.0.13";
+
     private record SeedUser(Guid Id, Guid ExternalId, string Username, string FullName, string Email, UserRole Role, string Password);
 
     private static readonly SeedUser[] DefaultUsers =
@@ -35,6 +39,14 @@ public static class DataSeeder
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+        var configuredConnectionString = context.Database.GetConnectionString();
+        if (string.IsNullOrWhiteSpace(configuredConnectionString))
+        {
+            throw new InvalidOperationException(
+                "A connection string do banco nao foi inicializada para o AppDbContext.");
+        }
+
+        await EnsureMigrationBaselineAsync(context, cancellationToken);
         await context.Database.MigrateAsync(cancellationToken);
 
         await EnsureDefaultUsersAsync(context, cancellationToken);
@@ -42,6 +54,82 @@ public static class DataSeeder
         if (context.ChangeTracker.HasChanges())
         {
             await context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private static async Task EnsureMigrationBaselineAsync(AppDbContext context, CancellationToken cancellationToken)
+    {
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+        if (pendingMigrations.Count == 0 || !pendingMigrations.Contains(InitialMigrationId))
+        {
+            return;
+        }
+
+        var historyTableExists = await TableExistsAsync(context, "__EFMigrationsHistory", cancellationToken);
+        if (historyTableExists)
+        {
+            return;
+        }
+
+        // Detecta um banco legado ja criado manualmente/por migrations antigas sem historico do EF atual.
+        var schemaAlreadyExists = await TableExistsAsync(context, "MediaResources", cancellationToken)
+            || await TableExistsAsync(context, "Users", cancellationToken)
+            || await TableExistsAsync(context, "Courses", cancellationToken);
+
+        if (!schemaAlreadyExists)
+        {
+            return;
+        }
+
+        await context.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE [__EFMigrationsHistory] (
+                [MigrationId] nvarchar(150) NOT NULL,
+                [ProductVersion] nvarchar(32) NOT NULL,
+                CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+            );
+            """,
+            cancellationToken);
+
+        await context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (@migrationId, @productVersion);",
+            [
+                new SqlParameter("@migrationId", InitialMigrationId),
+                new SqlParameter("@productVersion", InitialMigrationProductVersion)
+            ],
+            cancellationToken);
+    }
+
+    private static async Task<bool> TableExistsAsync(AppDbContext context, string tableName, CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var shouldCloseConnection = connection.State != System.Data.ConnectionState.Open;
+
+        if (shouldCloseConnection)
+        {
+            await connection.OpenAsync(cancellationToken);
+        }
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = @tableName";
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "@tableName";
+            parameter.Value = tableName;
+            command.Parameters.Add(parameter);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return result is not null;
+        }
+        finally
+        {
+            if (shouldCloseConnection)
+            {
+                await connection.CloseAsync();
+            }
         }
     }
 

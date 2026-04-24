@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
 
@@ -11,6 +11,7 @@
         <SpaProxyLaunchCommand>npm i &amp; npm start</SpaProxyLaunchCommand>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <Version>2.0.0</Version>
+        <UserSecretsId>projetofinal-api-local-secrets</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

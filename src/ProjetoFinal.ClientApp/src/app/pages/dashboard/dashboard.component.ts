@@ -8,7 +8,9 @@ import { map, switchMap } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 
 import { CourseDto, CourseListItem } from '../../core/api/courses.api';
+import { AiFrequentQuestionItemDto } from '../../core/api/ai.api';
 import { ForumPostDto, ForumThreadDto } from '../../core/api/forum.api';
+import { AiInsightsService } from '../../core/services/ai-insights.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ClassGroupsService } from '../../core/services/class-groups.service';
 import { CourseSubscriptionsService } from '../../core/services/course-subscriptions.service';
@@ -55,6 +57,7 @@ export class DashboardComponent {
   private readonly subscriptionsService = inject(CourseSubscriptionsService);
   private readonly classGroupsService = inject(ClassGroupsService);
   private readonly forumService = inject(ForumService);
+  private readonly aiInsightsService = inject(AiInsightsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toastr = inject(ToastrService);
   private readonly modeLabels: Record<number, string> = {
@@ -84,6 +87,9 @@ export class DashboardComponent {
   readonly forumActivities = signal<ForumActivityItem[]>([]);
   readonly forumActivityLoading = signal(false);
   readonly forumActivityError = signal<string | null>(null);
+  readonly frequentQuestions = signal<AiFrequentQuestionItemDto[]>([]);
+  readonly frequentQuestionsLoading = signal(false);
+  readonly frequentQuestionsError = signal<string | null>(null);
 
   constructor() {
     const userId = this.currentUser()?.id;
@@ -99,6 +105,7 @@ export class DashboardComponent {
       this.loading.set(false);
       this.loadInstructorStats(userId);
       this.loadInstructorForumActivity(userId);
+      this.loadInstructorFrequentQuestions();
     }
   }
 
@@ -116,6 +123,10 @@ export class DashboardComponent {
 
   trackByForumActivity(_: number, item: ForumActivityItem): string {
     return item.threadId;
+  }
+
+  trackByFrequentQuestion(_: number, item: AiFrequentQuestionItemDto): string {
+    return `${item.Topic}-${item.CourseTitle}-${item.ClassGroupName}`;
   }
 
   enrollmentStatusClass(status?: number): string {
@@ -354,6 +365,28 @@ export class DashboardComponent {
           this.forumActivityError.set('Nao foi possivel carregar as atividades do forum.');
           this.forumActivities.set([]);
           this.forumActivityLoading.set(false);
+        }
+      });
+  }
+
+  private loadInstructorFrequentQuestions(): void {
+    this.frequentQuestionsLoading.set(true);
+    this.frequentQuestionsError.set(null);
+
+    this.aiInsightsService
+      .getInstructorFrequentQuestions()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: response => {
+          this.frequentQuestions.set(response.Items ?? []);
+          this.frequentQuestionsLoading.set(false);
+        },
+        error: error => {
+          this.frequentQuestions.set([]);
+          this.frequentQuestionsError.set(
+            this.extractErrorMessage(error, 'Nao foi possivel carregar as duvidas frequentes com IA.')
+          );
+          this.frequentQuestionsLoading.set(false);
         }
       });
   }

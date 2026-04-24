@@ -75,13 +75,13 @@
     <ng-template #submissionContent>
       <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
 
-        <article class="submission-summary" *ngIf="existingSubmission() as submission; else submissionFormTpl">
+        <article class="submission-summary" *ngIf="existingSubmission() as submission">
           <header>
             <div>
               <h4>Envio registrado</h4>
               <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
             </div>
-            <span class="status-badge" data-status="enviado">Enviado</span>
+            <span class="status-badge" data-status="enviado">{{ submissionStatusLabel(submission.Status) }}</span>
           </header>
 
           <section class="submission-summary__grading">
@@ -152,7 +152,11 @@
         </section>
       </article>
 
-      <ng-template #submissionFormTpl>
+      <div class="state state--info" *ngIf="canResubmit()">
+        Esta atividade foi devolvida. Ajuste sua resposta e envie novamente.
+      </div>
+
+      <ng-container *ngIf="shouldShowSubmissionForm()">
         <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
           <label for="textAnswer">Observacao</label>
           <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
@@ -200,10 +204,10 @@
             class="primary-button"
             [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
           >
-            {{ isSubmittingWork() ? 'Enviando...' : 'Enviar atividade' }}
+            {{ isSubmittingWork() ? 'Enviando...' : (canResubmit() ? 'Reenviar atividade' : 'Enviar atividade') }}
           </button>
         </form>
-      </ng-template>
+      </ng-container>
     </ng-template>
   </section>
 </section>

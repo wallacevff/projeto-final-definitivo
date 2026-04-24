@@ -67,6 +67,8 @@ export class CourseActivityViewerComponent implements OnDestroy {
   readonly hasUploadingSubmissionAttachments = computed(() =>
     this.submissionAttachments().some(item => item.status === 'uploading')
   );
+  readonly canResubmit = computed(() => this.existingSubmission()?.Status === 4);
+  readonly shouldShowSubmissionForm = computed(() => !this.existingSubmission() || this.canResubmit());
   readonly submissionForm = this.fb.group({
     textAnswer: this.fb.control('', { validators: [Validators.maxLength(5000)] })
   });
@@ -188,7 +190,7 @@ export class CourseActivityViewerComponent implements OnDestroy {
       return;
     }
 
-    if (this.existingSubmission()) {
+    if (this.existingSubmission() && !this.canResubmit()) {
       this.toastr.info('Voce ja enviou esta atividade.');
       return;
     }
@@ -226,7 +228,7 @@ export class CourseActivityViewerComponent implements OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: submission => {
-          this.toastr.success('Atividade enviada com sucesso.');
+          this.toastr.success(this.canResubmit() ? 'Atividade reenviada com sucesso.' : 'Atividade enviada com sucesso.');
           const submissionWithLocalAttachments = {
             ...submission,
             Attachments: this.buildUiAttachmentsFromDrafts()

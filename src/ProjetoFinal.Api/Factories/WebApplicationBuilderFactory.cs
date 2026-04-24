@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+using System.Reflection;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
 using ProjetoFinal.Api.Extensions;
 using ProjetoFinal.Api.Utils;
 using ProjetoFinal.Infra.CrossCutting.Providers;
@@ -13,6 +15,8 @@ public static class WebApplicationBuilderFactory
         var builder = WebApplication.CreateBuilder(args);
         var configuration = CustomConfigurationProvider.GetConfiguration(builder.Environment);
         builder.Configuration.AddConfiguration(configuration);
+        builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
+        builder.Configuration.AddEnvironmentVariables();
         builder.ConfigureControllers();
         builder.Services.ConfigureByIoC(builder.Configuration, builder.Environment);
         builder.AddSwaggerBuilder();

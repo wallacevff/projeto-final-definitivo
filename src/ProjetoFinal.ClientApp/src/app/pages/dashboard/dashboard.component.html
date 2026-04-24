@@ -127,6 +127,34 @@
         <div class="state">Nenhuma atividade recente no fórum.</div>
       </ng-template>
     </section>
+
+    <section class="dashboard__insights">
+      <h3>Dúvidas frequentes com IA</h3>
+      <ng-container *ngIf="frequentQuestionsLoading(); else frequentQuestionsList">
+        <div class="state state--info">Analisando dúvidas do fórum...</div>
+      </ng-container>
+      <ng-template #frequentQuestionsList>
+        <ng-container *ngIf="!frequentQuestionsError(); else frequentQuestionsErrorState">
+          <ng-container *ngIf="frequentQuestions().length; else frequentQuestionsEmpty">
+            <div class="insights-grid">
+              <article class="insight-card" *ngFor="let item of frequentQuestions(); trackBy: trackByFrequentQuestion">
+                <span class="insight-card__tag">{{ item.EstimatedMentions }} menção(ões)</span>
+                <h4>{{ item.Topic || 'Tema recorrente' }}</h4>
+                <p class="insight-card__question">{{ item.Question }}</p>
+                <p class="insight-card__meta">{{ item.CourseTitle }} · {{ item.ClassGroupName || 'Turma nao informada' }}</p>
+                <p class="insight-card__action"><strong>Ação sugerida:</strong> {{ item.SuggestedAction }}</p>
+              </article>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+      <ng-template #frequentQuestionsErrorState>
+        <div class="state state--error">{{ frequentQuestionsError() }}</div>
+      </ng-template>
+      <ng-template #frequentQuestionsEmpty>
+        <div class="state">Ainda não há dúvidas suficientes para análise.</div>
+      </ng-template>
+    </section>
   </section>
 </ng-template>
 

@@ -5,7 +5,9 @@ using Microsoft.Extensions.Hosting;
 using RhbkSdk.Configurations;
 using RhbkSdk.Extensions;
 using ProjetoFinal.Aplication.Services;
+using ProjetoFinal.Aplication.Services.Services.Ai;
 using ProjetoFinal.Application.Contracts;
+using ProjetoFinal.Application.Contracts.Services;
 using ProjetoFinal.Domain;
 using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
 using ProjetoFinal.Infra.Data;
@@ -26,6 +28,7 @@ public static class IoCManager
         return services
                 .AddApplicationDbContext(configuration)
                 .AddJwtConfiguration(configuration)
+                .AddAiProvider(configuration)
                 .AddDomainRepositories()
                 .AddAutoMapper()
                 .AddApplicationServices()
@@ -37,12 +40,16 @@ public static class IoCManager
     public static IServiceCollection AddApplicationDbContext(this IServiceCollection services,
         IConfiguration configuration)
     {
-        DatabaseConfigure dbconfig = new DatabaseConfigure();
-        configuration.GetSection(DatabaseConfigure.ConnectionStringsSection).Bind(dbconfig);
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "A connection string 'DefaultConnection' nao foi configurada. Verifique appsettings, user-secrets ou variaveis de ambiente.");
+        }
 
         services.AddDbContext<AppDbContext>(optionsAction =>
         {
-            optionsAction.UseSqlServer(dbconfig.ConnectionStrings);
+            optionsAction.UseSqlServer(connectionString);
             //optionsAction.UseSqlite("Data Source=db.db");
         });
         return services;
@@ -58,6 +65,13 @@ public static class IoCManager
     public static IServiceCollection AddJwtConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtConfiguration>(configuration.GetSection(JwtConfiguration.SectionName));
+        return services;
+    }
+
+    public static IServiceCollection AddAiProvider(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<AiProviderConfiguration>(configuration.GetSection(AiProviderConfiguration.SectionName));
+        services.AddHttpClient<IAiInsightsAppService, AiInsightsAppService>();
         return services;
     }
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)

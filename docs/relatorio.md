@@ -250,3 +250,57 @@ pm.cmd run build.
 - Fluxo de autorizacao ao chat foi otimizado com `GetChatAccessInfoAsync`, evitando carregar a entidade completa de turma/curso em controller, hub e app service.
 - Middleware de excecao passou a registrar `GetBaseException()` no log, melhorando a investigacao de erros internos em homologacao/producao.
 - Risco pendente: existe um reset local das migrations para um novo `Initial`; a publicacao dessa alteracao exige decisao consciente porque afeta a linha historica de banco do projeto.
+
+### 2026-03-31 (reenvio de atividade devolvida)
+- Backend de submissao de atividades ajustado para permitir novo envio quando a submissao existente estiver com status `Returned`.
+- No reenvio, o mesmo registro de submissao e reutilizado e os dados de correcao anteriores sao limpos (`Score`, `Feedback`, rubricas, `GradedAt`, `GradedById`), voltando o status para `Submitted`.
+- Frontend da tela de atividade do aluno atualizado para liberar o formulario quando a atividade estiver devolvida, exibir orientacao de refacao e trocar o CTA para `Reenviar atividade`.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`; ambos falharam por dependencia ausente `@microsoft/signalr` no frontend, mantendo tambem warning conhecido `NU1903` do AutoMapper.
+
+### 2026-03-31 (correcao de globalization no ambiente de execucao)
+- Investigado erro `CultureNotFoundException` (`en-us`) na inicializacao da API, causado por `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` no ambiente do usuario.
+- Ajustado `src/ProjetoFinal.Api/Properties/launchSettings.json` para forcar `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0` em todos os profiles, evitando heranca incorreta no debug do Rider.
+- Ambiente `systemd --user` sobrescrito para `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0` e validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### 2026-03-31 (correcao de concorrencia no reenvio de atividade)
+- Investigado e corrigido `DbUpdateConcurrencyException` no reenvio de atividade devolvida (`ActivitySubmissionAppService.SubmitAsync`).
+- Causa identificada: uso de `Update` em agregado com anexos novos (com `Guid` ja definido), o que levava EF a executar `UPDATE` para anexos inexistentes em vez de `INSERT`.
+- Ajuste aplicado: recarga rastreada da submissao com detalhes e persistencia via `SaveChangesAsync` sem `UpdateAsync` no agregado; mesma estrategia aplicada ao fluxo `UpdateAsync` de submissao.
+- Validacao executada com `dotnet build ProjetoFinal.sln` e `npm run build` (sucesso, mantendo warnings conhecidos de budget Angular e NU1903 AutoMapper).
+
+### 2026-03-31 (script de build/push Docker com tag parametrizada)
+- Adicionado script `docker-build-push.sh` na raiz do repositorio para automatizar build e push da imagem Docker com tag informada por parametro.
+- Comando padrao encapsulado: `docker buildx build --no-cache -f Dockerfile -t wallacevff/projeto-final:<tag> .` seguido de `docker push wallacevff/projeto-final:<tag>`.
+
+### 2026-04-24 (insights com IA)
+- Implementada a base de integracao com provedor de IA compativel com OpenAI/DeepSeek no backend, via `AiProvider` configuravel e `IAiInsightsAppService`.
+- Entregue endpoint de resumo de conteudo para alunos (`ai-insights/contents/{contentId}/summary`) e endpoint de duvidas frequentes para o dashboard do professor (`ai-insights/instructor/frequent-questions`).
+- Dashboard do instrutor atualizado com secao `Duvidas frequentes com IA`, consolidando mensagens do forum por tema recorrente, curso/turma e acao sugerida.
+- Viewer de conteudo atualizado com o card `Resumo com IA`, exibindo sintese, pontos principais e pontos de atencao do material.
+- A configuracao da chave foi preparada para uso seguro por `user-secrets`, evitando persistencia do segredo no repositorio.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build`; permanecem apenas warnings conhecidos (`NU1903` do AutoMapper e budgets/seletores do Angular).
+
+### 2026-04-24 (migracao para .NET 10)
+- Solucao backend migrada para `net10.0` em todos os projetos C#.
+- Adicionado `global.json` na raiz para pinagem do SDK `10.0.104`.
+- Validacao concluida com `dotnet build ProjetoFinal.sln` e `npm run build` apos a migracao.
+- A migracao de framework foi bem-sucedida sem necessidade de refatoracao de codigo-fonte.
+- Risco residual: o build agora expoe com mais clareza warnings de vulnerabilidade em pacotes legados (`AutoMapper`, `Azure.Identity`, `Microsoft.Data.SqlClient`, `Microsoft.Extensions.Caching.Memory`, `NuGet.*`), sugerindo uma frente posterior de atualizacao de dependencias.
+
+### 2026-04-24 (correcao de startup em banco legado)
+- Corrigido erro de startup da API em banco existente com schema populado e sem historico compatível do EF: `There is already an object named 'MediaResources' in the database`.
+- Ajustado `DataSeeder` para criar e preencher `__EFMigrationsHistory` com a migration baseline `20260324111045_Initial` quando detectar schema ja existente sem historico.
+- A correcao foi pensada para o estado atual do repositorio, que consolidou o conjunto de migrations em uma `Initial` local.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### 2026-04-24 (correcao da configuracao do DbContext)
+- Corrigida a injecao do `AppDbContext` para usar `configuration.GetConnectionString("DefaultConnection")`.
+- Adicionada validacao explicita para connection string ausente, evitando falha tardia ao abrir `SqlConnection` no `DataSeeder`.
+- O ajuste elimina o erro `The ConnectionString property has not been initialized` no startup.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln` e `npm run build`.
+
+### 2026-04-24 (correcao do descarte da conexao compartilhada)
+- Corrigido `DataSeeder.TableExistsAsync`, que descartava a conexao retornada por `context.Database.GetDbConnection()` e invalidava as checagens seguintes do mesmo `DbContext`.
+- A conexao compartilhada do EF agora nao e descartada manualmente; o helper apenas abre e fecha quando necessario.
+- O ajuste elimina a recorrencia do erro `The ConnectionString property has not been initialized` durante as multiplas checagens de tabelas no startup.
+- Validacao tecnica concluida com `dotnet build ProjetoFinal.sln`.

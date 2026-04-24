@@ -13,6 +13,45 @@
   <ng-container *ngIf="!loading(); else loadingState">
     <ng-container *ngIf="!error(); else errorState">
       <article class="content-card" *ngIf="content() as current">
+        <section class="ai-summary-card">
+          <div class="ai-summary-card__header">
+            <div>
+              <h3>Resumo com IA</h3>
+              <p class="muted">Gere uma versao resumida deste material para leitura mais rapida.</p>
+            </div>
+            <button
+              class="button button--primary"
+              type="button"
+              (click)="generateSummary()"
+              [disabled]="aiSummaryLoading()"
+            >
+              {{ aiSummaryLoading() ? 'Gerando...' : 'Gerar resumo' }}
+            </button>
+          </div>
+
+          <div class="state state--error" *ngIf="aiSummaryError()">{{ aiSummaryError() }}</div>
+
+          <div class="ai-summary-result" *ngIf="aiSummary() as summary">
+            <p class="ai-summary-result__text">{{ summary.Summary }}</p>
+
+            <div class="ai-summary-result__grid">
+              <section>
+                <h4>Pontos principais</h4>
+                <ul>
+                  <li *ngFor="let item of summary.KeyPoints">{{ item }}</li>
+                </ul>
+              </section>
+
+              <section *ngIf="summary.AttentionPoints.length">
+                <h4>Pontos de atenção</h4>
+                <ul>
+                  <li *ngFor="let item of summary.AttentionPoints">{{ item }}</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </section>
+
         <section class="content-body">
           <h3>Descricao</h3>
           <div

@@ -547,3 +547,44 @@ pm.cmd run build executados com sucesso.
 - Validacao de acesso ao chat em controller, hub e app service foi otimizada com consulta enxuta de turma/instrutor (`GetChatAccessInfoAsync`), reduzindo carga de includes desnecessarios.
 - Middleware global de excecao passou a registrar a causa raiz (`GetBaseException`) no log de erro interno, facilitando diagnostico em homologacao/producao.
 - Observacao: o diretorio `src/ProjetoFinal.Infra.Data/Migrations` esta com um reset local do historico para um novo `Initial`, o que precisa de avaliacao cuidadosa antes de ser versionado.
+
+
+## 2026-04-24 (integracao inicial com IA)
+- Criado o modulo de insights com IA em `AiInsightsController` e `IAiInsightsAppService`, com suporte a provedor compativel com OpenAI/DeepSeek via `AiProviderConfiguration`.
+- A API agora oferece resumo didatico de conteudo por `contentId` e consolidacao de duvidas frequentes do forum para professores autenticados.
+- `ProjetoFinal.Api.csproj` recebeu `UserSecretsId` para guardar a chave localmente sem commitar segredo.
+- `IoCManager` passou a registrar `AiProvider` por options + typed `HttpClient`.
+- `ForumPostRepository` foi ampliado para incluir `ClassGroup`, permitindo contexto de turma nas analises de duvidas recorrentes.
+- `course-content-viewer` ganhou o card `Resumo com IA`, com estados de carregamento, erro e exibicao de pontos principais/pontos de atencao.
+- `dashboard` do professor ganhou a secao `Duvidas frequentes com IA`, exibindo tema, pergunta representativa, curso/turma e acao sugerida.
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso; permanecem warnings conhecidos (`NU1903` do AutoMapper e budgets/seletores do Angular).
+
+
+## 2026-04-24 (migracao para .NET 10)
+- Todos os projetos `.csproj` da solucao foram atualizados de `net8.0` para `net10.0`.
+- Criado `global.json` na raiz fixando o SDK `10.0.104` com `rollForward` em `latestFeature`.
+- `ProjetoFinal.Aplication.Services.csproj` foi ajustado adicionalmente apos um desalinhamento inicial de target framework identificado no restore.
+- Validacao: `dotnet build ProjetoFinal.sln` executado com sucesso em `net10.0`; `npm run build` tambem concluiu com sucesso.
+- Observacao: a migracao nao tratou upgrade de pacotes NuGet; continuam presentes warnings de vulnerabilidade em dependencias antigas que agora ficaram mais visiveis no restore/build com o SDK 10.
+
+
+## 2026-04-24 (baseline de migration para banco legado)
+- Identificada falha na inicializacao da API: `There is already an object named 'MediaResources' in the database` durante `context.Database.MigrateAsync()`.
+- Causa: o banco ja possuia o schema criado, mas o diretorio de migrations local foi consolidado em uma unica migration `Initial`, deixando o historico do EF inconsistente com o estado real do banco.
+- `DataSeeder` foi ajustado para detectar ausencia da tabela `__EFMigrationsHistory` em banco com tabelas principais existentes (`MediaResources`, `Users`, `Courses`), criar o historico e registrar a migration `20260324111045_Initial` como baseline antes do `MigrateAsync`.
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso.
+
+
+## 2026-04-24 (correcao da connection string no startup)
+- Identificada nova falha de startup: `The ConnectionString property has not been initialized` ao abrir conexao no `DataSeeder`.
+- Causa: o `IoCManager` estava populando o `DbContext` por bind manual da secao `ConnectionStrings`, abordagem mais fragil que o uso direto de `GetConnectionString("DefaultConnection")`.
+- Ajustado `AddApplicationDbContext` para usar `configuration.GetConnectionString("DefaultConnection")` e falhar cedo com mensagem clara se estiver ausente.
+- `DataSeeder` tambem passou a validar `context.Database.GetConnectionString()` antes de tentar inspecionar tabelas.
+- Validacao: `dotnet build ProjetoFinal.sln` e `npm run build` executados com sucesso.
+
+
+## 2026-04-24 (correcao da conexao compartilhada no DataSeeder)
+- O erro de `ConnectionString property has not been initialized` persistia mesmo apos o ajuste do `IoCManager` porque o helper `TableExistsAsync` descartava a conexao compartilhada do `DbContext` com `await using`.
+- Isso quebrava a segunda chamada sequencial de verificacao de tabela no fluxo de baseline da migration.
+- Ajustado o helper para nao descartar `context.Database.GetDbConnection()`, apenas abrir/fechar quando necessario e manter o descarte restrito ao `DbCommand`.
+- Validacao: `dotnet build ProjetoFinal.sln` executado com sucesso.

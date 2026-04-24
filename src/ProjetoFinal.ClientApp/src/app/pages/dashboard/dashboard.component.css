@@ -240,6 +240,63 @@
   gap: 2rem;
 }
 
+.dashboard__insights,
+.dashboard__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.insight-card {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.65);
+}
+
+.insight-card h4,
+.insight-card p {
+  margin: 0;
+}
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insight-card__tag {
+  align-self: flex-start;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.insight-card__question {
+  color: var(--surface-800);
+  line-height: 1.5;
+}
+
+.insight-card__meta {
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.insight-card__action {
+  color: var(--surface-700);
+  line-height: 1.5;
+}
+
 .dashboard__header {
   display: flex;
   flex-wrap: wrap;

@@ -19,6 +19,8 @@ public class ForumPostRepository(AppDbContext context)
             .Include(post => post.Author)
             .Include(post => post.Thread!)
                 .ThenInclude(thread => thread.Course)
+            .Include(post => post.Thread!)
+                .ThenInclude(thread => thread.ClassGroup)
             .Include(post => post.Attachments)
                 .ThenInclude(attachment => attachment.MediaResource);
     }

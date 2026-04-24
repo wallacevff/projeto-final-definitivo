@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -10,6 +11,8 @@ import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.
 import { MediaService } from '../../core/services/media.service';
 import { ToastrService } from 'ngx-toastr';
 import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
+import { AiInsightsService } from '../../core/services/ai-insights.service';
+import { AiContentSummaryDto } from '../../core/api/ai.api';
 
 interface LocalVideoAnnotation {
   id: string;
@@ -33,6 +36,7 @@ export class CourseContentViewerComponent {
   private readonly toastr = inject(ToastrService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly annotationsService = inject(ContentAnnotationsService);
+  private readonly aiInsightsService = inject(AiInsightsService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -43,6 +47,9 @@ export class CourseContentViewerComponent {
   readonly videoLoading = signal<Record<string, boolean>>({});
   readonly annotationDrafts = signal<Record<string, string>>({});
   readonly annotationsState = signal<Record<string, LocalVideoAnnotation[]>>({});
+  readonly aiSummary = signal<AiContentSummaryDto | null>(null);
+  readonly aiSummaryLoading = signal(false);
+  readonly aiSummaryError = signal<string | null>(null);
 
   readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
   readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
@@ -67,6 +74,8 @@ export class CourseContentViewerComponent {
         next: content => {
           this.content.set(content);
           this.loadPersistedAnnotations(content.Attachments ?? []);
+          this.aiSummary.set(null);
+          this.aiSummaryError.set(null);
           this.loading.set(false);
           this.error.set(null);
         },
@@ -217,6 +226,30 @@ export class CourseContentViewerComponent {
     return Boolean(this.videoLoading()[attachmentId]);
   }
 
+  generateSummary(): void {
+    const contentId = this.content()?.Id;
+    if (!contentId || this.aiSummaryLoading()) {
+      return;
+    }
+
+    this.aiSummaryLoading.set(true);
+    this.aiSummaryError.set(null);
+
+    this.aiInsightsService
+      .getContentSummary(contentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: summary => {
+          this.aiSummary.set(summary);
+          this.aiSummaryLoading.set(false);
+        },
+        error: error => {
+          this.aiSummaryError.set(this.extractErrorMessage(error, 'Nao foi possivel gerar o resumo com IA.'));
+          this.aiSummaryLoading.set(false);
+        }
+      });
+  }
+
   private cleanupVideoUrls(): void {
     const urls = Object.values(this.videoUrls());
     urls.forEach(url => URL.revokeObjectURL(url));
@@ -249,5 +282,25 @@ export class CourseContentViewerComponent {
 
   safeHtml(content?: string | null): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const payload = error.error;
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const message = (payload.message ?? payload.Message ?? payload.title ?? payload.Title) as string | undefined;
+      if (message?.trim()) {
+        return message;
+      }
+    }
+
+    return fallback;
   }
 }

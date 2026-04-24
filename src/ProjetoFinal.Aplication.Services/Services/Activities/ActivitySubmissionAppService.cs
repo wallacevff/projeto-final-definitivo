@@ -55,7 +55,40 @@ public class ActivitySubmissionAppService : IActivitySubmissionAppService
 
         if (existingSubmission is not null)
         {
-            throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
+            if (existingSubmission.Status != SubmissionStatus.Returned)
+            {
+                throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
+            }
+
+            var trackedSubmission = await _submissionRepository.GetWithDetailsAsync(existingSubmission.Id, cancellationToken);
+            if (trackedSubmission is null)
+            {
+                throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+            }
+
+            trackedSubmission.ClassGroupId = dto.ClassGroupId;
+            trackedSubmission.Status = SubmissionStatus.Submitted;
+            trackedSubmission.SubmittedAt = DateTime.UtcNow;
+            trackedSubmission.GradedAt = null;
+            trackedSubmission.GradedById = null;
+            trackedSubmission.Score = null;
+            trackedSubmission.Feedback = null;
+            trackedSubmission.MasteryScore = null;
+            trackedSubmission.ApplicationScore = null;
+            trackedSubmission.CommunicationScore = null;
+            trackedSubmission.FeedbackTags = null;
+            trackedSubmission.RecommendedAction = null;
+            trackedSubmission.TextAnswer = dto.TextAnswer;
+            trackedSubmission.Attachments.Clear();
+            foreach (var attachment in BuildAttachments(dto.Attachments))
+            {
+                trackedSubmission.Attachments.Add(attachment);
+            }
+            trackedSubmission.UpdatedAt = DateTime.UtcNow;
+
+            await _unityOfWork.SaveChangesAsync(cancellationToken);
+            var updatedExisting = await _submissionRepository.GetWithDetailsAsync(trackedSubmission.Id, cancellationToken);
+            return _mapper.MapFrom<ActivitySubmissionDto>(updatedExisting ?? trackedSubmission);
         }
 
         var entity = new ActivitySubmission
@@ -103,7 +136,6 @@ public class ActivitySubmissionAppService : IActivitySubmissionAppService
         }
         submission.UpdatedAt = DateTime.UtcNow;
 
-        await _submissionRepository.UpdateAsync(submission, cancellationToken);
         await _unityOfWork.SaveChangesAsync(cancellationToken);
         var updated = await _submissionRepository.GetWithDetailsAsync(submission.Id, cancellationToken);
         return _mapper.MapFrom<ActivitySubmissionDto>(updated ?? submission);
