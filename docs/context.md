@@ -355,3 +355,8 @@ pm.cmd run build.
 - A partir da segunda checagem de tabela, o `DbContext` passava a reutilizar uma conexao ja descartada, gerando novamente `The ConnectionString property has not been initialized`.
 - O helper agora abre e fecha a conexao apenas quando necessario, sem descartar o objeto compartilhado retornado pelo EF.
 - Validacao executada com `dotnet build ProjetoFinal.sln`.
+
+### Data: 2026-04-24
+### Resumo
+- Solicitada e autorizada a inclusao do arquivo local de IDE `ProjetoFinal.sln.DotSettings.user` no versionamento.
+- Sessao atual registrada no `docs/transcription.md` antes da geracao do commit incremental.

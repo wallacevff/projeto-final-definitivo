@@ -304,3 +304,7 @@ pm.cmd run build.
 - A conexao compartilhada do EF agora nao e descartada manualmente; o helper apenas abre e fecha quando necessario.
 - O ajuste elimina a recorrencia do erro `The ConnectionString property has not been initialized` durante as multiplas checagens de tabelas no startup.
 - Validacao tecnica concluida com `dotnet build ProjetoFinal.sln`.
+
+### 2026-04-24 (commit incremental de configuracao local)
+- Registrada a solicitacao de incluir `ProjetoFinal.sln.DotSettings.user` no versionamento.
+- Atualizados os documentos operacionais obrigatorios (`docs/transcription.md`, `docs/memoria_projeto.md` e `docs/context.md`) para manter rastreabilidade da sessao antes do novo commit.

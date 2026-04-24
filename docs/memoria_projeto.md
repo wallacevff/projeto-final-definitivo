@@ -588,3 +588,8 @@ pm.cmd run build executados com sucesso.
 - Isso quebrava a segunda chamada sequencial de verificacao de tabela no fluxo de baseline da migration.
 - Ajustado o helper para nao descartar `context.Database.GetDbConnection()`, apenas abrir/fechar quando necessario e manter o descarte restrito ao `DbCommand`.
 - Validacao: `dotnet build ProjetoFinal.sln` executado com sucesso.
+
+
+## 2026-04-24 (inclusao de configuracao de IDE no commit)
+- Solicitada inclusao do arquivo `ProjetoFinal.sln.DotSettings.user` no versionamento do repositorio.
+- Documentacao operacional da sessao atualizada (`docs/transcription.md`) antes do novo commit.
