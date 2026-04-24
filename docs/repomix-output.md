@@ -537,578 +537,6 @@ README.md
 
 # Files
 
-## File: src/ProjetoFinal.Api/Controllers/AiInsightsController.cs
-````csharp
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ProjetoFinal.Application.Contracts.Dto.Ai;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-
-namespace ProjetoFinal.Api.Controllers;
-
-[ApiController]
-[Authorize]
-[Route("api/ai-insights")]
-[Route("api/v1/ai-insights")]
-public class AiInsightsController : ControllerBase
-{
-    private readonly IAiInsightsAppService _service;
-
-    public AiInsightsController(IAiInsightsAppService service)
-    {
-        _service = service;
-    }
-
-    [HttpGet("contents/{contentId:guid}/summary")]
-    public Task<AiContentSummaryDto> GenerateContentSummaryAsync(
-        [FromRoute] Guid contentId,
-        CancellationToken cancellationToken = default)
-    {
-        return _service.GenerateContentSummaryAsync(contentId, cancellationToken);
-    }
-
-    [HttpGet("instructor/frequent-questions")]
-    public Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(
-        CancellationToken cancellationToken = default)
-    {
-        if (!IsInstructor() || IsAdministrator())
-        {
-            throw new BusinessException("Apenas instrutores podem consultar este painel.", ECodigo.NaoPermitido);
-        }
-
-        var instructorId = ResolveCurrentUserId();
-        if (instructorId == Guid.Empty)
-        {
-            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
-        }
-
-        return _service.GetInstructorFrequentQuestionsAsync(instructorId, cancellationToken);
-    }
-
-    private Guid ResolveCurrentUserId()
-    {
-        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
-    }
-
-    private bool IsInstructor()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Instructor;
-        }
-
-        return int.TryParse(roleValue, out var numericRole) && numericRole == (int)UserRole.Instructor;
-    }
-
-    private bool IsAdministrator()
-    {
-        var roleValue = User.FindFirstValue(ClaimTypes.Role);
-        if (string.IsNullOrWhiteSpace(roleValue))
-        {
-            return false;
-        }
-
-        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
-        {
-            return role == UserRole.Administrator;
-        }
-
-        return int.TryParse(roleValue, out var numericRole) && numericRole == (int)UserRole.Administrator;
-    }
-}
-````
-
-## File: src/ProjetoFinal.Aplication.Services/Services/Ai/AiInsightsAppService.cs
-````csharp
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Options;
-using ProjetoFinal.Application.Contracts.Dto.Ai;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
-
-namespace ProjetoFinal.Aplication.Services.Services.Ai;
-
-public class AiInsightsAppService : IAiInsightsAppService
-{
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private readonly HttpClient _httpClient;
-    private readonly AiProviderConfiguration _configuration;
-    private readonly ICourseContentRepository _courseContentRepository;
-    private readonly IForumPostRepository _forumPostRepository;
-
-    public AiInsightsAppService(
-        HttpClient httpClient,
-        IOptions<AiProviderConfiguration> configuration,
-        ICourseContentRepository courseContentRepository,
-        IForumPostRepository forumPostRepository)
-    {
-        _httpClient = httpClient;
-        _configuration = configuration.Value;
-        _courseContentRepository = courseContentRepository;
-        _forumPostRepository = forumPostRepository;
-    }
-
-    public async Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default)
-    {
-        EnsureConfiguration();
-
-        var content = await _courseContentRepository.GetByIdAsync(contentId, cancellationToken);
-        if (content is null)
-        {
-            throw new BusinessException("Conteudo nao encontrado para resumo.", ECodigo.NaoEncontrado);
-        }
-
-        var sourceText = BuildContentSource(content.Title, content.Summary, content.Body);
-        if (string.IsNullOrWhiteSpace(sourceText))
-        {
-            throw new BusinessException("O conteudo nao possui texto suficiente para gerar resumo.", ECodigo.NaoPermitido);
-        }
-
-        var prompt = $$"""
-        Voce e um assistente educacional em portugues do Brasil.
-        Gere um resumo claro e didatico para estudantes.
-        Responda exclusivamente em JSON valido no formato:
-        {
-          "summary": "texto curto com no maximo 120 palavras",
-          "keyPoints": ["ponto 1", "ponto 2", "ponto 3"],
-          "attentionPoints": ["atencao 1", "atencao 2"]
-        }
-
-        Titulo: {{content.Title}}
-        Resumo original: {{content.Summary ?? "Nao informado"}}
-        Conteudo:
-        {{sourceText}}
-        """;
-
-        var completion = await CreateCompletionAsync(prompt, cancellationToken);
-        var parsed = DeserializeOrThrow<AiContentSummaryPayload>(completion);
-
-        return new AiContentSummaryDto
-        {
-            Summary = parsed.Summary?.Trim() ?? string.Empty,
-            KeyPoints = SanitizeList(parsed.KeyPoints, 5),
-            AttentionPoints = SanitizeList(parsed.AttentionPoints, 4),
-            Model = _configuration.Model,
-            GeneratedAt = DateTime.UtcNow
-        };
-    }
-
-    public async Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(Guid instructorId, CancellationToken cancellationToken = default)
-    {
-        EnsureConfiguration();
-
-        var posts = await _forumPostRepository.GetAllAsync(new ForumPostFilter
-        {
-            InstructorId = instructorId,
-            PageNumber = 1,
-            PageSize = 200
-        }, cancellationToken);
-
-        var relevantPosts = posts.Dados
-            .Where(post => !string.IsNullOrWhiteSpace(post.Message))
-            .OrderByDescending(post => post.CreatedAt)
-            .Take(80)
-            .ToList();
-
-        if (relevantPosts.Count == 0)
-        {
-            return new AiInstructorFrequentQuestionsDto
-            {
-                Items = new List<AiFrequentQuestionItemDto>(),
-                Model = _configuration.Model,
-                GeneratedAt = DateTime.UtcNow
-            };
-        }
-
-        var forumDigest = new StringBuilder();
-        foreach (var post in relevantPosts)
-        {
-            forumDigest.AppendLine($"Curso: {post.Thread?.Course?.Title ?? "Curso nao informado"}");
-            forumDigest.AppendLine($"Turma: {post.Thread?.ClassGroup?.Name ?? "Turma nao informada"}");
-            forumDigest.AppendLine($"Autor: {post.Author?.FullName ?? "Usuario"}");
-            forumDigest.AppendLine($"Mensagem: {NormalizeWhitespace(StripHtml(post.Message))}");
-            forumDigest.AppendLine();
-        }
-
-        var prompt = $$"""
-        Voce e um assistente educacional em portugues do Brasil.
-        Analise as mensagens de forum abaixo e identifique as duvidas mais frequentes dos alunos.
-        Considere variacoes de redacao como a mesma duvida quando o tema for igual.
-        Responda exclusivamente em JSON valido no formato:
-        {
-          "items": [
-            {
-              "topic": "tema curto",
-              "question": "duvida representativa",
-              "suggestedAction": "acao recomendada ao professor",
-              "estimatedMentions": 3,
-              "courseTitle": "nome do curso",
-              "classGroupName": "nome da turma"
-            }
-          ]
-        }
-        Limite a resposta a no maximo 5 itens, ordenados do mais recorrente para o menos recorrente.
-
-        Mensagens:
-        {{forumDigest.ToString()}}
-        """;
-
-        var completion = await CreateCompletionAsync(prompt, cancellationToken);
-        var parsed = DeserializeOrThrow<AiInstructorFrequentQuestionsPayload>(completion);
-
-        return new AiInstructorFrequentQuestionsDto
-        {
-            Items = parsed.Items?
-                .Where(item => !string.IsNullOrWhiteSpace(item.Question))
-                .Take(5)
-                .Select(item => new AiFrequentQuestionItemDto
-                {
-                    Topic = item.Topic?.Trim() ?? string.Empty,
-                    Question = item.Question?.Trim() ?? string.Empty,
-                    SuggestedAction = item.SuggestedAction?.Trim() ?? string.Empty,
-                    EstimatedMentions = Math.Max(item.EstimatedMentions, 1),
-                    CourseTitle = item.CourseTitle?.Trim() ?? string.Empty,
-                    ClassGroupName = item.ClassGroupName?.Trim() ?? string.Empty
-                })
-                .ToList() ?? new List<AiFrequentQuestionItemDto>(),
-            Model = _configuration.Model,
-            GeneratedAt = DateTime.UtcNow
-        };
-    }
-
-    private async Task<string> CreateCompletionAsync(string prompt, CancellationToken cancellationToken)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _configuration.ApiKey);
-        request.Content = JsonContent.Create(new
-        {
-            model = _configuration.Model,
-            temperature = _configuration.Temperature,
-            max_tokens = _configuration.MaxTokens,
-            response_format = new { type = "json_object" },
-            messages = new object[]
-            {
-                new { role = "system", content = "Voce responde apenas com JSON valido." },
-                new { role = "user", content = prompt }
-            }
-        });
-
-        using var response = await _httpClient.SendAsync(request, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new BusinessException($"Falha ao consultar o provedor de IA ({(int)response.StatusCode}).", ECodigo.NaoPermitido);
-        }
-
-        var completion = JsonSerializer.Deserialize<AiChatCompletionResponse>(body, JsonOptions);
-        var content = completion?.Choices?.FirstOrDefault()?.Message?.Content;
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            throw new BusinessException("O provedor de IA nao retornou conteudo utilizavel.", ECodigo.NaoPermitido);
-        }
-
-        return content;
-    }
-
-    private void EnsureConfiguration()
-    {
-        if (string.IsNullOrWhiteSpace(_configuration.ApiKey))
-        {
-            throw new BusinessException("A chave do provedor de IA nao esta configurada no servidor.", ECodigo.NaoPermitido);
-        }
-
-        if (_httpClient.BaseAddress is null)
-        {
-            _httpClient.BaseAddress = new Uri(EnsureTrailingSlash(_configuration.BaseUrl));
-        }
-    }
-
-    private static T DeserializeOrThrow<T>(string json)
-    {
-        var result = JsonSerializer.Deserialize<T>(json, JsonOptions);
-        if (result is null)
-        {
-            throw new BusinessException("Nao foi possivel interpretar a resposta do provedor de IA.", ECodigo.NaoPermitido);
-        }
-
-        return result;
-    }
-
-    private static string BuildContentSource(string? title, string? summary, string? body)
-    {
-        var source = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(title))
-        {
-            source.AppendLine(title);
-        }
-
-        if (!string.IsNullOrWhiteSpace(summary))
-        {
-            source.AppendLine(summary);
-        }
-
-        if (!string.IsNullOrWhiteSpace(body))
-        {
-            source.AppendLine(StripHtml(body));
-        }
-
-        return NormalizeWhitespace(source.ToString());
-    }
-
-    private static string StripHtml(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            return string.Empty;
-        }
-
-        var withoutTags = Regex.Replace(input, "<[^>]+>", " ");
-        return System.Net.WebUtility.HtmlDecode(withoutTags);
-    }
-
-    private static string NormalizeWhitespace(string input)
-    {
-        return Regex.Replace(input ?? string.Empty, "\\s+", " ").Trim();
-    }
-
-    private static IList<string> SanitizeList(IEnumerable<string>? values, int maxItems)
-    {
-        return values?
-            .Select(value => value?.Trim())
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Take(maxItems)
-            .Cast<string>()
-            .ToList() ?? new List<string>();
-    }
-
-    private static string EnsureTrailingSlash(string url)
-    {
-        return url.EndsWith('/') ? url : $"{url}/";
-    }
-
-    private sealed class AiChatCompletionResponse
-    {
-        public IList<AiChatChoice>? Choices { get; set; }
-    }
-
-    private sealed class AiChatChoice
-    {
-        public AiChatMessage? Message { get; set; }
-    }
-
-    private sealed class AiChatMessage
-    {
-        public string? Content { get; set; }
-    }
-
-    private sealed class AiContentSummaryPayload
-    {
-        public string? Summary { get; set; }
-        public IList<string>? KeyPoints { get; set; }
-        public IList<string>? AttentionPoints { get; set; }
-    }
-
-    private sealed class AiInstructorFrequentQuestionsPayload
-    {
-        public IList<AiInstructorFrequentQuestionItemPayload>? Items { get; set; }
-    }
-
-    private sealed class AiInstructorFrequentQuestionItemPayload
-    {
-        public string? Topic { get; set; }
-        public string? Question { get; set; }
-        public string? SuggestedAction { get; set; }
-        public int EstimatedMentions { get; set; }
-        public string? CourseTitle { get; set; }
-        public string? ClassGroupName { get; set; }
-    }
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiContentSummaryDto.cs
-````csharp
-namespace ProjetoFinal.Application.Contracts.Dto.Ai;
-
-public class AiContentSummaryDto
-{
-    public string Summary { get; set; } = string.Empty;
-    public IList<string> KeyPoints { get; set; } = new List<string>();
-    public IList<string> AttentionPoints { get; set; } = new List<string>();
-    public string Model { get; set; } = string.Empty;
-    public DateTime GeneratedAt { get; set; }
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiFrequentQuestionItemDto.cs
-````csharp
-namespace ProjetoFinal.Application.Contracts.Dto.Ai;
-
-public class AiFrequentQuestionItemDto
-{
-    public string Topic { get; set; } = string.Empty;
-    public string Question { get; set; } = string.Empty;
-    public string SuggestedAction { get; set; } = string.Empty;
-    public int EstimatedMentions { get; set; }
-    public string CourseTitle { get; set; } = string.Empty;
-    public string ClassGroupName { get; set; } = string.Empty;
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiInstructorFrequentQuestionsDto.cs
-````csharp
-namespace ProjetoFinal.Application.Contracts.Dto.Ai;
-
-public class AiInstructorFrequentQuestionsDto
-{
-    public IList<AiFrequentQuestionItemDto> Items { get; set; } = new List<AiFrequentQuestionItemDto>();
-    public string Model { get; set; } = string.Empty;
-    public DateTime GeneratedAt { get; set; }
-}
-````
-
-## File: src/ProjetoFinal.Application.Contracts/Services/IAiInsightsAppService.cs
-````csharp
-using ProjetoFinal.Application.Contracts.Dto.Ai;
-
-namespace ProjetoFinal.Application.Contracts.Services;
-
-public interface IAiInsightsAppService
-{
-    Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default);
-    Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(Guid instructorId, CancellationToken cancellationToken = default);
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/core/api/ai.api.ts
-````typescript
-export interface AiContentSummaryDto {
-  Summary: string;
-  KeyPoints: string[];
-  AttentionPoints: string[];
-  Model: string;
-  GeneratedAt: string;
-}
-
-export interface AiFrequentQuestionItemDto {
-  Topic: string;
-  Question: string;
-  SuggestedAction: string;
-  EstimatedMentions: number;
-  CourseTitle: string;
-  ClassGroupName: string;
-}
-
-export interface AiInstructorFrequentQuestionsDto {
-  Items: AiFrequentQuestionItemDto[];
-  Model: string;
-  GeneratedAt: string;
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/core/services/ai-insights.service.ts
-````typescript
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
-
-import { environment } from '../../../environments/environment';
-import { AiContentSummaryDto, AiInstructorFrequentQuestionsDto } from '../api/ai.api';
-
-@Injectable({ providedIn: 'root' })
-export class AiInsightsService {
-  private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.baseUrl;
-
-  getContentSummary(contentId: string) {
-    return this.http
-      .get<AiContentSummaryDto>(`${this.baseUrl}/ai-insights/contents/${contentId}/summary`)
-      .pipe(catchError(error => throwError(() => error)));
-  }
-
-  getInstructorFrequentQuestions() {
-    return this.http
-      .get<AiInstructorFrequentQuestionsDto>(`${this.baseUrl}/ai-insights/instructor/frequent-questions`)
-      .pipe(catchError(error => throwError(() => error)));
-  }
-}
-````
-
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationModels/AiProviderConfiguration.cs
-````csharp
-namespace ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
-
-public class AiProviderConfiguration
-{
-    public const string SectionName = "AiProvider";
-
-    public string BaseUrl { get; set; } = "https://api.deepseek.com";
-    public string ApiKey { get; set; } = string.Empty;
-    public string Model { get; set; } = "deepseek-chat";
-    public double Temperature { get; set; } = 0.2;
-    public int MaxTokens { get; set; } = 900;
-}
-````
-
-## File: docker-build-push.sh
-````bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ $# -ne 1 || -z "${1}" ]]; then
-  echo "Uso: $0 <tag>"
-  echo "Exemplo: $0 1.4.2"
-  exit 1
-fi
-
-TAG="$1"
-IMAGE="wallacevff/projeto-final:${TAG}"
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
-
-echo ">> Build da imagem ${IMAGE}"
-docker buildx build --no-cache -f Dockerfile -t "${IMAGE}" .
-
-echo ">> Push da imagem ${IMAGE}"
-docker push "${IMAGE}"
-
-echo ">> Concluido: ${IMAGE}"
-````
-
-## File: global.json
-````json
-{
-  "sdk": {
-    "version": "10.0.104",
-    "rollForward": "latestFeature"
-  }
-}
-````
-
 ## File: .run/start.run.xml
 ````xml
 <component name="ProjectRunConfigurationManager">
@@ -1733,6 +1161,99 @@ BEGIN
 END
 ````
 
+## File: src/ProjetoFinal.Api/Controllers/AiInsightsController.cs
+````csharp
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjetoFinal.Application.Contracts.Dto.Ai;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+
+namespace ProjetoFinal.Api.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/ai-insights")]
+[Route("api/v1/ai-insights")]
+public class AiInsightsController : ControllerBase
+{
+    private readonly IAiInsightsAppService _service;
+
+    public AiInsightsController(IAiInsightsAppService service)
+    {
+        _service = service;
+    }
+
+    [HttpGet("contents/{contentId:guid}/summary")]
+    public Task<AiContentSummaryDto> GenerateContentSummaryAsync(
+        [FromRoute] Guid contentId,
+        CancellationToken cancellationToken = default)
+    {
+        return _service.GenerateContentSummaryAsync(contentId, cancellationToken);
+    }
+
+    [HttpGet("instructor/frequent-questions")]
+    public Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsInstructor() || IsAdministrator())
+        {
+            throw new BusinessException("Apenas instrutores podem consultar este painel.", ECodigo.NaoPermitido);
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        return _service.GetInstructorFrequentQuestionsAsync(instructorId, cancellationToken);
+    }
+
+    private Guid ResolveCurrentUserId()
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        return Guid.TryParse(identifier, out var id) ? id : Guid.Empty;
+    }
+
+    private bool IsInstructor()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Instructor;
+        }
+
+        return int.TryParse(roleValue, out var numericRole) && numericRole == (int)UserRole.Instructor;
+    }
+
+    private bool IsAdministrator()
+    {
+        var roleValue = User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrWhiteSpace(roleValue))
+        {
+            return false;
+        }
+
+        if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var role))
+        {
+            return role == UserRole.Administrator;
+        }
+
+        return int.TryParse(roleValue, out var numericRole) && numericRole == (int)UserRole.Administrator;
+    }
+}
+````
+
 ## File: src/ProjetoFinal.Api/Controllers/ContentAnnotationsController.cs
 ````csharp
 using System.IdentityModel.Tokens.Jwt;
@@ -2005,6 +1526,325 @@ public class MediaUploadRequest
 }
 ````
 
+## File: src/ProjetoFinal.Aplication.Services/Services/Ai/AiInsightsAppService.cs
+````csharp
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
+using ProjetoFinal.Application.Contracts.Dto.Ai;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
+
+namespace ProjetoFinal.Aplication.Services.Services.Ai;
+
+public class AiInsightsAppService : IAiInsightsAppService
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    private readonly HttpClient _httpClient;
+    private readonly AiProviderConfiguration _configuration;
+    private readonly ICourseContentRepository _courseContentRepository;
+    private readonly IForumPostRepository _forumPostRepository;
+
+    public AiInsightsAppService(
+        HttpClient httpClient,
+        IOptions<AiProviderConfiguration> configuration,
+        ICourseContentRepository courseContentRepository,
+        IForumPostRepository forumPostRepository)
+    {
+        _httpClient = httpClient;
+        _configuration = configuration.Value;
+        _courseContentRepository = courseContentRepository;
+        _forumPostRepository = forumPostRepository;
+    }
+
+    public async Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default)
+    {
+        EnsureConfiguration();
+
+        var content = await _courseContentRepository.GetByIdAsync(contentId, cancellationToken);
+        if (content is null)
+        {
+            throw new BusinessException("Conteudo nao encontrado para resumo.", ECodigo.NaoEncontrado);
+        }
+
+        var sourceText = BuildContentSource(content.Title, content.Summary, content.Body);
+        if (string.IsNullOrWhiteSpace(sourceText))
+        {
+            throw new BusinessException("O conteudo nao possui texto suficiente para gerar resumo.", ECodigo.NaoPermitido);
+        }
+
+        var prompt = $$"""
+        Voce e um assistente educacional em portugues do Brasil.
+        Gere um resumo claro e didatico para estudantes.
+        Responda exclusivamente em JSON valido no formato:
+        {
+          "summary": "texto curto com no maximo 120 palavras",
+          "keyPoints": ["ponto 1", "ponto 2", "ponto 3"],
+          "attentionPoints": ["atencao 1", "atencao 2"]
+        }
+
+        Titulo: {{content.Title}}
+        Resumo original: {{content.Summary ?? "Nao informado"}}
+        Conteudo:
+        {{sourceText}}
+        """;
+
+        var completion = await CreateCompletionAsync(prompt, cancellationToken);
+        var parsed = DeserializeOrThrow<AiContentSummaryPayload>(completion);
+
+        return new AiContentSummaryDto
+        {
+            Summary = parsed.Summary?.Trim() ?? string.Empty,
+            KeyPoints = SanitizeList(parsed.KeyPoints, 5),
+            AttentionPoints = SanitizeList(parsed.AttentionPoints, 4),
+            Model = _configuration.Model,
+            GeneratedAt = DateTime.UtcNow
+        };
+    }
+
+    public async Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(Guid instructorId, CancellationToken cancellationToken = default)
+    {
+        EnsureConfiguration();
+
+        var posts = await _forumPostRepository.GetAllAsync(new ForumPostFilter
+        {
+            InstructorId = instructorId,
+            PageNumber = 1,
+            PageSize = 200
+        }, cancellationToken);
+
+        var relevantPosts = posts.Dados
+            .Where(post => !string.IsNullOrWhiteSpace(post.Message))
+            .OrderByDescending(post => post.CreatedAt)
+            .Take(80)
+            .ToList();
+
+        if (relevantPosts.Count == 0)
+        {
+            return new AiInstructorFrequentQuestionsDto
+            {
+                Items = new List<AiFrequentQuestionItemDto>(),
+                Model = _configuration.Model,
+                GeneratedAt = DateTime.UtcNow
+            };
+        }
+
+        var forumDigest = new StringBuilder();
+        foreach (var post in relevantPosts)
+        {
+            forumDigest.AppendLine($"Curso: {post.Thread?.Course?.Title ?? "Curso nao informado"}");
+            forumDigest.AppendLine($"Turma: {post.Thread?.ClassGroup?.Name ?? "Turma nao informada"}");
+            forumDigest.AppendLine($"Autor: {post.Author?.FullName ?? "Usuario"}");
+            forumDigest.AppendLine($"Mensagem: {NormalizeWhitespace(StripHtml(post.Message))}");
+            forumDigest.AppendLine();
+        }
+
+        var prompt = $$"""
+        Voce e um assistente educacional em portugues do Brasil.
+        Analise as mensagens de forum abaixo e identifique as duvidas mais frequentes dos alunos.
+        Considere variacoes de redacao como a mesma duvida quando o tema for igual.
+        Responda exclusivamente em JSON valido no formato:
+        {
+          "items": [
+            {
+              "topic": "tema curto",
+              "question": "duvida representativa",
+              "suggestedAction": "acao recomendada ao professor",
+              "estimatedMentions": 3,
+              "courseTitle": "nome do curso",
+              "classGroupName": "nome da turma"
+            }
+          ]
+        }
+        Limite a resposta a no maximo 5 itens, ordenados do mais recorrente para o menos recorrente.
+
+        Mensagens:
+        {{forumDigest.ToString()}}
+        """;
+
+        var completion = await CreateCompletionAsync(prompt, cancellationToken);
+        var parsed = DeserializeOrThrow<AiInstructorFrequentQuestionsPayload>(completion);
+
+        return new AiInstructorFrequentQuestionsDto
+        {
+            Items = parsed.Items?
+                .Where(item => !string.IsNullOrWhiteSpace(item.Question))
+                .Take(5)
+                .Select(item => new AiFrequentQuestionItemDto
+                {
+                    Topic = item.Topic?.Trim() ?? string.Empty,
+                    Question = item.Question?.Trim() ?? string.Empty,
+                    SuggestedAction = item.SuggestedAction?.Trim() ?? string.Empty,
+                    EstimatedMentions = Math.Max(item.EstimatedMentions, 1),
+                    CourseTitle = item.CourseTitle?.Trim() ?? string.Empty,
+                    ClassGroupName = item.ClassGroupName?.Trim() ?? string.Empty
+                })
+                .ToList() ?? new List<AiFrequentQuestionItemDto>(),
+            Model = _configuration.Model,
+            GeneratedAt = DateTime.UtcNow
+        };
+    }
+
+    private async Task<string> CreateCompletionAsync(string prompt, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _configuration.ApiKey);
+        request.Content = JsonContent.Create(new
+        {
+            model = _configuration.Model,
+            temperature = _configuration.Temperature,
+            max_tokens = _configuration.MaxTokens,
+            response_format = new { type = "json_object" },
+            messages = new object[]
+            {
+                new { role = "system", content = "Voce responde apenas com JSON valido." },
+                new { role = "user", content = prompt }
+            }
+        });
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new BusinessException($"Falha ao consultar o provedor de IA ({(int)response.StatusCode}).", ECodigo.NaoPermitido);
+        }
+
+        var completion = JsonSerializer.Deserialize<AiChatCompletionResponse>(body, JsonOptions);
+        var content = completion?.Choices?.FirstOrDefault()?.Message?.Content;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            throw new BusinessException("O provedor de IA nao retornou conteudo utilizavel.", ECodigo.NaoPermitido);
+        }
+
+        return content;
+    }
+
+    private void EnsureConfiguration()
+    {
+        if (string.IsNullOrWhiteSpace(_configuration.ApiKey))
+        {
+            throw new BusinessException("A chave do provedor de IA nao esta configurada no servidor.", ECodigo.NaoPermitido);
+        }
+
+        if (_httpClient.BaseAddress is null)
+        {
+            _httpClient.BaseAddress = new Uri(EnsureTrailingSlash(_configuration.BaseUrl));
+        }
+    }
+
+    private static T DeserializeOrThrow<T>(string json)
+    {
+        var result = JsonSerializer.Deserialize<T>(json, JsonOptions);
+        if (result is null)
+        {
+            throw new BusinessException("Nao foi possivel interpretar a resposta do provedor de IA.", ECodigo.NaoPermitido);
+        }
+
+        return result;
+    }
+
+    private static string BuildContentSource(string? title, string? summary, string? body)
+    {
+        var source = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            source.AppendLine(title);
+        }
+
+        if (!string.IsNullOrWhiteSpace(summary))
+        {
+            source.AppendLine(summary);
+        }
+
+        if (!string.IsNullOrWhiteSpace(body))
+        {
+            source.AppendLine(StripHtml(body));
+        }
+
+        return NormalizeWhitespace(source.ToString());
+    }
+
+    private static string StripHtml(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return string.Empty;
+        }
+
+        var withoutTags = Regex.Replace(input, "<[^>]+>", " ");
+        return System.Net.WebUtility.HtmlDecode(withoutTags);
+    }
+
+    private static string NormalizeWhitespace(string input)
+    {
+        return Regex.Replace(input ?? string.Empty, "\\s+", " ").Trim();
+    }
+
+    private static IList<string> SanitizeList(IEnumerable<string>? values, int maxItems)
+    {
+        return values?
+            .Select(value => value?.Trim())
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Take(maxItems)
+            .Cast<string>()
+            .ToList() ?? new List<string>();
+    }
+
+    private static string EnsureTrailingSlash(string url)
+    {
+        return url.EndsWith('/') ? url : $"{url}/";
+    }
+
+    private sealed class AiChatCompletionResponse
+    {
+        public IList<AiChatChoice>? Choices { get; set; }
+    }
+
+    private sealed class AiChatChoice
+    {
+        public AiChatMessage? Message { get; set; }
+    }
+
+    private sealed class AiChatMessage
+    {
+        public string? Content { get; set; }
+    }
+
+    private sealed class AiContentSummaryPayload
+    {
+        public string? Summary { get; set; }
+        public IList<string>? KeyPoints { get; set; }
+        public IList<string>? AttentionPoints { get; set; }
+    }
+
+    private sealed class AiInstructorFrequentQuestionsPayload
+    {
+        public IList<AiInstructorFrequentQuestionItemPayload>? Items { get; set; }
+    }
+
+    private sealed class AiInstructorFrequentQuestionItemPayload
+    {
+        public string? Topic { get; set; }
+        public string? Question { get; set; }
+        public string? SuggestedAction { get; set; }
+        public int EstimatedMentions { get; set; }
+        public string? CourseTitle { get; set; }
+        public string? ClassGroupName { get; set; }
+    }
+}
+````
+
 ## File: src/ProjetoFinal.Aplication.Services/Services/Contents/ContentVideoAnnotationAppService.cs
 ````csharp
 using System;
@@ -2101,6 +1941,47 @@ public class UserAppService : DefaultService<User, UserDto, UserCreateDto, UserU
 
         return user is null ? null : _mapper.MapFrom<UserDto>(user);
     }
+}
+````
+
+## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiContentSummaryDto.cs
+````csharp
+namespace ProjetoFinal.Application.Contracts.Dto.Ai;
+
+public class AiContentSummaryDto
+{
+    public string Summary { get; set; } = string.Empty;
+    public IList<string> KeyPoints { get; set; } = new List<string>();
+    public IList<string> AttentionPoints { get; set; } = new List<string>();
+    public string Model { get; set; } = string.Empty;
+    public DateTime GeneratedAt { get; set; }
+}
+````
+
+## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiFrequentQuestionItemDto.cs
+````csharp
+namespace ProjetoFinal.Application.Contracts.Dto.Ai;
+
+public class AiFrequentQuestionItemDto
+{
+    public string Topic { get; set; } = string.Empty;
+    public string Question { get; set; } = string.Empty;
+    public string SuggestedAction { get; set; } = string.Empty;
+    public int EstimatedMentions { get; set; }
+    public string CourseTitle { get; set; } = string.Empty;
+    public string ClassGroupName { get; set; } = string.Empty;
+}
+````
+
+## File: src/ProjetoFinal.Application.Contracts/Dto/Ai/AiInstructorFrequentQuestionsDto.cs
+````csharp
+namespace ProjetoFinal.Application.Contracts.Dto.Ai;
+
+public class AiInstructorFrequentQuestionsDto
+{
+    public IList<AiFrequentQuestionItemDto> Items { get; set; } = new List<AiFrequentQuestionItemDto>();
+    public string Model { get; set; } = string.Empty;
+    public DateTime GeneratedAt { get; set; }
 }
 ````
 
@@ -2202,6 +2083,19 @@ public class ContentVideoAnnotationUpdateDto
 }
 ````
 
+## File: src/ProjetoFinal.Application.Contracts/Services/IAiInsightsAppService.cs
+````csharp
+using ProjetoFinal.Application.Contracts.Dto.Ai;
+
+namespace ProjetoFinal.Application.Contracts.Services;
+
+public interface IAiInsightsAppService
+{
+    Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default);
+    Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(Guid instructorId, CancellationToken cancellationToken = default);
+}
+````
+
 ## File: src/ProjetoFinal.Application.Contracts/Services/IContentVideoAnnotationAppService.cs
 ````csharp
 using System;
@@ -2214,6 +2108,32 @@ public interface IContentVideoAnnotationAppService
     : IDefaultService<ContentVideoAnnotationDto, ContentVideoAnnotationCreateDto, ContentVideoAnnotationUpdateDto,
         ContentVideoAnnotationFilter, Guid>
 {
+}
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/api/ai.api.ts
+````typescript
+export interface AiContentSummaryDto {
+  Summary: string;
+  KeyPoints: string[];
+  AttentionPoints: string[];
+  Model: string;
+  GeneratedAt: string;
+}
+
+export interface AiFrequentQuestionItemDto {
+  Topic: string;
+  Question: string;
+  SuggestedAction: string;
+  EstimatedMentions: number;
+  CourseTitle: string;
+  ClassGroupName: string;
+}
+
+export interface AiInstructorFrequentQuestionsDto {
+  Items: AiFrequentQuestionItemDto[];
+  Model: string;
+  GeneratedAt: string;
 }
 ````
 
@@ -2375,6 +2295,34 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     })
   );
 };
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/core/services/ai-insights.service.ts
+````typescript
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
+import { AiContentSummaryDto, AiInstructorFrequentQuestionsDto } from '../api/ai.api';
+
+@Injectable({ providedIn: 'root' })
+export class AiInsightsService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.baseUrl;
+
+  getContentSummary(contentId: string) {
+    return this.http
+      .get<AiContentSummaryDto>(`${this.baseUrl}/ai-insights/contents/${contentId}/summary`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
+  getInstructorFrequentQuestions() {
+    return this.http
+      .get<AiInstructorFrequentQuestionsDto>(`${this.baseUrl}/ai-insights/instructor/frequent-questions`)
+      .pipe(catchError(error => throwError(() => error)));
+  }
+}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/core/services/chat-notification.service.ts
@@ -3453,6 +3401,22 @@ services:
 
 volumes:
   minio_data:
+````
+
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationModels/AiProviderConfiguration.cs
+````csharp
+namespace ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
+
+public class AiProviderConfiguration
+{
+    public const string SectionName = "AiProvider";
+
+    public string BaseUrl { get; set; } = "https://api.deepseek.com";
+    public string ApiKey { get; set; } = string.Empty;
+    public string Model { get; set; } = "deepseek-chat";
+    public double Temperature { get; set; } = 0.2;
+    public int MaxTokens { get; set; } = 900;
+}
 ````
 
 ## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationModels/JwtConfiguration.cs
@@ -6531,6 +6495,32 @@ public class ContentVideoAnnotationRepository
 </Project>
 ````
 
+## File: docker-build-push.sh
+````bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 || -z "${1}" ]]; then
+  echo "Uso: $0 <tag>"
+  echo "Exemplo: $0 1.4.2"
+  exit 1
+fi
+
+TAG="$1"
+IMAGE="wallacevff/projeto-final:${TAG}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPT_DIR}"
+
+echo ">> Build da imagem ${IMAGE}"
+docker buildx build --no-cache -f Dockerfile -t "${IMAGE}" .
+
+echo ">> Push da imagem ${IMAGE}"
+docker push "${IMAGE}"
+
+echo ">> Concluido: ${IMAGE}"
+````
+
 ## File: docker-compose.yml
 ````yaml
 version: "3.9"
@@ -6609,6 +6599,16 @@ networks:
 configs:
   projeto-final-settings:
     external: true
+````
+
+## File: global.json
+````json
+{
+  "sdk": {
+    "version": "10.0.104",
+    "rollForward": "latestFeature"
+  }
+}
 ````
 
 ## File: docs/commands.md
@@ -7492,35 +7492,6 @@ public interface IApplicationServices
 }
 ````
 
-## File: src/ProjetoFinal.Aplication.Services/ProjetoFinal.Aplication.Services.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="BCrypt.Net-Core" Version="1.6.0"/>
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
-        <PackageReference Include="RhbkSdk" Version="8.2.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net8.0\Microsoft.AspNetCore.dll"/>
-        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net10.0\Microsoft.AspNetCore.dll"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
-    </ItemGroup>
-</Project>
-````
-
 ## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivitySubmissionCreateDto.cs
 ````csharp
 using System;
@@ -8196,28 +8167,6 @@ namespace ProjetoFinal.Application.Contracts;
 public interface IApplicationContracts
 {
 }
-````
-
-## File: src/ProjetoFinal.Application.Contracts/ProjetoFinal.Application.Contracts.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Folder Include="CadastroDto\" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj" />
-        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj" />
-    </ItemGroup>
-
-</Project>
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/core/api/api.types.ts
@@ -11578,31 +11527,6 @@ public interface IDomain
 }
 ````
 
-## File: src/ProjetoFinal.Domain/ProjetoFinal.Domain.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Folder Include="Entities\"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj"/>
-    </ItemGroup>
-
-</Project>
-````
-
 ## File: src/ProjetoFinal.Domain.Shared/Enums/ECodigo.cs
 ````csharp
 namespace ProjetoFinal.Domain.Shared.Enums;
@@ -11715,23 +11639,6 @@ namespace ProjetoFinal.Domain.Shared;
 public interface IDomainShared
 {
 }
-````
-
-## File: src/ProjetoFinal.Domain.Shared/ProjetoFinal.Domain.Shared.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
-    </ItemGroup>
-
-</Project>
 ````
 
 ## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/sql-server-compose.yaml
@@ -13143,66 +13050,6 @@ public interface IInfraData
 }
 ````
 
-## File: src/ProjetoFinal.Infra.Data/ProjetoFinal.Infra.Data.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-
-    <ItemGroup>
-        <PackageReference Include="LinqKit.Core" Version="1.2.7"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.13"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="EntityMaps\"/>
-        <Folder Include="Migrations\"/>
-        <Folder Include="SqlFiles\"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj"/>
-    </ItemGroup>
-
-</Project>
-````
-
-## File: src/ProjetoFinal.IoC/ProjetoFinal.IoC.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj"/>
-        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
-    </ItemGroup>
-
-</Project>
-````
-
 ## File: .gitlab-ci.yml
 ````yaml
 include:
@@ -13747,61 +13594,6 @@ public static class WebApplicationExtensions
 }
 ````
 
-## File: src/ProjetoFinal.Api/Factories/WebApplicationBuilderFactory.cs
-````csharp
-using System.Reflection;
-using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
-using ProjetoFinal.Api.Extensions;
-using ProjetoFinal.Api.Utils;
-using ProjetoFinal.Infra.CrossCutting.Providers;
-using ProjetoFinal.IoC;
-
-namespace ProjetoFinal.Api.Factories;
-
-public static class WebApplicationBuilderFactory
-{
-    public static WebApplication CreateWebApplication(params string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-        var configuration = CustomConfigurationProvider.GetConfiguration(builder.Environment);
-        builder.Configuration.AddConfiguration(configuration);
-        builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
-        builder.Configuration.AddEnvironmentVariables();
-        builder.ConfigureControllers();
-        builder.Services.ConfigureByIoC(builder.Configuration, builder.Environment);
-        builder.AddSwaggerBuilder();
-        builder.AddCorsBuilder();
-        builder.AddJwtAuthentication();
-        builder.AddRealtime();
-        builder.ConfigureRequestBodySize();
-
-        return builder.Build();
-    }
-
-    public static WebApplicationBuilder ConfigureControllers(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddControllers(options =>
-            {
-                options.InputFormatters.Add(
-                    new PlainTextFormatter()
-                );
-                // options.InputFormatters.Add(new XmlSerializerInputFormatter(new MvcOptions()
-                // {
-                //     
-                // }));
-            })
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                options.JsonSerializerOptions.PropertyNamingPolicy = new PascalCaseNamingPolicy();
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-            });
-        return builder;
-    }
-}
-````
-
 ## File: src/ProjetoFinal.Api/Hubs/ChatHub.cs
 ````csharp
 using System.IdentityModel.Tokens.Jwt;
@@ -14031,222 +13823,6 @@ public class ExceptionHandlingMidleware(RequestDelegate next, ILogger<ExceptionH
 }
 ````
 
-## File: src/ProjetoFinal.Api/Services/DataSeeder.cs
-````csharp
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Shared.Security;
-using ProjetoFinal.Infra.Data.Contexts;
-
-namespace ProjetoFinal.Api.Services;
-
-public static class DataSeeder
-{
-    private const string InitialMigrationId = "20260324111045_Initial";
-    private const string InitialMigrationProductVersion = "8.0.13";
-
-    private record SeedUser(Guid Id, Guid ExternalId, string Username, string FullName, string Email, UserRole Role, string Password);
-
-    private static readonly SeedUser[] DefaultUsers =
-    [
-        new SeedUser(
-            Id: Guid.Parse("7f2b0cd9-6e3c-4f58-9f3e-08dba86fbde1"),
-            ExternalId: Guid.Parse("068df3c8-9b36-4e44-9ba1-3c5a2e41a9bd"),
-            Username: "wallace.vidal",
-            FullName: "Wallace Vidal",
-            Email: "wallace.vidal@ead.dev",
-            Role: UserRole.Instructor,
-            Password: "123456"),
-        new SeedUser(
-            Id: Guid.Parse("f407e6da-4b6a-4c81-92d3-000fcdab3047"),
-            ExternalId: Guid.Parse("b18431db-e4fb-4a1d-a2a9-d9e6f85ba521"),
-            Username: "robert.leite",
-            FullName: "Robert Leite",
-            Email: "robert.leite@ead.dev",
-            Role: UserRole.Student,
-            Password: "123456")
-    ];
-
-    public static async Task SeedAsync(WebApplication app, CancellationToken cancellationToken = default)
-    {
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var configuredConnectionString = context.Database.GetConnectionString();
-        if (string.IsNullOrWhiteSpace(configuredConnectionString))
-        {
-            throw new InvalidOperationException(
-                "A connection string do banco nao foi inicializada para o AppDbContext.");
-        }
-
-        await EnsureMigrationBaselineAsync(context, cancellationToken);
-        await context.Database.MigrateAsync(cancellationToken);
-
-        await EnsureDefaultUsersAsync(context, cancellationToken);
-
-        if (context.ChangeTracker.HasChanges())
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
-    }
-
-    private static async Task EnsureMigrationBaselineAsync(AppDbContext context, CancellationToken cancellationToken)
-    {
-        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
-        if (pendingMigrations.Count == 0 || !pendingMigrations.Contains(InitialMigrationId))
-        {
-            return;
-        }
-
-        var historyTableExists = await TableExistsAsync(context, "__EFMigrationsHistory", cancellationToken);
-        if (historyTableExists)
-        {
-            return;
-        }
-
-        // Detecta um banco legado ja criado manualmente/por migrations antigas sem historico do EF atual.
-        var schemaAlreadyExists = await TableExistsAsync(context, "MediaResources", cancellationToken)
-            || await TableExistsAsync(context, "Users", cancellationToken)
-            || await TableExistsAsync(context, "Courses", cancellationToken);
-
-        if (!schemaAlreadyExists)
-        {
-            return;
-        }
-
-        await context.Database.ExecuteSqlRawAsync(
-            """
-            CREATE TABLE [__EFMigrationsHistory] (
-                [MigrationId] nvarchar(150) NOT NULL,
-                [ProductVersion] nvarchar(32) NOT NULL,
-                CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
-            );
-            """,
-            cancellationToken);
-
-        await context.Database.ExecuteSqlRawAsync(
-            "INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (@migrationId, @productVersion);",
-            [
-                new SqlParameter("@migrationId", InitialMigrationId),
-                new SqlParameter("@productVersion", InitialMigrationProductVersion)
-            ],
-            cancellationToken);
-    }
-
-    private static async Task<bool> TableExistsAsync(AppDbContext context, string tableName, CancellationToken cancellationToken)
-    {
-        var connection = context.Database.GetDbConnection();
-        var shouldCloseConnection = connection.State != System.Data.ConnectionState.Open;
-
-        if (shouldCloseConnection)
-        {
-            await connection.OpenAsync(cancellationToken);
-        }
-
-        try
-        {
-            await using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = @tableName";
-
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = "@tableName";
-            parameter.Value = tableName;
-            command.Parameters.Add(parameter);
-
-            var result = await command.ExecuteScalarAsync(cancellationToken);
-            return result is not null;
-        }
-        finally
-        {
-            if (shouldCloseConnection)
-            {
-                await connection.CloseAsync();
-            }
-        }
-    }
-
-    private static async Task EnsureDefaultUsersAsync(AppDbContext context, CancellationToken cancellationToken)
-    {
-        foreach (var seed in DefaultUsers)
-        {
-            var user = await context.Users.FirstOrDefaultAsync(
-                entity => entity.Username == seed.Username,
-                cancellationToken);
-
-            if (user is null)
-            {
-                var now = DateTime.UtcNow;
-                context.Users.Add(new User
-                {
-                    Id = seed.Id,
-                    ExternalId = seed.ExternalId == Guid.Empty ? Guid.NewGuid() : seed.ExternalId,
-                    FullName = seed.FullName,
-                    Email = seed.Email,
-                    Username = seed.Username,
-                    PasswordHash = PasswordHasher.Hash(seed.Password),
-                    Role = seed.Role,
-                    IsActive = true,
-                    CreatedAt = now
-                });
-                continue;
-            }
-
-            var updated = false;
-
-            if (!string.Equals(user.FullName, seed.FullName, StringComparison.Ordinal))
-            {
-                user.FullName = seed.FullName;
-                updated = true;
-            }
-
-            if (!string.Equals(user.Email, seed.Email, StringComparison.OrdinalIgnoreCase))
-            {
-                user.Email = seed.Email;
-                updated = true;
-            }
-
-            if (!string.Equals(user.Username, seed.Username, StringComparison.OrdinalIgnoreCase))
-            {
-                user.Username = seed.Username;
-                updated = true;
-            }
-
-            if (user.Role != seed.Role)
-            {
-                user.Role = seed.Role;
-                updated = true;
-            }
-
-            if (!PasswordHasher.Verify(seed.Password, user.PasswordHash ?? string.Empty))
-            {
-                user.PasswordHash = PasswordHasher.Hash(seed.Password);
-                updated = true;
-            }
-
-            if (!user.IsActive)
-            {
-                user.IsActive = true;
-                updated = true;
-            }
-
-            if (seed.ExternalId != Guid.Empty && user.ExternalId != seed.ExternalId)
-            {
-                user.ExternalId = seed.ExternalId;
-                updated = true;
-            }
-
-            if (updated)
-            {
-                user.UpdatedAt = DateTime.UtcNow;
-            }
-        }
-    }
-}
-````
-
 ## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivityAppService.cs
 ````csharp
 using System;
@@ -14366,280 +13942,6 @@ public class ActivityAppService : DefaultService<Activity, ActivityDto, Activity
                 ClassGroupId = classGroupId
             }
         };
-    }
-}
-````
-
-## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivitySubmissionAppService.cs
-````csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Dto.Activities;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Enums;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
-using ProjetoFinal.Domain.Shared.Enums;
-using ProjetoFinal.Domain.Shared.Exceptions;
-using Talonario.Domain.Repositories;
-
-namespace ProjetoFinal.Aplication.Services.Services.Activities;
-
-public class ActivitySubmissionAppService : IActivitySubmissionAppService
-{
-    private readonly IActivitySubmissionRepository _submissionRepository;
-    private readonly IActivityRepository _activityRepository;
-    private readonly IVideoAnnotationRepository _videoAnnotationRepository;
-    private readonly IAutomapApi _mapper;
-    private readonly IUnityOfWork _unityOfWork;
-
-    public ActivitySubmissionAppService(
-        IActivitySubmissionRepository submissionRepository,
-        IActivityRepository activityRepository,
-        IVideoAnnotationRepository videoAnnotationRepository,
-        IUnityOfWork unityOfWork,
-        IAutomapApi mapper)
-    {
-        _submissionRepository = submissionRepository;
-        _activityRepository = activityRepository;
-        _videoAnnotationRepository = videoAnnotationRepository;
-        _unityOfWork = unityOfWork;
-        _mapper = mapper;
-    }
-
-    public async Task<ActivitySubmissionDto> SubmitAsync(ActivitySubmissionCreateDto dto, CancellationToken cancellationToken = default)
-    {
-        var activity = await _activityRepository.FindAsync(dto.ActivityId, cancellationToken);
-        if (activity is null)
-        {
-            throw new BusinessException("Atividade nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        if (activity.DueDate.HasValue && DateTime.UtcNow > activity.DueDate.Value && !activity.AllowLateSubmissions)
-        {
-            throw new BusinessException("Prazo para envio encerrado.", ECodigo.NaoPermitido);
-        }
-
-        var existingSubmission = await _submissionRepository.FirstOrDefaultByPredicateAsync(
-            submission => submission.ActivityId == dto.ActivityId && submission.StudentId == dto.StudentId,
-            cancellationToken);
-
-        if (existingSubmission is not null)
-        {
-            if (existingSubmission.Status != SubmissionStatus.Returned)
-            {
-                throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
-            }
-
-            var trackedSubmission = await _submissionRepository.GetWithDetailsAsync(existingSubmission.Id, cancellationToken);
-            if (trackedSubmission is null)
-            {
-                throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-            }
-
-            trackedSubmission.ClassGroupId = dto.ClassGroupId;
-            trackedSubmission.Status = SubmissionStatus.Submitted;
-            trackedSubmission.SubmittedAt = DateTime.UtcNow;
-            trackedSubmission.GradedAt = null;
-            trackedSubmission.GradedById = null;
-            trackedSubmission.Score = null;
-            trackedSubmission.Feedback = null;
-            trackedSubmission.MasteryScore = null;
-            trackedSubmission.ApplicationScore = null;
-            trackedSubmission.CommunicationScore = null;
-            trackedSubmission.FeedbackTags = null;
-            trackedSubmission.RecommendedAction = null;
-            trackedSubmission.TextAnswer = dto.TextAnswer;
-            trackedSubmission.Attachments.Clear();
-            foreach (var attachment in BuildAttachments(dto.Attachments))
-            {
-                trackedSubmission.Attachments.Add(attachment);
-            }
-            trackedSubmission.UpdatedAt = DateTime.UtcNow;
-
-            await _unityOfWork.SaveChangesAsync(cancellationToken);
-            var updatedExisting = await _submissionRepository.GetWithDetailsAsync(trackedSubmission.Id, cancellationToken);
-            return _mapper.MapFrom<ActivitySubmissionDto>(updatedExisting ?? trackedSubmission);
-        }
-
-        var entity = new ActivitySubmission
-        {
-            ActivityId = dto.ActivityId,
-            StudentId = dto.StudentId,
-            ClassGroupId = dto.ClassGroupId,
-            Status = SubmissionStatus.Submitted,
-            SubmittedAt = DateTime.UtcNow,
-            TextAnswer = dto.TextAnswer,
-            Attachments = BuildAttachments(dto.Attachments)
-        };
-
-        var created = await _submissionRepository.AddAsync(entity, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        var withDetails = await _submissionRepository.GetWithDetailsAsync(created.Id, cancellationToken);
-        return _mapper.MapFrom<ActivitySubmissionDto>(withDetails ?? created);
-    }
-
-    public async Task<ActivitySubmissionDto> UpdateAsync(Guid submissionId, ActivitySubmissionUpdateDto dto, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        submission.Status = dto.Status;
-        submission.Score = dto.Score;
-        submission.GradedById = dto.GradedById;
-        submission.Feedback = dto.Feedback;
-        submission.MasteryScore = ValidateRubricScore(dto.MasteryScore, nameof(dto.MasteryScore));
-        submission.ApplicationScore = ValidateRubricScore(dto.ApplicationScore, nameof(dto.ApplicationScore));
-        submission.CommunicationScore = ValidateRubricScore(dto.CommunicationScore, nameof(dto.CommunicationScore));
-        submission.FeedbackTags = NormalizeFeedbackTags(dto.FeedbackTags);
-        submission.RecommendedAction = string.IsNullOrWhiteSpace(dto.RecommendedAction)
-            ? null
-            : dto.RecommendedAction.Trim();
-        submission.TextAnswer = dto.TextAnswer;
-        submission.GradedAt = dto.Score.HasValue ? DateTime.UtcNow : submission.GradedAt;
-        submission.Attachments.Clear();
-        foreach (var attachment in BuildAttachments(dto.Attachments))
-        {
-            submission.Attachments.Add(attachment);
-        }
-        submission.UpdatedAt = DateTime.UtcNow;
-
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        var updated = await _submissionRepository.GetWithDetailsAsync(submission.Id, cancellationToken);
-        return _mapper.MapFrom<ActivitySubmissionDto>(updated ?? submission);
-    }
-
-    public async Task<ActivitySubmissionDto> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        return _mapper.MapFrom<ActivitySubmissionDto>(submission);
-    }
-
-    public async Task<PagedResultDto<ActivitySubmissionDto>> GetAllAsync(ActivitySubmissionFilter filter, CancellationToken cancellationToken = default)
-    {
-        var result = await _submissionRepository.GetAllAsync(filter, cancellationToken);
-        return _mapper.MapFrom<PagedResultDto<ActivitySubmissionDto>>(result);
-    }
-
-    public async Task<VideoAnnotationDto> AddAnnotationAsync(VideoAnnotationCreateDto dto, CancellationToken cancellationToken = default)
-    {
-        var submission = await _submissionRepository.GetWithDetailsAsync(dto.SubmissionId, cancellationToken);
-        if (submission is null)
-        {
-            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
-        }
-
-        var attachment = submission.Attachments.FirstOrDefault(a => a.Id == dto.AttachmentId);
-        if (attachment is null || !attachment.IsVideo)
-        {
-            throw new BusinessException("Somente videos permitem anotacoes temporais.", ECodigo.MaRequisicao);
-        }
-
-        var annotation = new VideoAnnotation
-        {
-            SubmissionId = dto.SubmissionId,
-            AttachmentId = dto.AttachmentId,
-            CreatedById = dto.CreatedById,
-            TimeMarkerSeconds = dto.TimeMarkerSeconds,
-            Comment = dto.Comment,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var created = await _videoAnnotationRepository.AddAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.MapFrom<VideoAnnotationDto>(created);
-    }
-
-    public async Task<VideoAnnotationDto> UpdateAnnotationAsync(Guid annotationId, VideoAnnotationUpdateDto dto, CancellationToken cancellationToken = default)
-    {
-        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
-        if (annotation is null)
-        {
-            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        annotation.TimeMarkerSeconds = dto.TimeMarkerSeconds;
-        annotation.Comment = dto.Comment;
-        annotation.EditedAt = DateTime.UtcNow;
-
-        await _videoAnnotationRepository.UpdateAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.MapFrom<VideoAnnotationDto>(annotation);
-    }
-
-    public async Task DeleteAnnotationAsync(Guid annotationId, CancellationToken cancellationToken = default)
-    {
-        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
-        if (annotation is null)
-        {
-            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
-        }
-
-        await _videoAnnotationRepository.DeleteAsync(annotation, cancellationToken);
-        await _unityOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private static List<SubmissionAttachment> BuildAttachments(IList<SubmissionAttachmentCreateDto> attachments)
-    {
-        attachments ??= new List<SubmissionAttachmentCreateDto>();
-        var result = new List<SubmissionAttachment>();
-        foreach (var attachmentDto in attachments)
-        {
-            result.Add(new SubmissionAttachment
-            {
-                MediaResourceId = attachmentDto.MediaResourceId,
-                IsPrimary = attachmentDto.IsPrimary,
-                IsVideo = attachmentDto.IsVideo
-            });
-        }
-
-        return result;
-    }
-
-    private static int? ValidateRubricScore(int? value, string fieldName)
-    {
-        if (!value.HasValue)
-        {
-            return null;
-        }
-
-        if (value.Value < 1 || value.Value > 5)
-        {
-            throw new BusinessException($"{fieldName} deve estar entre 1 e 5.", ECodigo.MaRequisicao);
-        }
-
-        return value.Value;
-    }
-
-    private static string? NormalizeFeedbackTags(string? tags)
-    {
-        if (string.IsNullOrWhiteSpace(tags))
-        {
-            return null;
-        }
-
-        var normalized = tags
-            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        if (normalized.Length == 0)
-        {
-            return null;
-        }
-
-        return string.Join(",", normalized);
     }
 }
 ````
@@ -14765,6 +14067,35 @@ public class MediaResourceAppService : DefaultService<MediaResource, MediaResour
         return media is null ? null : _mapper.MapFrom<MediaResourceDto>(media);
     }
 }
+````
+
+## File: src/ProjetoFinal.Aplication.Services/ProjetoFinal.Aplication.Services.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="13.0.1"/>
+        <PackageReference Include="BCrypt.Net-Core" Version="1.6.0"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
+        <PackageReference Include="RhbkSdk" Version="8.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net8.0\Microsoft.AspNetCore.dll"/>
+        <Content Remove="..\..\..\.nuget\packages\rhbksdk\8.2.0\contentFiles\any\net10.0\Microsoft.AspNetCore.dll"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
+    </ItemGroup>
+</Project>
 ````
 
 ## File: src/ProjetoFinal.Application.Contracts/Dto/Activities/ActivityCreateDto.cs
@@ -15096,6 +14427,28 @@ public interface IMediaResourceAppService : IDefaultService<MediaResourceDto, Me
 {
     Task<MediaResourceDto?> FindByShaAsync(string sha256, CancellationToken cancellationToken = default);
 }
+````
+
+## File: src/ProjetoFinal.Application.Contracts/ProjetoFinal.Application.Contracts.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="CadastroDto\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj" />
+        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/core/api/activity-submissions.api.ts
@@ -16683,289 +16036,6 @@ export class ActivityCorrectionsComponent {
     </section>
   </div>
 </section>
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.css
-````css
-.content-viewer {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.content-viewer__header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.back-link {
-  align-self: flex-start;
-  text-decoration: none;
-  color: var(--accent-600);
-  font-weight: 600;
-}
-
-.content-viewer__header h2 {
-  margin: 0;
-  color: var(--surface-900);
-  font-size: 2rem;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgba(59, 130, 246, 0.18);
-  color: var(--accent-600);
-  width: fit-content;
-}
-
-.status-badge[data-status='Publicado'] {
-  background: rgba(34, 197, 94, 0.18);
-  color: #15803d;
-}
-
-.summary {
-  margin: 0;
-  color: var(--surface-500);
-}
-
-.content-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.rich-content {
-  line-height: 1.6;
-  color: var(--surface-700);
-}
-
-.rich-content :where(p, ul, ol) {
-  margin: 0 0 0.75rem;
-}
-
-.rich-content ul,
-.rich-content ol {
-  padding-left: 1.25rem;
-}
-
-.content-body h3,
-.attachments-section h3 {
-  margin: 0 0 0.5rem;
-  color: var(--surface-700);
-}
-
-.muted {
-  color: var(--surface-500);
-  margin: 0;
-}
-
-.attachments-section header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.attachments-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.attachments-list li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 16px;
-  background: rgba(248, 250, 252, 0.85);
-}
-
-.tag {
-  margin-left: 0.5rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-600);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.button {
-  border-radius: 999px;
-  padding: 0.45rem 1.2rem;
-  border: 1px solid transparent;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.button--ghost {
-  background: transparent;
-  border-color: rgba(148, 163, 184, 0.5);
-  color: var(--surface-600);
-}
-
-.button--primary {
-  background: var(--accent-600);
-  color: #fff;
-}
-
-.button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.ai-summary-card {
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 16px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  background: linear-gradient(180deg, rgba(99, 102, 241, 0.08), rgba(255, 255, 255, 0.95));
-}
-
-.ai-summary-card__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.ai-summary-card__header h3,
-.ai-summary-result h4 {
-  margin: 0;
-}
-
-.ai-summary-result {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.ai-summary-result__text {
-  margin: 0;
-  color: var(--surface-700);
-  line-height: 1.7;
-}
-
-.ai-summary-result__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.ai-summary-result__grid ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.1rem;
-  color: var(--surface-700);
-}
-
-.video-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.video-frame {
-  display: grid;
-  gap: 1rem;
-}
-
-.video-frame video {
-  width: 100%;
-  max-height: 420px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: #000;
-}
-
-.annotation-panel {
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 16px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.annotation-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.annotation-form input {
-  flex: 1;
-  min-width: 200px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  border-radius: 12px;
-  padding: 0.45rem 0.9rem;
-  font: inherit;
-}
-
-.annotation-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.annotation-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 12px;
-  background: rgba(99, 102, 241, 0.08);
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.annotation-list li span {
-  font-weight: 700;
-  color: var(--accent-600);
-  min-width: 48px;
-}
-
-.annotation-list li:hover {
-  background: rgba(99, 102, 241, 0.15);
-}
-
-.state {
-  padding: 1rem;
-  border-radius: 16px;
-}
-
-.state--info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #1d4ed8;
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.2);
-  color: #b91c1c;
-}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/course-manage/course-contents.component.html
@@ -19011,6 +18081,48 @@ public interface IMediaResourceRepository : IDefaultRepository<MediaResource, Me
 }
 ````
 
+## File: src/ProjetoFinal.Domain/ProjetoFinal.Domain.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Entities\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj"/>
+    </ItemGroup>
+
+</Project>
+````
+
+## File: src/ProjetoFinal.Domain.Shared/ProjetoFinal.Domain.Shared.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
+    </ItemGroup>
+
+</Project>
+````
+
 ## File: src/ProjetoFinal.Infra.CrossCutting/Providers/CustomConfigurationProvider.cs
 ````csharp
 using Microsoft.Extensions.Configuration;
@@ -19237,50 +18349,6 @@ public class MinioObjectStorageService : IObjectStorageService
         return $"{endpoint}/{_configuration.BucketName}/{objectName}";
     }
 }
-````
-
-## File: src/ProjetoFinal.Infra.CrossCutting/ProjetoFinal.Infra.CrossCutting.csproj
-````
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Content Include="ConfigurationEnvironment\appsettings.Development.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-        <Content Include="ConfigurationEnvironment\appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Minio" Version="6.0.2" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Features" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    </ItemGroup>
-
-</Project>
 ````
 
 ## File: src/ProjetoFinal.Infra.Data/Configurations/ActivityMap.cs
@@ -20071,159 +19139,64 @@ public partial class DefaultRepository<TEntity, TFilter, TKey>(AppDbContext cont
 }
 ````
 
-## File: src/ProjetoFinal.IoC/IoCManager.cs
-````csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RhbkSdk.Configurations;
-using RhbkSdk.Extensions;
-using ProjetoFinal.Aplication.Services;
-using ProjetoFinal.Aplication.Services.Services.Ai;
-using ProjetoFinal.Application.Contracts;
-using ProjetoFinal.Application.Contracts.Services;
-using ProjetoFinal.Domain;
-using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
-using ProjetoFinal.Infra.Data;
-using ProjetoFinal.Infra.Data.UnityOfWorks;
-using Talonario.Domain.Repositories;
-using ProjetoFinal.Infra.Data.Contexts;
-using ProjetoFinal.Infra.CrossCutting.Storage;
+## File: src/ProjetoFinal.Infra.Data/ProjetoFinal.Infra.Data.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
 
-namespace ProjetoFinal.IoC;
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-public static class IoCManager
-{
-    public static IServiceCollection ConfigureByIoC(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        IHostEnvironment hostingEnvironment)
-    {
-        return services
-                .AddApplicationDbContext(configuration)
-                .AddJwtConfiguration(configuration)
-                .AddAiProvider(configuration)
-                .AddDomainRepositories()
-                .AddAutoMapper()
-                .AddApplicationServices()
-                .AddObjectStorage(configuration)
-                .AddRhbkSdk(configuration)
-            ;
-    }
 
-    public static IServiceCollection AddApplicationDbContext(this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                "A connection string 'DefaultConnection' nao foi configurada. Verifique appsettings, user-secrets ou variaveis de ambiente.");
-        }
+    <ItemGroup>
+        <PackageReference Include="LinqKit.Core" Version="1.2.7"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.13"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-        services.AddDbContext<AppDbContext>(optionsAction =>
-        {
-            optionsAction.UseSqlServer(connectionString);
-            //optionsAction.UseSqlite("Data Source=db.db");
-        });
-        return services;
-    }
+    <ItemGroup>
+        <Folder Include="EntityMaps\"/>
+        <Folder Include="Migrations\"/>
+        <Folder Include="SqlFiles\"/>
+    </ItemGroup>
 
-    public static IServiceCollection AddDomainRepositories(this IServiceCollection services)
-    {
-        services.AddAllServicesByTypes(typeof(IDomain), typeof(IInfraData));
-        services.AddScoped<IUnityOfWork, UnityOfWork>();
-        return services;
-    }
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Domain.Shared\ProjetoFinal.Domain.Shared.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj"/>
+    </ItemGroup>
 
-    public static IServiceCollection AddJwtConfiguration(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<JwtConfiguration>(configuration.GetSection(JwtConfiguration.SectionName));
-        return services;
-    }
+</Project>
+````
 
-    public static IServiceCollection AddAiProvider(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<AiProviderConfiguration>(configuration.GetSection(AiProviderConfiguration.SectionName));
-        services.AddHttpClient<IAiInsightsAppService, AiInsightsAppService>();
-        return services;
-    }
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        services.AddAllServicesByTypes(typeof(IApplicationContracts), typeof(IApplicationServices));
-        return services;
-    }
+## File: src/ProjetoFinal.IoC/ProjetoFinal.IoC.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
 
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services)
-    {
-        services.AddAutoMapper(typeof(IApplicationServices));
-        return services;
-    }
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-    public static IServiceCollection AddRhbkSdk(this IServiceCollection services, IConfiguration configuration)
-    {
-        RhbkConfiguration config =
-            configuration.GetSection(RhbkConfiguration.ConfigurationSection).Get<RhbkConfiguration>()!;
-        return services.AddRhbkClient(config.KeycloakBaseUrl, ServiceLifetime.Scoped);
-    }
 
-    #region "Private Methods"
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.Aplication.Services\ProjetoFinal.Aplication.Services.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Application.Contracts\ProjetoFinal.Application.Contracts.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Domain\ProjetoFinal.Domain.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.CrossCutting\ProjetoFinal.Infra.CrossCutting.csproj"/>
+        <ProjectReference Include="..\ProjetoFinal.Infra.Data\ProjetoFinal.Infra.Data.csproj"/>
+    </ItemGroup>
 
-    private static IServiceCollection AddAllServicesByTypes(this IServiceCollection services, Type typeInterface,
-        Type implementationType)
-    {
-        IEnumerable<Type> projectInterfaces = GetDescendentInterfaces(typeInterface);
-        return AddServiceOfAllTypesAndDescendentTypes
-            (services, projectInterfaces, implementationType);
-    }
-
-    private static IServiceCollection AddServiceOfAllTypesAndDescendentTypes(IServiceCollection services,
-        IEnumerable<Type> interfaceTypes, Type implementationType)
-    {
-        foreach (var implementedTye in interfaceTypes)
-        {
-            var implementedTypes = GetImplementedTypesFromInterface(implementedTye, implementationType);
-            AddServiceScoped(services, implementedTye, implementedTypes);
-        }
-
-        return services;
-    }
-
-    private static IEnumerable<Type> GetDescendentInterfaces(Type typeInterface)
-    {
-        return typeInterface.Assembly
-            .GetTypes()
-            .Where(i => i.IsInterface && i != typeInterface);
-    }
-
-    private static IEnumerable<Type> GetImplementedTypesFromInterface
-        (Type projectInterface, Type implementationType)
-    {
-        return implementationType
-            .Assembly
-            .GetTypes()
-            .Where(t => !t.IsInterface
-                        && !t.IsAbstract
-                        && t.IsAssignableTo(projectInterface));
-    }
-
-    private static IServiceCollection AddServiceScoped(
-        IServiceCollection services,
-        Type interfaceType,
-        IEnumerable<Type> implementedTypes)
-    {
-        // Console.ForegroundColor = ConsoleColor.White;
-        foreach (Type implementedType in implementedTypes)
-        {
-            services.AddScoped(interfaceType, implementedType);
-        }
-
-        return services;
-    }
-
-    #endregion
-}
+</Project>
 ````
 
 ## File: ProjetoFinal.sln.DotSettings.user
@@ -20634,59 +19607,549 @@ public static class WebApplicationBuilderExtensions
 }
 ````
 
-## File: src/ProjetoFinal.Api/ProjetoFinal.Api.csproj
+## File: src/ProjetoFinal.Api/Factories/WebApplicationBuilderFactory.cs
+````csharp
+using System.Reflection;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
+using ProjetoFinal.Api.Extensions;
+using ProjetoFinal.Api.Utils;
+using ProjetoFinal.Infra.CrossCutting.Providers;
+using ProjetoFinal.IoC;
+
+namespace ProjetoFinal.Api.Factories;
+
+public static class WebApplicationBuilderFactory
+{
+    public static WebApplication CreateWebApplication(params string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        var configuration = CustomConfigurationProvider.GetConfiguration(builder.Environment);
+        builder.Configuration.AddConfiguration(configuration);
+        builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
+        builder.Configuration.AddEnvironmentVariables();
+        builder.ConfigureControllers();
+        builder.Services.ConfigureByIoC(builder.Configuration, builder.Environment);
+        builder.AddSwaggerBuilder();
+        builder.AddCorsBuilder();
+        builder.AddJwtAuthentication();
+        builder.AddRealtime();
+        builder.ConfigureRequestBodySize();
+
+        return builder.Build();
+    }
+
+    public static WebApplicationBuilder ConfigureControllers(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddControllers(options =>
+            {
+                options.InputFormatters.Add(
+                    new PlainTextFormatter()
+                );
+                // options.InputFormatters.Add(new XmlSerializerInputFormatter(new MvcOptions()
+                // {
+                //     
+                // }));
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.PropertyNamingPolicy = new PascalCaseNamingPolicy();
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
+        return builder;
+    }
+}
 ````
-<Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+## File: src/ProjetoFinal.Api/Services/DataSeeder.cs
+````csharp
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Shared.Security;
+using ProjetoFinal.Infra.Data.Contexts;
 
-        <IsPackable>false</IsPackable>
-        <SpaRoot>..\ProjetoFinal.ClientApp\</SpaRoot>
-        <SpaProxyServerUrl>http://localhost:4200</SpaProxyServerUrl>
-        <SpaProxyLaunchCommand>npm i &amp; npm start</SpaProxyLaunchCommand>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <Version>2.0.0</Version>
-        <UserSecretsId>projetofinal-api-local-secrets</UserSecretsId>
-    </PropertyGroup>
+namespace ProjetoFinal.Api.Services;
 
-    <ItemGroup>
-        <Compile Remove="wwwroot\media\**" />
-        <Content Remove="wwwroot\media\**" />
-        <EmbeddedResource Remove="wwwroot\media\**" />
-        <None Remove="wwwroot\media\**" />
-    </ItemGroup>
+public static class DataSeeder
+{
+    private const string InitialMigrationId = "20260324111045_Initial";
+    private const string InitialMigrationProductVersion = "8.0.13";
 
+    private record SeedUser(Guid Id, Guid ExternalId, string Username, string FullName, string Email, UserRole Role, string Password);
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-          <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    </ItemGroup>
+    private static readonly SeedUser[] DefaultUsers =
+    [
+        new SeedUser(
+            Id: Guid.Parse("7f2b0cd9-6e3c-4f58-9f3e-08dba86fbde1"),
+            ExternalId: Guid.Parse("068df3c8-9b36-4e44-9ba1-3c5a2e41a9bd"),
+            Username: "wallace.vidal",
+            FullName: "Wallace Vidal",
+            Email: "wallace.vidal@ead.dev",
+            Role: UserRole.Instructor,
+            Password: "123456"),
+        new SeedUser(
+            Id: Guid.Parse("f407e6da-4b6a-4c81-92d3-000fcdab3047"),
+            ExternalId: Guid.Parse("b18431db-e4fb-4a1d-a2a9-d9e6f85ba521"),
+            Username: "robert.leite",
+            FullName: "Robert Leite",
+            Email: "robert.leite@ead.dev",
+            Role: UserRole.Student,
+            Password: "123456")
+    ];
 
-    <ItemGroup>
-        <ProjectReference Include="..\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj" />
-    </ItemGroup>
+    public static async Task SeedAsync(WebApplication app, CancellationToken cancellationToken = default)
+    {
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    <ItemGroup>
-        <Folder Include="wwwroot\" />
-    </ItemGroup>
-<!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
-        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
-<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />-->
-        <!-- O postbuild do ClientApp ja copia os artefatos para ProjetoFinal.Api/wwwroot -->
-<!--    </Target>-->
+        var configuredConnectionString = context.Database.GetConnectionString();
+        if (string.IsNullOrWhiteSpace(configuredConnectionString))
+        {
+            throw new InvalidOperationException(
+                "A connection string do banco nao foi inicializada para o AppDbContext.");
+        }
 
-</Project>
+        await EnsureMigrationBaselineAsync(context, cancellationToken);
+        await context.Database.MigrateAsync(cancellationToken);
+
+        await EnsureDefaultUsersAsync(context, cancellationToken);
+
+        if (context.ChangeTracker.HasChanges())
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private static async Task EnsureMigrationBaselineAsync(AppDbContext context, CancellationToken cancellationToken)
+    {
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+        if (pendingMigrations.Count == 0 || !pendingMigrations.Contains(InitialMigrationId))
+        {
+            return;
+        }
+
+        var historyTableExists = await TableExistsAsync(context, "__EFMigrationsHistory", cancellationToken);
+        if (historyTableExists)
+        {
+            return;
+        }
+
+        // Detecta um banco legado ja criado manualmente/por migrations antigas sem historico do EF atual.
+        var schemaAlreadyExists = await TableExistsAsync(context, "MediaResources", cancellationToken)
+            || await TableExistsAsync(context, "Users", cancellationToken)
+            || await TableExistsAsync(context, "Courses", cancellationToken);
+
+        if (!schemaAlreadyExists)
+        {
+            return;
+        }
+
+        await context.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE [__EFMigrationsHistory] (
+                [MigrationId] nvarchar(150) NOT NULL,
+                [ProductVersion] nvarchar(32) NOT NULL,
+                CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+            );
+            """,
+            cancellationToken);
+
+        await context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (@migrationId, @productVersion);",
+            [
+                new SqlParameter("@migrationId", InitialMigrationId),
+                new SqlParameter("@productVersion", InitialMigrationProductVersion)
+            ],
+            cancellationToken);
+    }
+
+    private static async Task<bool> TableExistsAsync(AppDbContext context, string tableName, CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var shouldCloseConnection = connection.State != System.Data.ConnectionState.Open;
+
+        if (shouldCloseConnection)
+        {
+            await connection.OpenAsync(cancellationToken);
+        }
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = @tableName";
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "@tableName";
+            parameter.Value = tableName;
+            command.Parameters.Add(parameter);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return result is not null;
+        }
+        finally
+        {
+            if (shouldCloseConnection)
+            {
+                await connection.CloseAsync();
+            }
+        }
+    }
+
+    private static async Task EnsureDefaultUsersAsync(AppDbContext context, CancellationToken cancellationToken)
+    {
+        foreach (var seed in DefaultUsers)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(
+                entity => entity.Username == seed.Username,
+                cancellationToken);
+
+            if (user is null)
+            {
+                var now = DateTime.UtcNow;
+                context.Users.Add(new User
+                {
+                    Id = seed.Id,
+                    ExternalId = seed.ExternalId == Guid.Empty ? Guid.NewGuid() : seed.ExternalId,
+                    FullName = seed.FullName,
+                    Email = seed.Email,
+                    Username = seed.Username,
+                    PasswordHash = PasswordHasher.Hash(seed.Password),
+                    Role = seed.Role,
+                    IsActive = true,
+                    CreatedAt = now
+                });
+                continue;
+            }
+
+            var updated = false;
+
+            if (!string.Equals(user.FullName, seed.FullName, StringComparison.Ordinal))
+            {
+                user.FullName = seed.FullName;
+                updated = true;
+            }
+
+            if (!string.Equals(user.Email, seed.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Email = seed.Email;
+                updated = true;
+            }
+
+            if (!string.Equals(user.Username, seed.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Username = seed.Username;
+                updated = true;
+            }
+
+            if (user.Role != seed.Role)
+            {
+                user.Role = seed.Role;
+                updated = true;
+            }
+
+            if (!PasswordHasher.Verify(seed.Password, user.PasswordHash ?? string.Empty))
+            {
+                user.PasswordHash = PasswordHasher.Hash(seed.Password);
+                updated = true;
+            }
+
+            if (!user.IsActive)
+            {
+                user.IsActive = true;
+                updated = true;
+            }
+
+            if (seed.ExternalId != Guid.Empty && user.ExternalId != seed.ExternalId)
+            {
+                user.ExternalId = seed.ExternalId;
+                updated = true;
+            }
+
+            if (updated)
+            {
+                user.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+    }
+}
+````
+
+## File: src/ProjetoFinal.Aplication.Services/Services/Activities/ActivitySubmissionAppService.cs
+````csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Dto.Activities;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Enums;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Domain.Shared.Enums;
+using ProjetoFinal.Domain.Shared.Exceptions;
+using Talonario.Domain.Repositories;
+
+namespace ProjetoFinal.Aplication.Services.Services.Activities;
+
+public class ActivitySubmissionAppService : IActivitySubmissionAppService
+{
+    private readonly IActivitySubmissionRepository _submissionRepository;
+    private readonly IActivityRepository _activityRepository;
+    private readonly IVideoAnnotationRepository _videoAnnotationRepository;
+    private readonly IAutomapApi _mapper;
+    private readonly IUnityOfWork _unityOfWork;
+
+    public ActivitySubmissionAppService(
+        IActivitySubmissionRepository submissionRepository,
+        IActivityRepository activityRepository,
+        IVideoAnnotationRepository videoAnnotationRepository,
+        IUnityOfWork unityOfWork,
+        IAutomapApi mapper)
+    {
+        _submissionRepository = submissionRepository;
+        _activityRepository = activityRepository;
+        _videoAnnotationRepository = videoAnnotationRepository;
+        _unityOfWork = unityOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<ActivitySubmissionDto> SubmitAsync(ActivitySubmissionCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var activity = await _activityRepository.FindAsync(dto.ActivityId, cancellationToken);
+        if (activity is null)
+        {
+            throw new BusinessException("Atividade nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        if (activity.DueDate.HasValue && DateTime.UtcNow > activity.DueDate.Value && !activity.AllowLateSubmissions)
+        {
+            throw new BusinessException("Prazo para envio encerrado.", ECodigo.NaoPermitido);
+        }
+
+        var existingSubmission = await _submissionRepository.FirstOrDefaultByPredicateAsync(
+            submission => submission.ActivityId == dto.ActivityId && submission.StudentId == dto.StudentId,
+            cancellationToken);
+
+        if (existingSubmission is not null)
+        {
+            if (existingSubmission.Status != SubmissionStatus.Returned)
+            {
+                throw new BusinessException("Voce ja enviou esta atividade.", ECodigo.Conflito);
+            }
+
+            var trackedSubmission = await _submissionRepository.GetWithDetailsAsync(existingSubmission.Id, cancellationToken);
+            if (trackedSubmission is null)
+            {
+                throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+            }
+
+            trackedSubmission.ClassGroupId = dto.ClassGroupId;
+            trackedSubmission.Status = SubmissionStatus.Submitted;
+            trackedSubmission.SubmittedAt = DateTime.UtcNow;
+            trackedSubmission.GradedAt = null;
+            trackedSubmission.GradedById = null;
+            trackedSubmission.Score = null;
+            trackedSubmission.Feedback = null;
+            trackedSubmission.MasteryScore = null;
+            trackedSubmission.ApplicationScore = null;
+            trackedSubmission.CommunicationScore = null;
+            trackedSubmission.FeedbackTags = null;
+            trackedSubmission.RecommendedAction = null;
+            trackedSubmission.TextAnswer = dto.TextAnswer;
+            trackedSubmission.Attachments.Clear();
+            foreach (var attachment in BuildAttachments(dto.Attachments))
+            {
+                trackedSubmission.Attachments.Add(attachment);
+            }
+            trackedSubmission.UpdatedAt = DateTime.UtcNow;
+
+            await _unityOfWork.SaveChangesAsync(cancellationToken);
+            var updatedExisting = await _submissionRepository.GetWithDetailsAsync(trackedSubmission.Id, cancellationToken);
+            return _mapper.MapFrom<ActivitySubmissionDto>(updatedExisting ?? trackedSubmission);
+        }
+
+        var entity = new ActivitySubmission
+        {
+            ActivityId = dto.ActivityId,
+            StudentId = dto.StudentId,
+            ClassGroupId = dto.ClassGroupId,
+            Status = SubmissionStatus.Submitted,
+            SubmittedAt = DateTime.UtcNow,
+            TextAnswer = dto.TextAnswer,
+            Attachments = BuildAttachments(dto.Attachments)
+        };
+
+        var created = await _submissionRepository.AddAsync(entity, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        var withDetails = await _submissionRepository.GetWithDetailsAsync(created.Id, cancellationToken);
+        return _mapper.MapFrom<ActivitySubmissionDto>(withDetails ?? created);
+    }
+
+    public async Task<ActivitySubmissionDto> UpdateAsync(Guid submissionId, ActivitySubmissionUpdateDto dto, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        submission.Status = dto.Status;
+        submission.Score = dto.Score;
+        submission.GradedById = dto.GradedById;
+        submission.Feedback = dto.Feedback;
+        submission.MasteryScore = ValidateRubricScore(dto.MasteryScore, nameof(dto.MasteryScore));
+        submission.ApplicationScore = ValidateRubricScore(dto.ApplicationScore, nameof(dto.ApplicationScore));
+        submission.CommunicationScore = ValidateRubricScore(dto.CommunicationScore, nameof(dto.CommunicationScore));
+        submission.FeedbackTags = NormalizeFeedbackTags(dto.FeedbackTags);
+        submission.RecommendedAction = string.IsNullOrWhiteSpace(dto.RecommendedAction)
+            ? null
+            : dto.RecommendedAction.Trim();
+        submission.TextAnswer = dto.TextAnswer;
+        submission.GradedAt = dto.Score.HasValue ? DateTime.UtcNow : submission.GradedAt;
+        submission.Attachments.Clear();
+        foreach (var attachment in BuildAttachments(dto.Attachments))
+        {
+            submission.Attachments.Add(attachment);
+        }
+        submission.UpdatedAt = DateTime.UtcNow;
+
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        var updated = await _submissionRepository.GetWithDetailsAsync(submission.Id, cancellationToken);
+        return _mapper.MapFrom<ActivitySubmissionDto>(updated ?? submission);
+    }
+
+    public async Task<ActivitySubmissionDto> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        return _mapper.MapFrom<ActivitySubmissionDto>(submission);
+    }
+
+    public async Task<PagedResultDto<ActivitySubmissionDto>> GetAllAsync(ActivitySubmissionFilter filter, CancellationToken cancellationToken = default)
+    {
+        var result = await _submissionRepository.GetAllAsync(filter, cancellationToken);
+        return _mapper.MapFrom<PagedResultDto<ActivitySubmissionDto>>(result);
+    }
+
+    public async Task<VideoAnnotationDto> AddAnnotationAsync(VideoAnnotationCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var submission = await _submissionRepository.GetWithDetailsAsync(dto.SubmissionId, cancellationToken);
+        if (submission is null)
+        {
+            throw new BusinessException("Envio nao encontrado.", ECodigo.NaoEncontrado);
+        }
+
+        var attachment = submission.Attachments.FirstOrDefault(a => a.Id == dto.AttachmentId);
+        if (attachment is null || !attachment.IsVideo)
+        {
+            throw new BusinessException("Somente videos permitem anotacoes temporais.", ECodigo.MaRequisicao);
+        }
+
+        var annotation = new VideoAnnotation
+        {
+            SubmissionId = dto.SubmissionId,
+            AttachmentId = dto.AttachmentId,
+            CreatedById = dto.CreatedById,
+            TimeMarkerSeconds = dto.TimeMarkerSeconds,
+            Comment = dto.Comment,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var created = await _videoAnnotationRepository.AddAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        return _mapper.MapFrom<VideoAnnotationDto>(created);
+    }
+
+    public async Task<VideoAnnotationDto> UpdateAnnotationAsync(Guid annotationId, VideoAnnotationUpdateDto dto, CancellationToken cancellationToken = default)
+    {
+        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
+        if (annotation is null)
+        {
+            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        annotation.TimeMarkerSeconds = dto.TimeMarkerSeconds;
+        annotation.Comment = dto.Comment;
+        annotation.EditedAt = DateTime.UtcNow;
+
+        await _videoAnnotationRepository.UpdateAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+        return _mapper.MapFrom<VideoAnnotationDto>(annotation);
+    }
+
+    public async Task DeleteAnnotationAsync(Guid annotationId, CancellationToken cancellationToken = default)
+    {
+        var annotation = await _videoAnnotationRepository.FindAsync(annotationId, cancellationToken);
+        if (annotation is null)
+        {
+            throw new BusinessException("Anotacao nao encontrada.", ECodigo.NaoEncontrado);
+        }
+
+        await _videoAnnotationRepository.DeleteAsync(annotation, cancellationToken);
+        await _unityOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private static List<SubmissionAttachment> BuildAttachments(IList<SubmissionAttachmentCreateDto> attachments)
+    {
+        attachments ??= new List<SubmissionAttachmentCreateDto>();
+        var result = new List<SubmissionAttachment>();
+        foreach (var attachmentDto in attachments)
+        {
+            result.Add(new SubmissionAttachment
+            {
+                MediaResourceId = attachmentDto.MediaResourceId,
+                IsPrimary = attachmentDto.IsPrimary,
+                IsVideo = attachmentDto.IsVideo
+            });
+        }
+
+        return result;
+    }
+
+    private static int? ValidateRubricScore(int? value, string fieldName)
+    {
+        if (!value.HasValue)
+        {
+            return null;
+        }
+
+        if (value.Value < 1 || value.Value > 5)
+        {
+            throw new BusinessException($"{fieldName} deve estar entre 1 e 5.", ECodigo.MaRequisicao);
+        }
+
+        return value.Value;
+    }
+
+    private static string? NormalizeFeedbackTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+        {
+            return null;
+        }
+
+        var normalized = tags
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        return string.Join(",", normalized);
+    }
+}
 ````
 
 ## File: src/ProjetoFinal.Aplication.Services/Services/ClassGroups/ClassGroupAppService.cs
@@ -21750,6 +21213,289 @@ td {
 <ng-template #emptyState>
   <div class="state state--info">Nenhuma turma cadastrada ate o momento.</div>
 </ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.css
+````css
+.content-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.content-viewer__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.back-link {
+  align-self: flex-start;
+  text-decoration: none;
+  color: var(--accent-600);
+  font-weight: 600;
+}
+
+.content-viewer__header h2 {
+  margin: 0;
+  color: var(--surface-900);
+  font-size: 2rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--accent-600);
+  width: fit-content;
+}
+
+.status-badge[data-status='Publicado'] {
+  background: rgba(34, 197, 94, 0.18);
+  color: #15803d;
+}
+
+.summary {
+  margin: 0;
+  color: var(--surface-500);
+}
+
+.content-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.rich-content {
+  line-height: 1.6;
+  color: var(--surface-700);
+}
+
+.rich-content :where(p, ul, ol) {
+  margin: 0 0 0.75rem;
+}
+
+.rich-content ul,
+.rich-content ol {
+  padding-left: 1.25rem;
+}
+
+.content-body h3,
+.attachments-section h3 {
+  margin: 0 0 0.5rem;
+  color: var(--surface-700);
+}
+
+.muted {
+  color: var(--surface-500);
+  margin: 0;
+}
+
+.attachments-section header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.attachments-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachments-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.85);
+}
+
+.tag {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-600);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.button {
+  border-radius: 999px;
+  padding: 0.45rem 1.2rem;
+  border: 1px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button--ghost {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.5);
+  color: var(--surface-600);
+}
+
+.button--primary {
+  background: var(--accent-600);
+  color: #fff;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ai-summary-card {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.08), rgba(255, 255, 255, 0.95));
+}
+
+.ai-summary-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ai-summary-card__header h3,
+.ai-summary-result h4 {
+  margin: 0;
+}
+
+.ai-summary-result {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-summary-result__text {
+  margin: 0;
+  color: var(--surface-700);
+  line-height: 1.7;
+}
+
+.ai-summary-result__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.ai-summary-result__grid ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--surface-700);
+}
+
+.video-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.video-frame {
+  display: grid;
+  gap: 1rem;
+}
+
+.video-frame video {
+  width: 100%;
+  max-height: 420px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #000;
+}
+
+.annotation-panel {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.annotation-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.annotation-form input {
+  flex: 1;
+  min-width: 200px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 12px;
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+}
+
+.annotation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.annotation-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.annotation-list li span {
+  font-weight: 700;
+  color: var(--accent-600);
+  min-width: 48px;
+}
+
+.annotation-list li:hover {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.state {
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.state--info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.2);
+  color: #b91c1c;
+}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/course-create/course-create.component.html
@@ -23789,6 +23535,50 @@ public class ActivityFilter : Filter
 }
 ````
 
+## File: src/ProjetoFinal.Infra.CrossCutting/ProjetoFinal.Infra.CrossCutting.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="ConfigurationEnvironment\appsettings.Development.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Include="ConfigurationEnvironment\appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Minio" Version="6.0.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Features" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>
+````
+
 ## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ChatMessageRepository.cs
 ````csharp
 using System;
@@ -23858,55 +23648,158 @@ public class ChatMessageRepository(AppDbContext context)
 }
 ````
 
-## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumPostRepository.cs
+## File: src/ProjetoFinal.IoC/IoCManager.cs
 ````csharp
-using System;
-using System.Linq;
-using LinqKit;
 using Microsoft.EntityFrameworkCore;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Filters;
-using ProjetoFinal.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RhbkSdk.Configurations;
+using RhbkSdk.Extensions;
+using ProjetoFinal.Aplication.Services;
+using ProjetoFinal.Aplication.Services.Services.Ai;
+using ProjetoFinal.Application.Contracts;
+using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain;
+using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
+using ProjetoFinal.Infra.Data;
+using ProjetoFinal.Infra.Data.UnityOfWorks;
+using Talonario.Domain.Repositories;
 using ProjetoFinal.Infra.Data.Contexts;
-using System.Linq.Expressions;
+using ProjetoFinal.Infra.CrossCutting.Storage;
 
-namespace ProjetoFinal.Infra.Data.Repositories.Entities;
+namespace ProjetoFinal.IoC;
 
-public class ForumPostRepository(AppDbContext context)
-    : DefaultRepository<ForumPost, ForumPostFilter, Guid>(context), IForumPostRepository
+public static class IoCManager
 {
-    protected override IQueryable<ForumPost> ApplyIncludes(IQueryable<ForumPost> query)
+    public static IServiceCollection ConfigureByIoC(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment hostingEnvironment)
     {
-        return query
-            .Include(post => post.Author)
-            .Include(post => post.Thread!)
-                .ThenInclude(thread => thread.Course)
-            .Include(post => post.Thread!)
-                .ThenInclude(thread => thread.ClassGroup)
-            .Include(post => post.Attachments)
-                .ThenInclude(attachment => attachment.MediaResource);
+        return services
+                .AddApplicationDbContext(configuration)
+                .AddJwtConfiguration(configuration)
+                .AddAiProvider(configuration)
+                .AddDomainRepositories()
+                .AddAutoMapper()
+                .AddApplicationServices()
+                .AddObjectStorage(configuration)
+                .AddRhbkSdk(configuration)
+            ;
     }
 
-    protected override IQueryable<ForumPost> ApplyIncludesList(IQueryable<ForumPost> query)
+    public static IServiceCollection AddApplicationDbContext(this IServiceCollection services,
+        IConfiguration configuration)
     {
-        return ApplyIncludes(query);
-    }
-
-    protected override Expression<Func<ForumPost, bool>> GetFilters(ForumPostFilter filter)
-    {
-        var predicate = base.GetFilters(filter);
-
-        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            var instructorId = filter.InstructorId.Value;
-            predicate = predicate.And(post =>
-                post.Thread != null &&
-                post.Thread.Course != null &&
-                post.Thread.Course.InstructorId == instructorId);
+            throw new InvalidOperationException(
+                "A connection string 'DefaultConnection' nao foi configurada. Verifique appsettings, user-secrets ou variaveis de ambiente.");
         }
 
-        return predicate;
+        services.AddDbContext<AppDbContext>(optionsAction =>
+        {
+            optionsAction.UseSqlServer(connectionString);
+            //optionsAction.UseSqlite("Data Source=db.db");
+        });
+        return services;
     }
+
+    public static IServiceCollection AddDomainRepositories(this IServiceCollection services)
+    {
+        services.AddAllServicesByTypes(typeof(IDomain), typeof(IInfraData));
+        services.AddScoped<IUnityOfWork, UnityOfWork>();
+        return services;
+    }
+
+    public static IServiceCollection AddJwtConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<JwtConfiguration>(configuration.GetSection(JwtConfiguration.SectionName));
+        return services;
+    }
+
+    public static IServiceCollection AddAiProvider(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<AiProviderConfiguration>(configuration.GetSection(AiProviderConfiguration.SectionName));
+        services.AddHttpClient<IAiInsightsAppService, AiInsightsAppService>();
+        return services;
+    }
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    {
+        services.AddAllServicesByTypes(typeof(IApplicationContracts), typeof(IApplicationServices));
+        return services;
+    }
+
+    public static IServiceCollection AddAutoMapper(this IServiceCollection services)
+    {
+        services.AddAutoMapper(typeof(IApplicationServices));
+        return services;
+    }
+
+    public static IServiceCollection AddRhbkSdk(this IServiceCollection services, IConfiguration configuration)
+    {
+        RhbkConfiguration config =
+            configuration.GetSection(RhbkConfiguration.ConfigurationSection).Get<RhbkConfiguration>()!;
+        return services.AddRhbkClient(config.KeycloakBaseUrl, ServiceLifetime.Scoped);
+    }
+
+    #region "Private Methods"
+
+    private static IServiceCollection AddAllServicesByTypes(this IServiceCollection services, Type typeInterface,
+        Type implementationType)
+    {
+        IEnumerable<Type> projectInterfaces = GetDescendentInterfaces(typeInterface);
+        return AddServiceOfAllTypesAndDescendentTypes
+            (services, projectInterfaces, implementationType);
+    }
+
+    private static IServiceCollection AddServiceOfAllTypesAndDescendentTypes(IServiceCollection services,
+        IEnumerable<Type> interfaceTypes, Type implementationType)
+    {
+        foreach (var implementedTye in interfaceTypes)
+        {
+            var implementedTypes = GetImplementedTypesFromInterface(implementedTye, implementationType);
+            AddServiceScoped(services, implementedTye, implementedTypes);
+        }
+
+        return services;
+    }
+
+    private static IEnumerable<Type> GetDescendentInterfaces(Type typeInterface)
+    {
+        return typeInterface.Assembly
+            .GetTypes()
+            .Where(i => i.IsInterface && i != typeInterface);
+    }
+
+    private static IEnumerable<Type> GetImplementedTypesFromInterface
+        (Type projectInterface, Type implementationType)
+    {
+        return implementationType
+            .Assembly
+            .GetTypes()
+            .Where(t => !t.IsInterface
+                        && !t.IsAbstract
+                        && t.IsAssignableTo(projectInterface));
+    }
+
+    private static IServiceCollection AddServiceScoped(
+        IServiceCollection services,
+        Type interfaceType,
+        IEnumerable<Type> implementedTypes)
+    {
+        // Console.ForegroundColor = ConsoleColor.White;
+        foreach (Type implementedType in implementedTypes)
+        {
+            services.AddScoped(interfaceType, implementedType);
+        }
+
+        return services;
+    }
+
+    #endregion
 }
 ````
 
@@ -24380,76 +24273,59 @@ public class ForumThreadsController : ControllerBase
 }
 ````
 
-## File: src/ProjetoFinal.Api/Properties/launchSettings.json
-````json
-{
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:13852",
-      "sslPort": 0
-    }
-  },
-  "profiles": {
-    "development_http": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
-        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "development_http_api": {
-      "commandName": "Project",
-      "launchBrowser": false,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "production_http": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
-        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "production_http_api": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production",
-        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5179"
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
-      }
-    }
-  }
-}
+## File: src/ProjetoFinal.Api/ProjetoFinal.Api.csproj
+````
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <IsPackable>false</IsPackable>
+        <SpaRoot>..\ProjetoFinal.ClientApp\</SpaRoot>
+        <SpaProxyServerUrl>http://localhost:4200</SpaProxyServerUrl>
+        <SpaProxyLaunchCommand>npm i &amp; npm start</SpaProxyLaunchCommand>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Version>2.0.0</Version>
+        <UserSecretsId>projetofinal-api-local-secrets</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="wwwroot\media\**" />
+        <Content Remove="wwwroot\media\**" />
+        <EmbeddedResource Remove="wwwroot\media\**" />
+        <None Remove="wwwroot\media\**" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjetoFinal.IoC\ProjetoFinal.IoC.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
+    </ItemGroup>
+<!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
+<!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />-->
+        <!-- O postbuild do ClientApp ja copia os artefatos para ProjetoFinal.Api/wwwroot -->
+<!--    </Target>-->
+
+</Project>
 ````
 
 ## File: src/ProjetoFinal.Aplication.Services/Services/Chat/ChatMessageAppService.cs
@@ -24995,480 +24871,6 @@ export class ClassGroupsComponent {
 
   navigateToManage(groupId: string): void {
     this.router.navigate(['/class-groups', groupId, 'manage']);
-  }
-}
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.html
-````html
-<section class="content-viewer">
-  <div class="content-viewer__header">
-    <a class="back-link" [routerLink]="['/courses', courseId() ?? '' , 'manage']">
-      ← Voltar para o curso
-    </a>
-
-    <h2>{{ pageTitle() }}</h2>
-    <span class="status-badge" [attr.data-status]="statusLabel()">{{ statusLabel() }}</span>
-
-    <p class="summary" *ngIf="content()?.Summary">{{ content()?.Summary }}</p>
-  </div>
-
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <article class="content-card" *ngIf="content() as current">
-        <section class="ai-summary-card">
-          <div class="ai-summary-card__header">
-            <div>
-              <h3>Resumo com IA</h3>
-              <p class="muted">Gere uma versao resumida deste material para leitura mais rapida.</p>
-            </div>
-            <button
-              class="button button--primary"
-              type="button"
-              (click)="generateSummary()"
-              [disabled]="aiSummaryLoading()"
-            >
-              {{ aiSummaryLoading() ? 'Gerando...' : 'Gerar resumo' }}
-            </button>
-          </div>
-
-          <div class="state state--error" *ngIf="aiSummaryError()">{{ aiSummaryError() }}</div>
-
-          <div class="ai-summary-result" *ngIf="aiSummary() as summary">
-            <p class="ai-summary-result__text">{{ summary.Summary }}</p>
-
-            <div class="ai-summary-result__grid">
-              <section>
-                <h4>Pontos principais</h4>
-                <ul>
-                  <li *ngFor="let item of summary.KeyPoints">{{ item }}</li>
-                </ul>
-              </section>
-
-              <section *ngIf="summary.AttentionPoints.length">
-                <h4>Pontos de atenção</h4>
-                <ul>
-                  <li *ngFor="let item of summary.AttentionPoints">{{ item }}</li>
-                </ul>
-              </section>
-            </div>
-          </div>
-        </section>
-
-        <section class="content-body">
-          <h3>Descricao</h3>
-          <div
-            class="rich-content"
-            *ngIf="current.Body; else noBody"
-            [innerHTML]="safeHtml(current.Body)"
-          ></div>
-          <ng-template #noBody>
-            <p class="muted">Nenhuma descricao detalhada informada.</p>
-          </ng-template>
-        </section>
-
-        <section class="attachments-section">
-          <header>
-            <h3>Anexos</h3>
-            <span>{{ current.Attachments.length }} arquivo(s)</span>
-          </header>
-
-          <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
-            <ul class="attachments-list">
-              <li *ngFor="let attachment of current.Attachments">
-                <div>
-                  <strong>{{ attachment.Caption || 'Arquivo sem descricao' }}</strong>
-                  <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
-                  <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
-                </div>
-
-                <ng-container *ngIf="isVideoAttachment(attachment); else downloadBlock">
-                  <div class="video-container">
-                    <button
-                      class="button button--primary"
-                      type="button"
-                      *ngIf="!isVideoLoaded(attachment.MediaResourceId)"
-                      (click)="loadVideo(attachment)"
-                      [disabled]="videoIsLoading(attachment.MediaResourceId)"
-                    >
-                      {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : 'Carregar vídeo' }}
-                    </button>
-
-                    <div class="video-frame" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
-                      <video #videoPlayer controls [src]="videoUrl"></video>
-
-                      <div class="annotation-panel">
-                        <h4>Anotações</h4>
-                        <div class="annotation-form">
-                          <input
-                            type="text"
-                            placeholder="Mensagem"
-                            [value]="annotationDraft(attachment.Id)"
-                            (input)="updateAnnotationDraft(attachment.Id, ($any($event.target).value || ''))"
-                          />
-                          <button
-                            type="button"
-                            class="button button--ghost"
-                            (click)="addAnnotation(attachment.Id, videoPlayer.currentTime)"
-                          >
-                            Adicionar ({{ formatTime(videoPlayer.currentTime) }})
-                          </button>
-                        </div>
-
-                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.Id).length; else noAnnotations">
-                          <li
-                            *ngFor="let annotation of annotationsFor(attachment.Id)"
-                            (click)="seekTo(videoPlayer, annotation.time)"
-                          >
-                            <span>{{ formatTime(annotation.time) }}</span>
-                            <p>{{ annotation.text }}</p>
-                          </li>
-                        </ul>
-                        <ng-template #noAnnotations>
-                          <p class="muted">Nenhuma anotação criada ainda.</p>
-                        </ng-template>
-                      </div>
-                    </div>
-                  </div>
-                </ng-container>
-
-                <ng-template #downloadBlock>
-                  <button
-                    class="button button--ghost"
-                    type="button"
-                    (click)="downloadAttachment(attachment)"
-                    [disabled]="downloading() === attachment.MediaResourceId"
-                  >
-                    {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                  </button>
-                </ng-template>
-              </li>
-            </ul>
-          </ng-container>
-          <ng-template #noAttachments>
-            <p class="muted">Nenhum arquivo foi anexado a este conteudo.</p>
-          </ng-template>
-        </section>
-      </article>
-    </ng-container>
-  </ng-container>
-</section>
-
-<ng-template #loadingState>
-  <div class="state state--info">Carregando conteudo...</div>
-</ng-template>
-
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
-````
-
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
-import { CourseContentsService } from '../../core/services/course-contents.service';
-import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
-import { MediaService } from '../../core/services/media.service';
-import { ToastrService } from 'ngx-toastr';
-import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
-import { AiInsightsService } from '../../core/services/ai-insights.service';
-import { AiContentSummaryDto } from '../../core/api/ai.api';
-
-interface LocalVideoAnnotation {
-  id: string;
-  time: number;
-  text: string;
-}
-
-@Component({
-  selector: 'app-course-content-viewer',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './course-content-viewer.component.html',
-  styleUrl: './course-content-viewer.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CourseContentViewerComponent {
-  private readonly route = inject(ActivatedRoute);
-  private readonly service = inject(CourseContentsService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly mediaService = inject(MediaService);
-  private readonly toastr = inject(ToastrService);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly annotationsService = inject(ContentAnnotationsService);
-  private readonly aiInsightsService = inject(AiInsightsService);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly content = signal<CourseContentDto | null>(null);
-  readonly courseId = signal<string | null>(null);
-  readonly downloading = signal<string | null>(null);
-  readonly videoUrls = signal<Record<string, string>>({});
-  readonly videoLoading = signal<Record<string, boolean>>({});
-  readonly annotationDrafts = signal<Record<string, string>>({});
-  readonly annotationsState = signal<Record<string, LocalVideoAnnotation[]>>({});
-  readonly aiSummary = signal<AiContentSummaryDto | null>(null);
-  readonly aiSummaryLoading = signal(false);
-  readonly aiSummaryError = signal<string | null>(null);
-
-  readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
-  readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
-  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
-
-  constructor() {
-    this.route.paramMap
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(params => {
-          const courseId = params.get('courseId');
-          const contentId = params.get('contentId');
-          this.courseId.set(courseId);
-          if (!contentId) {
-            throw new Error('Conteudo nao encontrado.');
-          }
-          this.loading.set(true);
-          return this.service.getContentById(contentId);
-        })
-      )
-      .subscribe({
-        next: content => {
-          this.content.set(content);
-          this.loadPersistedAnnotations(content.Attachments ?? []);
-          this.aiSummary.set(null);
-          this.aiSummaryError.set(null);
-          this.loading.set(false);
-          this.error.set(null);
-        },
-        error: () => {
-          this.content.set(null);
-          this.error.set('Nao foi possivel carregar o conteudo selecionado.');
-          this.loading.set(false);
-        }
-      });
-
-    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
-  }
-
-  downloadAttachment(attachment: ContentAttachmentDto): void {
-    if (!attachment?.MediaResourceId) {
-      return;
-    }
-
-    this.downloading.set(attachment.MediaResourceId);
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = attachment.Media?.OriginalFileName || attachment.Media?.FileName || 'anexo';
-          anchor.click();
-          URL.revokeObjectURL(url);
-          this.downloading.set(null);
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel baixar o arquivo.');
-          this.downloading.set(null);
-        }
-      });
-  }
-
-  isVideoAttachment(attachment: ContentAttachmentDto): boolean {
-    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
-    if (contentType.startsWith('video/')) {
-      return true;
-    }
-
-    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
-    const extension = fileName.split('.').pop() ?? '';
-    return this.videoExtensions.includes(extension);
-  }
-
-  videoUrlFor(attachmentId: string): string | null {
-    return this.videoUrls()[attachmentId] ?? null;
-  }
-
-  annotationDraft(attachmentId: string): string {
-    return this.annotationDrafts()[attachmentId] ?? '';
-  }
-
-  annotationsFor(attachmentId: string): LocalVideoAnnotation[] {
-    return this.annotationsState()[attachmentId] ?? [];
-  }
-
-  loadVideo(attachment: ContentAttachmentDto): void {
-    if (!attachment.MediaResourceId || this.videoLoading()[attachment.MediaResourceId]) {
-      return;
-    }
-
-    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
-
-    this.mediaService
-      .download(attachment.MediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel carregar o video.');
-          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
-        }
-      });
-  }
-
-  updateAnnotationDraft(attachmentId: string, value: string): void {
-    this.annotationDrafts.update(state => ({ ...state, [attachmentId]: value }));
-  }
-
-  addAnnotation(attachmentId: string, currentTime: number): void {
-    const text = (this.annotationDrafts()[attachmentId] ?? '').trim();
-    if (!text) {
-      this.toastr.info('Digite uma anotacao antes de salvar.');
-      return;
-    }
-
-    this.annotationsService
-      .addAnnotation({
-        ContentAttachmentId: attachmentId,
-        TimeMarkerSeconds: currentTime,
-        Comment: text
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: saved => {
-          const annotation: LocalVideoAnnotation = {
-            id: saved.Id,
-            time: saved.TimeMarkerSeconds,
-            text: saved.Comment
-          };
-          this.annotationsState.update(state => {
-            const list = state[attachmentId] ?? [];
-            return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
-          });
-          this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel salvar a anotacao.');
-        }
-      });
-  }
-
-  seekTo(video: HTMLVideoElement, time: number): void {
-    if (Number.isFinite(time) && video) {
-      video.currentTime = time;
-      video.focus();
-    }
-  }
-
-  formatTime(time: number): string {
-    if (!Number.isFinite(time)) {
-      return '00:00';
-    }
-    const minutes = Math.floor(time / 60)
-      .toString()
-      .padStart(2, '0');
-    const seconds = Math.floor(time % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  }
-
-  isVideoLoaded(attachmentId: string): boolean {
-    return Boolean(this.videoUrls()[attachmentId]);
-  }
-
-  videoIsLoading(attachmentId: string): boolean {
-    return Boolean(this.videoLoading()[attachmentId]);
-  }
-
-  generateSummary(): void {
-    const contentId = this.content()?.Id;
-    if (!contentId || this.aiSummaryLoading()) {
-      return;
-    }
-
-    this.aiSummaryLoading.set(true);
-    this.aiSummaryError.set(null);
-
-    this.aiInsightsService
-      .getContentSummary(contentId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: summary => {
-          this.aiSummary.set(summary);
-          this.aiSummaryLoading.set(false);
-        },
-        error: error => {
-          this.aiSummaryError.set(this.extractErrorMessage(error, 'Nao foi possivel gerar o resumo com IA.'));
-          this.aiSummaryLoading.set(false);
-        }
-      });
-  }
-
-  private cleanupVideoUrls(): void {
-    const urls = Object.values(this.videoUrls());
-    urls.forEach(url => URL.revokeObjectURL(url));
-  }
-
-  private loadPersistedAnnotations(attachments: ContentAttachmentDto[]): void {
-    attachments
-      .filter(attachment => this.isVideoAttachment(attachment))
-      .forEach(attachment => {
-        this.annotationsService
-          .getAnnotations({ ContentAttachmentId: attachment.Id })
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            next: response => {
-              const annotations = response.items
-                .map(item => ({
-                  id: item.Id,
-                  time: item.TimeMarkerSeconds,
-                  text: item.Comment
-                }))
-                .sort((a, b) => a.time - b.time);
-              this.annotationsState.update(state => ({ ...state, [attachment.Id]: annotations }));
-            },
-            error: () => {
-              this.toastr.error('Nao foi possivel carregar as anotacoes do video.');
-            }
-          });
-      });
-  }
-
-  safeHtml(content?: string | null): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
-  }
-
-  private extractErrorMessage(error: unknown, fallback: string): string {
-    if (!(error instanceof HttpErrorResponse)) {
-      return fallback;
-    }
-
-    const payload = error.error;
-    if (typeof payload === 'string' && payload.trim()) {
-      return payload;
-    }
-
-    if (payload && typeof payload === 'object') {
-      const message = (payload.message ?? payload.Message ?? payload.title ?? payload.Title) as string | undefined;
-      if (message?.trim()) {
-        return message;
-      }
-    }
-
-    return fallback;
   }
 }
 ````
@@ -26810,51 +26212,6 @@ export class CourseManageComponent {
 }
 ````
 
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.json
-````json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "UploadsConfiguration": {
-    "PathDir": "Uploads"
-  },
-  "Minio": {
-    "Endpoint": "https://minio.dadyilha.com.br",
-    "AccessKey": "admin",
-    "SecretKey": "admin123",
-    "Region": "us-east-1",
-    "BucketName": "meajudaai"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
-  },
-  "Jwt": {
-    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
-    "Issuer": "ProjetoFinal.Api",
-    "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 120
-  },
-  "AiProvider": {
-    "BaseUrl": "https://api.deepseek.com",
-    "ApiKey": "",
-    "Model": "deepseek-chat",
-    "Temperature": 0.2,
-    "MaxTokens": 900
-  },
-  "RhbkConfiguration": {
-    "Realm": "",
-    "ClientId": "",
-    "ClientSecret": "",
-    "KeycloakBaseUrl": "",
-    "RedirectUri": ""
-  }
-}
-````
-
 ## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ActivityRepository.cs
 ````csharp
 using System;
@@ -27031,6 +26388,58 @@ public class CourseRepository : DefaultRepository<Course, CourseFilter, Guid>, I
         return query
             .OrderByDescending(course => course.CreatedAt)
             .ThenBy(course => course.Id);
+    }
+}
+````
+
+## File: src/ProjetoFinal.Infra.Data/Repositories/Entities/ForumPostRepository.cs
+````csharp
+using System;
+using System.Linq;
+using LinqKit;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Filters;
+using ProjetoFinal.Domain.Repositories;
+using ProjetoFinal.Infra.Data.Contexts;
+using System.Linq.Expressions;
+
+namespace ProjetoFinal.Infra.Data.Repositories.Entities;
+
+public class ForumPostRepository(AppDbContext context)
+    : DefaultRepository<ForumPost, ForumPostFilter, Guid>(context), IForumPostRepository
+{
+    protected override IQueryable<ForumPost> ApplyIncludes(IQueryable<ForumPost> query)
+    {
+        return query
+            .Include(post => post.Author)
+            .Include(post => post.Thread!)
+                .ThenInclude(thread => thread.Course)
+            .Include(post => post.Thread!)
+                .ThenInclude(thread => thread.ClassGroup)
+            .Include(post => post.Attachments)
+                .ThenInclude(attachment => attachment.MediaResource);
+    }
+
+    protected override IQueryable<ForumPost> ApplyIncludesList(IQueryable<ForumPost> query)
+    {
+        return ApplyIncludes(query);
+    }
+
+    protected override Expression<Func<ForumPost, bool>> GetFilters(ForumPostFilter filter)
+    {
+        var predicate = base.GetFilters(filter);
+
+        if (filter.InstructorId is not null && filter.InstructorId != Guid.Empty)
+        {
+            var instructorId = filter.InstructorId.Value;
+            predicate = predicate.And(post =>
+                post.Thread != null &&
+                post.Thread.Course != null &&
+                post.Thread.Course.InstructorId == instructorId);
+        }
+
+        return predicate;
     }
 }
 ````
@@ -27561,6 +26970,78 @@ public class ForumPostsController : ControllerBase
         var created = await _service.CreatePostAsync(dto, cancellationToken);
         return await _service.GetPostByIdAsync(created.Id, cancellationToken);
     }
+}
+````
+
+## File: src/ProjetoFinal.Api/Properties/launchSettings.json
+````json
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:13852",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "development_http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "development_http_api": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "production_http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": ".",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "production_http_api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5179"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "0"
+      }
+    }
+  }
 }
 ````
 
@@ -28920,447 +28401,476 @@ export class ClassGroupManageComponent {
 }
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.css
-````css
-.student-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.student-dashboard__header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.student-dashboard__header h2 {
-  margin: 0;
-  font-size: 1.8rem;
-  color: var(--surface-900);
-}
-
-.student-dashboard__header .lead {
-  margin: 0.35rem 0 0;
-  color: var(--surface-500);
-}
-
-.enrollment-count {
-  font-weight: 600;
-  color: var(--surface-500);
-}
-
-.student-dashboard__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(410px, 100%), 460px));
-  justify-content: start;
-  align-items: stretch;
-  gap: 1.5rem;
-}
-
-.student-course-card {
-  min-height: 100%;
-  border-radius: 20px;
-  padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 20px 60px -48px rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.student-course-card__head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-}
-
-.student-course-card .badge {
-  padding: 0.2rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-}
-
-.student-course-card .mode {
-  font-weight: 600;
-}
-
-.student-course-card h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--surface-900);
-}
-
-.student-course-card .instructor {
-  margin: 0;
-  color: var(--surface-500);
-  font-size: 0.9rem;
-}
-
-.student-dashboard .enrollment-meta {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--surface-500);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.student-dashboard .status-badge {
-  border-radius: 999px;
-  padding: 0.15rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.student-dashboard .status-badge--success {
-  background: rgba(34, 197, 94, 0.15);
-  color: #15803d;
-}
-
-.student-dashboard .status-badge--warning {
-  background: rgba(250, 204, 21, 0.2);
-  color: #a16207;
-}
-
-.student-dashboard .status-badge--danger {
-  background: rgba(248, 113, 113, 0.2);
-  color: #b91c1c;
-}
-
-.student-dashboard .status-badge--neutral {
-  background: rgba(148, 163, 184, 0.2);
-  color: var(--surface-600);
-}
-
-.student-course-card__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 0;
-}
-
-.student-course-card__stats div {
-  min-width: 0;
-  background: rgba(148, 163, 184, 0.12);
-  border-radius: 16px;
-  padding: 0.75rem;
-}
-
-.student-course-card__stats dt {
-  margin: 0;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--surface-500);
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.student-course-card__stats dd {
-  margin: 0.35rem 0 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--surface-900);
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.student-course-card__cta {
-  margin-top: auto;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.4rem 1.25rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  background: var(--accent-600);
-  color: #fff;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.student-course-card__cta:disabled {
-  background: rgba(148, 163, 184, 0.6);
-  cursor: not-allowed;
-}
-
-.student-course-card__cta:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -12px rgba(15, 23, 42, 0.6);
-}
-
-.student-course-card__actions {
-  margin-top: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.student-course-card__leave {
-  border: 1px solid rgba(220, 38, 38, 0.22);
-  border-radius: 999px;
-  padding: 0.4rem 1.1rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  background: rgba(254, 226, 226, 0.65);
-  color: #b91c1c;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.student-course-card__leave:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.student-course-card__leave:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -12px rgba(185, 28, 28, 0.45);
-}
-
-.student-course-card__hint {
-  font-size: 0.72rem;
-  color: var(--surface-500);
-}
-
-.state {
-  padding: 1.5rem;
-  border-radius: 16px;
-  text-align: center;
-  font-weight: 500;
-  background: rgba(148, 163, 184, 0.15);
-  color: var(--surface-600);
-}
-
-.state--error {
-  background: rgba(248, 113, 113, 0.18);
-  color: #b91c1c;
-}
-
-.state--info {
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-}
-
-@media (max-width: 720px) {
-  .student-course-card__stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.dashboard__insights,
-.dashboard__timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.insights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-}
-
-.insight-card {
-  padding: 1rem;
-  border-radius: 18px;
-  border: 1px solid rgba(99, 102, 241, 0.18);
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.65);
-}
-
-.insight-card h4,
-.insight-card p {
-  margin: 0;
-}
-
-.insight-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.insight-card__tag {
-  align-self: flex-start;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--accent-600);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.insight-card__question {
-  color: var(--surface-800);
-  line-height: 1.5;
-}
-
-.insight-card__meta {
-  color: var(--surface-500);
-  font-size: 0.9rem;
-}
-
-.insight-card__action {
-  color: var(--surface-700);
-  line-height: 1.5;
-}
-
-.dashboard__header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.dashboard__header h2 {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--surface-900);
-}
-
-.dashboard__header .lead {
-  margin: 0.25rem 0 0;
-  color: var(--surface-500);
-}
-
-.dashboard__header .action {
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  border: 0;
-  background: var(--accent-500);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dashboard__header .action:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(98, 99, 226, 0.25);
-}
-
-.dashboard__highlights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-}
-
-.highlight {
-  background: linear-gradient(135deg, rgba(98, 99, 226, 0.12), rgba(143, 149, 255, 0.05));
-  border-radius: 18px;
-  padding: 1.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.highlight::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  pointer-events: none;
-}
-
-.highlight__label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
-  color: var(--surface-500);
-}
-
-.highlight__value {
-  font-size: 2rem;
-  color: var(--surface-900);
-}
-
-.highlight__context {
-  font-size: 0.85rem;
-  color: var(--surface-500);
-}
-
-.highlight[data-trend='up'] {
-  background: linear-gradient(135deg, rgba(38, 192, 171, 0.18), rgba(38, 192, 171, 0.05));
-}
-
-.highlight[data-trend='down'] {
-  background: linear-gradient(135deg, rgba(243, 112, 85, 0.2), rgba(243, 112, 85, 0.05));
-}
-
-.dashboard__timeline {
-  background: #fff;
-  border-radius: 24px;
-  padding: 1.75rem;
-  box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.6);
-}
-
-.dashboard__timeline h3 {
-  margin: 0 0 1rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--surface-900);
-}
-
-.dashboard__timeline ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dashboard__timeline li {
-  display: grid;
-  grid-template-columns: minmax(140px, auto) 1fr;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.timeline__date {
-  font-weight: 600;
-  color: var(--accent-500);
-}
-
-.timeline__details h4 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--surface-900);
-}
-
-.timeline__details p {
-  margin: 0.35rem 0 0;
-  color: var(--surface-500);
-}
-
-@media (max-width: 860px) {
-  .dashboard__timeline li {
-    grid-template-columns: 1fr;
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.html
+````html
+<section class="content-viewer">
+  <div class="content-viewer__header">
+    <a class="back-link" [routerLink]="['/courses', courseId() ?? '' , 'manage']">
+      ← Voltar para o curso
+    </a>
+
+    <h2>{{ pageTitle() }}</h2>
+    <span class="status-badge" [attr.data-status]="statusLabel()">{{ statusLabel() }}</span>
+
+    <p class="summary" *ngIf="content()?.Summary">{{ content()?.Summary }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <article class="content-card" *ngIf="content() as current">
+        <section class="ai-summary-card">
+          <div class="ai-summary-card__header">
+            <div>
+              <h3>Resumo com IA</h3>
+              <p class="muted">Gere uma versao resumida deste material para leitura mais rapida.</p>
+            </div>
+            <button
+              class="button button--primary"
+              type="button"
+              (click)="generateSummary()"
+              [disabled]="aiSummaryLoading()"
+            >
+              {{ aiSummaryLoading() ? 'Gerando...' : 'Gerar resumo' }}
+            </button>
+          </div>
+
+          <div class="state state--error" *ngIf="aiSummaryError()">{{ aiSummaryError() }}</div>
+
+          <div class="ai-summary-result" *ngIf="aiSummary() as summary">
+            <p class="ai-summary-result__text">{{ summary.Summary }}</p>
+
+            <div class="ai-summary-result__grid">
+              <section>
+                <h4>Pontos principais</h4>
+                <ul>
+                  <li *ngFor="let item of summary.KeyPoints">{{ item }}</li>
+                </ul>
+              </section>
+
+              <section *ngIf="summary.AttentionPoints.length">
+                <h4>Pontos de atenção</h4>
+                <ul>
+                  <li *ngFor="let item of summary.AttentionPoints">{{ item }}</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-body">
+          <h3>Descricao</h3>
+          <div
+            class="rich-content"
+            *ngIf="current.Body; else noBody"
+            [innerHTML]="safeHtml(current.Body)"
+          ></div>
+          <ng-template #noBody>
+            <p class="muted">Nenhuma descricao detalhada informada.</p>
+          </ng-template>
+        </section>
+
+        <section class="attachments-section">
+          <header>
+            <h3>Anexos</h3>
+            <span>{{ current.Attachments.length }} arquivo(s)</span>
+          </header>
+
+          <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of current.Attachments">
+                <div>
+                  <strong>{{ attachment.Caption || 'Arquivo sem descricao' }}</strong>
+                  <span class="tag" *ngIf="attachment.IsPrimary">Principal</span>
+                  <p class="muted">{{ attachment.Media?.ContentType }} · {{ attachment.Media?.OriginalFileName }}</p>
+                </div>
+
+                <ng-container *ngIf="isVideoAttachment(attachment); else downloadBlock">
+                  <div class="video-container">
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      *ngIf="!isVideoLoaded(attachment.MediaResourceId)"
+                      (click)="loadVideo(attachment)"
+                      [disabled]="videoIsLoading(attachment.MediaResourceId)"
+                    >
+                      {{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando...' : 'Carregar vídeo' }}
+                    </button>
+
+                    <div class="video-frame" *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl">
+                      <video #videoPlayer controls [src]="videoUrl"></video>
+
+                      <div class="annotation-panel">
+                        <h4>Anotações</h4>
+                        <div class="annotation-form">
+                          <input
+                            type="text"
+                            placeholder="Mensagem"
+                            [value]="annotationDraft(attachment.Id)"
+                            (input)="updateAnnotationDraft(attachment.Id, ($any($event.target).value || ''))"
+                          />
+                          <button
+                            type="button"
+                            class="button button--ghost"
+                            (click)="addAnnotation(attachment.Id, videoPlayer.currentTime)"
+                          >
+                            Adicionar ({{ formatTime(videoPlayer.currentTime) }})
+                          </button>
+                        </div>
+
+                        <ul class="annotation-list" *ngIf="annotationsFor(attachment.Id).length; else noAnnotations">
+                          <li
+                            *ngFor="let annotation of annotationsFor(attachment.Id)"
+                            (click)="seekTo(videoPlayer, annotation.time)"
+                          >
+                            <span>{{ formatTime(annotation.time) }}</span>
+                            <p>{{ annotation.text }}</p>
+                          </li>
+                        </ul>
+                        <ng-template #noAnnotations>
+                          <p class="muted">Nenhuma anotação criada ainda.</p>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-template #downloadBlock>
+                  <button
+                    class="button button--ghost"
+                    type="button"
+                    (click)="downloadAttachment(attachment)"
+                    [disabled]="downloading() === attachment.MediaResourceId"
+                  >
+                    {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                  </button>
+                </ng-template>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noAttachments>
+            <p class="muted">Nenhum arquivo foi anexado a este conteudo.</p>
+          </ng-template>
+        </section>
+      </article>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando conteudo...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-content-viewer/course-content-viewer.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+import { CourseContentsService } from '../../core/services/course-contents.service';
+import { CourseContentDto, ContentAttachmentDto } from '../../core/api/contents.api';
+import { MediaService } from '../../core/services/media.service';
+import { ToastrService } from 'ngx-toastr';
+import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
+import { AiInsightsService } from '../../core/services/ai-insights.service';
+import { AiContentSummaryDto } from '../../core/api/ai.api';
+
+interface LocalVideoAnnotation {
+  id: string;
+  time: number;
+  text: string;
+}
+
+@Component({
+  selector: 'app-course-content-viewer',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './course-content-viewer.component.html',
+  styleUrl: './course-content-viewer.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CourseContentViewerComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly service = inject(CourseContentsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly mediaService = inject(MediaService);
+  private readonly toastr = inject(ToastrService);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly annotationsService = inject(ContentAnnotationsService);
+  private readonly aiInsightsService = inject(AiInsightsService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly content = signal<CourseContentDto | null>(null);
+  readonly courseId = signal<string | null>(null);
+  readonly downloading = signal<string | null>(null);
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
+  readonly annotationDrafts = signal<Record<string, string>>({});
+  readonly annotationsState = signal<Record<string, LocalVideoAnnotation[]>>({});
+  readonly aiSummary = signal<AiContentSummaryDto | null>(null);
+  readonly aiSummaryLoading = signal(false);
+  readonly aiSummaryError = signal<string | null>(null);
+
+  readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
+  readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg'];
+
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(params => {
+          const courseId = params.get('courseId');
+          const contentId = params.get('contentId');
+          this.courseId.set(courseId);
+          if (!contentId) {
+            throw new Error('Conteudo nao encontrado.');
+          }
+          this.loading.set(true);
+          return this.service.getContentById(contentId);
+        })
+      )
+      .subscribe({
+        next: content => {
+          this.content.set(content);
+          this.loadPersistedAnnotations(content.Attachments ?? []);
+          this.aiSummary.set(null);
+          this.aiSummaryError.set(null);
+          this.loading.set(false);
+          this.error.set(null);
+        },
+        error: () => {
+          this.content.set(null);
+          this.error.set('Nao foi possivel carregar o conteudo selecionado.');
+          this.loading.set(false);
+        }
+      });
+
+    this.destroyRef.onDestroy(() => this.cleanupVideoUrls());
   }
 
-  .timeline__date {
-    order: -1;
+  downloadAttachment(attachment: ContentAttachmentDto): void {
+    if (!attachment?.MediaResourceId) {
+      return;
+    }
+
+    this.downloading.set(attachment.MediaResourceId);
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = attachment.Media?.OriginalFileName || attachment.Media?.FileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloading.set(null);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel baixar o arquivo.');
+          this.downloading.set(null);
+        }
+      });
+  }
+
+  isVideoAttachment(attachment: ContentAttachmentDto): boolean {
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
+
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
+
+  videoUrlFor(attachmentId: string): string | null {
+    return this.videoUrls()[attachmentId] ?? null;
+  }
+
+  annotationDraft(attachmentId: string): string {
+    return this.annotationDrafts()[attachmentId] ?? '';
+  }
+
+  annotationsFor(attachmentId: string): LocalVideoAnnotation[] {
+    return this.annotationsState()[attachmentId] ?? [];
+  }
+
+  loadVideo(attachment: ContentAttachmentDto): void {
+    if (!attachment.MediaResourceId || this.videoLoading()[attachment.MediaResourceId]) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: true }));
+
+    this.mediaService
+      .download(attachment.MediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [attachment.MediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel carregar o video.');
+          this.videoLoading.update(state => ({ ...state, [attachment.MediaResourceId]: false }));
+        }
+      });
+  }
+
+  updateAnnotationDraft(attachmentId: string, value: string): void {
+    this.annotationDrafts.update(state => ({ ...state, [attachmentId]: value }));
+  }
+
+  addAnnotation(attachmentId: string, currentTime: number): void {
+    const text = (this.annotationDrafts()[attachmentId] ?? '').trim();
+    if (!text) {
+      this.toastr.info('Digite uma anotacao antes de salvar.');
+      return;
+    }
+
+    this.annotationsService
+      .addAnnotation({
+        ContentAttachmentId: attachmentId,
+        TimeMarkerSeconds: currentTime,
+        Comment: text
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: saved => {
+          const annotation: LocalVideoAnnotation = {
+            id: saved.Id,
+            time: saved.TimeMarkerSeconds,
+            text: saved.Comment
+          };
+          this.annotationsState.update(state => {
+            const list = state[attachmentId] ?? [];
+            return { ...state, [attachmentId]: [...list, annotation].sort((a, b) => a.time - b.time) };
+          });
+          this.annotationDrafts.update(state => ({ ...state, [attachmentId]: '' }));
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel salvar a anotacao.');
+        }
+      });
+  }
+
+  seekTo(video: HTMLVideoElement, time: number): void {
+    if (Number.isFinite(time) && video) {
+      video.currentTime = time;
+      video.focus();
+    }
+  }
+
+  formatTime(time: number): string {
+    if (!Number.isFinite(time)) {
+      return '00:00';
+    }
+    const minutes = Math.floor(time / 60)
+      .toString()
+      .padStart(2, '0');
+    const seconds = Math.floor(time % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  }
+
+  isVideoLoaded(attachmentId: string): boolean {
+    return Boolean(this.videoUrls()[attachmentId]);
+  }
+
+  videoIsLoading(attachmentId: string): boolean {
+    return Boolean(this.videoLoading()[attachmentId]);
+  }
+
+  generateSummary(): void {
+    const contentId = this.content()?.Id;
+    if (!contentId || this.aiSummaryLoading()) {
+      return;
+    }
+
+    this.aiSummaryLoading.set(true);
+    this.aiSummaryError.set(null);
+
+    this.aiInsightsService
+      .getContentSummary(contentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: summary => {
+          this.aiSummary.set(summary);
+          this.aiSummaryLoading.set(false);
+        },
+        error: error => {
+          this.aiSummaryError.set(this.extractErrorMessage(error, 'Nao foi possivel gerar o resumo com IA.'));
+          this.aiSummaryLoading.set(false);
+        }
+      });
+  }
+
+  private cleanupVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
+  }
+
+  private loadPersistedAnnotations(attachments: ContentAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoAttachment(attachment))
+      .forEach(attachment => {
+        this.annotationsService
+          .getAnnotations({ ContentAttachmentId: attachment.Id })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: response => {
+              const annotations = response.items
+                .map(item => ({
+                  id: item.Id,
+                  time: item.TimeMarkerSeconds,
+                  text: item.Comment
+                }))
+                .sort((a, b) => a.time - b.time);
+              this.annotationsState.update(state => ({ ...state, [attachment.Id]: annotations }));
+            },
+            error: () => {
+              this.toastr.error('Nao foi possivel carregar as anotacoes do video.');
+            }
+          });
+      });
+  }
+
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const payload = error.error;
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const message = (payload.message ?? payload.Message ?? payload.title ?? payload.Title) as string | undefined;
+      if (message?.trim()) {
+        return message;
+      }
+    }
+
+    return fallback;
   }
 }
 ````
@@ -29427,7 +28937,7 @@ textarea:focus-visible {
 }
 ````
 
-## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.json
 ````json
 {
   "Logging": {
@@ -29436,7 +28946,7 @@ textarea:focus-visible {
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "UploadsConfiguration" : {
+  "UploadsConfiguration": {
     "PathDir": "Uploads"
   },
   "Minio": {
@@ -29444,16 +28954,16 @@ textarea:focus-visible {
     "AccessKey": "admin",
     "SecretKey": "admin123",
     "Region": "us-east-1",
-    "BucketName": "meajudaai-development"
+    "BucketName": "meajudaai"
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal_Development;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
   },
   "Jwt": {
     "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
     "Issuer": "ProjetoFinal.Api",
     "Audience": "ProjetoFinal.Client",
-    "ExpiresInMinutes": 1202
+    "ExpiresInMinutes": 120
   },
   "AiProvider": {
     "BaseUrl": "https://api.deepseek.com",
@@ -30768,459 +30278,6 @@ dd{margin:4px 0 0;color:var(--color-text-muted)}
 </ng-template>
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.ts
-````typescript
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
-import { ActivitiesService } from '../../core/services/activities.service';
-import { ActivityAttachmentDto, ActivityDto } from '../../core/api/activities.api';
-import { MediaKind, MediaResource } from '../../core/api/media.api';
-import { MediaService } from '../../core/services/media.service';
-import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
-import { AuthService } from '../../core/services/auth.service';
-import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
-import {
-  ActivitySubmissionDto,
-  SubmissionAttachmentDto
-} from '../../core/api/activity-submissions.api';
-
-interface SubmissionAttachmentDraft {
-  id: string;
-  fileName: string;
-  status: 'uploading' | 'ready' | 'error';
-  media?: MediaResource;
-}
-
-@Component({
-  selector: 'app-course-activity-viewer',
-  standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, RichTextEditorComponent],
-  templateUrl: './course-activity-viewer.component.html',
-  styleUrl: './course-activity-viewer.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CourseActivityViewerComponent implements OnDestroy {
-  private readonly fb = inject(FormBuilder);
-  private readonly route = inject(ActivatedRoute);
-  private readonly activitiesService = inject(ActivitiesService);
-  private readonly mediaService = inject(MediaService);
-  private readonly toastr = inject(ToastrService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly authService = inject(AuthService);
-  private readonly submissionsService = inject(ActivitySubmissionsService);
-
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly activity = signal<ActivityDto | null>(null);
-  readonly courseId = signal<string | null>(null);
-  readonly downloading = signal<string | null>(null);
-  readonly videoUrls = signal<Record<string, string>>({});
-  readonly videoLoading = signal<Record<string, boolean>>({});
-  readonly existingSubmission = signal<ActivitySubmissionDto | null>(null);
-  readonly submissionLoading = signal(false);
-  readonly submissionError = signal<string | null>(null);
-  readonly submissionAttachments = signal<SubmissionAttachmentDraft[]>([]);
-  readonly isSubmittingWork = signal(false);
-
-  readonly pageTitle = computed(() => this.activity()?.Title ?? 'Atividade');
-  readonly dueDateLabel = computed(() => this.formatDate(this.activity()?.DueDate));
-  readonly currentUser = this.authService.currentUser;
-  readonly isStudent = computed(() => this.currentUser()?.role === 1);
-  readonly isInstructor = computed(() => this.currentUser()?.role === 2);
-  readonly hasUploadingSubmissionAttachments = computed(() =>
-    this.submissionAttachments().some(item => item.status === 'uploading')
-  );
-  readonly canResubmit = computed(() => this.existingSubmission()?.Status === 4);
-  readonly shouldShowSubmissionForm = computed(() => !this.existingSubmission() || this.canResubmit());
-  readonly submissionForm = this.fb.group({
-    textAnswer: this.fb.control('', { validators: [Validators.maxLength(5000)] })
-  });
-  private readonly submissionStatusLabels: Record<number, string> = {
-    1: 'Rascunho',
-    2: 'Submetida',
-    3: 'Corrigida',
-    4: 'Devolvida'
-  };
-  private readonly recommendedActionLabels: Record<string, string> = {
-    reforco: 'Reforco de conteudo',
-    refazer_atividade: 'Refazer atividade',
-    monitoria: 'Encaminhar para monitoria',
-    proximo_modulo: 'Liberar proximo modulo'
-  };
-  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg', 'mov', 'webm', 'avi'];
-
-  constructor() {
-    this.route.paramMap
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(params => {
-          const courseId = params.get('courseId');
-          const activityId = params.get('activityId');
-          this.courseId.set(courseId);
-          if (!activityId) {
-            throw new Error('Atividade nao encontrada.');
-          }
-          this.loading.set(true);
-          return this.activitiesService.getActivityById(activityId);
-        })
-      )
-      .subscribe({
-        next: activity => {
-          this.revokeVideoUrls();
-          this.videoUrls.set({});
-          this.videoLoading.set({});
-          this.activity.set(activity);
-          this.preloadActivityVideos(activity.Attachments ?? []);
-          this.error.set(null);
-          this.loading.set(false);
-          this.resetSubmissionState();
-          if (this.isStudent()) {
-            this.fetchStudentSubmission(activity.Id);
-          }
-        },
-        error: () => {
-          this.activity.set(null);
-          this.error.set('Nao foi possivel carregar a atividade selecionada.');
-          this.loading.set(false);
-        }
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.revokeVideoUrls();
-  }
-
-  readonly backLink = computed(() => {
-    const id = this.courseId();
-    if (this.isInstructor()) {
-      return ['/courses', id ?? '', 'manage'];
-    }
-    return id ? ['/student/courses', id] : ['/dashboard'];
-  });
-
-  downloadAttachment(attachment: ActivityAttachmentDto): void {
-    this.downloadMedia(attachment.MediaResourceId, attachment.Caption || 'anexo');
-  }
-
-  downloadSubmissionAttachment(attachment: SubmissionAttachmentDto): void {
-    const fallback = attachment.Media?.OriginalFileName ?? 'Envio do aluno';
-    this.downloadMedia(attachment.MediaResourceId, fallback);
-  }
-
-  isVideoActivityAttachment(attachment: ActivityAttachmentDto): boolean {
-    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
-    if (contentType.startsWith('video/')) {
-      return true;
-    }
-
-    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? attachment.Caption ?? '').toLowerCase();
-    const extension = fileName.split('.').pop() ?? '';
-    return this.videoExtensions.includes(extension);
-  }
-
-  videoUrlFor(mediaResourceId: string): string | null {
-    return this.videoUrls()[mediaResourceId] ?? null;
-  }
-
-  videoIsLoading(mediaResourceId: string): boolean {
-    return Boolean(this.videoLoading()[mediaResourceId]);
-  }
-
-  handleSubmissionFiles(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (!files?.length) {
-      return;
-    }
-
-    Array.from(files).forEach(file => this.uploadSubmissionFile(file));
-    input.value = '';
-  }
-
-  removeSubmissionAttachment(id: string): void {
-    this.submissionAttachments.update(list => list.filter(item => item.id !== id));
-  }
-
-  trackSubmissionAttachment(_: number, item: SubmissionAttachmentDraft): string {
-    return item.id;
-  }
-
-  submitActivityWork(): void {
-    const currentActivity = this.activity();
-    const student = this.currentUser();
-    if (!currentActivity || !student) {
-      this.toastr.error('Atividade ou usuario invalido.');
-      return;
-    }
-
-    if (this.existingSubmission() && !this.canResubmit()) {
-      this.toastr.info('Voce ja enviou esta atividade.');
-      return;
-    }
-
-    if (this.hasUploadingSubmissionAttachments()) {
-      this.toastr.info('Aguarde o envio completo dos anexos.');
-      return;
-    }
-
-    const textAnswer = (this.submissionForm.controls.textAnswer.value ?? '').trim();
-    const readyAttachments = this.submissionAttachments()
-      .filter(item => item.status === 'ready' && item.media)
-      .map((item, index) => ({
-        MediaResourceId: item.media!.Id,
-        IsPrimary: index === 0,
-        IsVideo: item.media?.Kind === MediaKind.Video
-      }));
-
-    if (!textAnswer && readyAttachments.length === 0) {
-      this.toastr.warning('Adicione uma observacao ou pelo menos um anexo.');
-      return;
-    }
-
-    const payload = {
-      ActivityId: currentActivity.Id,
-      StudentId: student.id,
-      ClassGroupId: currentActivity.ClassGroupId,
-      TextAnswer: textAnswer || undefined,
-      Attachments: readyAttachments
-    };
-
-    this.isSubmittingWork.set(true);
-    this.submissionsService
-      .submit(payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: submission => {
-          this.toastr.success(this.canResubmit() ? 'Atividade reenviada com sucesso.' : 'Atividade enviada com sucesso.');
-          const submissionWithLocalAttachments = {
-            ...submission,
-            Attachments: this.buildUiAttachmentsFromDrafts()
-          };
-          this.existingSubmission.set(this.normalizeSubmission(submissionWithLocalAttachments));
-          this.submissionAttachments.set([]);
-          this.submissionForm.reset();
-          this.isSubmittingWork.set(false);
-          this.fetchStudentSubmission(currentActivity.Id);
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel enviar sua atividade.');
-          this.isSubmittingWork.set(false);
-        }
-      });
-  }
-
-  private formatDate(value?: string): string {
-    if (!value) {
-      return 'Sem data definida';
-    }
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return 'Sem data definida';
-    }
-    return parsed.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-
-  safeHtml(content?: string | null): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
-  }
-
-  private downloadMedia(mediaResourceId: string, fileName: string): void {
-    if (!mediaResourceId || this.downloading() === mediaResourceId) {
-      return;
-    }
-
-    this.downloading.set(mediaResourceId);
-    this.mediaService
-      .download(mediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = fileName || 'anexo';
-          anchor.click();
-          URL.revokeObjectURL(url);
-          this.downloading.set(null);
-        },
-        error: () => {
-          this.toastr.error('Nao foi possivel baixar o anexo.');
-          this.downloading.set(null);
-        }
-      });
-  }
-
-  private uploadSubmissionFile(file: File): void {
-    const draft: SubmissionAttachmentDraft = {
-      id: this.generateAttachmentId(),
-      fileName: file.name,
-      status: 'uploading'
-    };
-
-    this.submissionAttachments.update(list => [...list, draft]);
-    this.mediaService
-      .upload(file)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: media => {
-          this.submissionAttachments.update(list =>
-            list.map(item => (item.id === draft.id ? { ...item, status: 'ready', media } : item))
-          );
-        },
-        error: () => {
-          this.submissionAttachments.update(list =>
-            list.map(item => (item.id === draft.id ? { ...item, status: 'error' } : item))
-          );
-          this.toastr.error(`Nao foi possivel enviar ${file.name}.`);
-        }
-      });
-  }
-
-  private preloadActivityVideos(attachments: ActivityAttachmentDto[]): void {
-    attachments
-      .filter(attachment => this.isVideoActivityAttachment(attachment))
-      .forEach(attachment => this.loadActivityVideo(attachment.MediaResourceId));
-  }
-
-  private loadActivityVideo(mediaResourceId: string): void {
-    if (!mediaResourceId || this.videoIsLoading(mediaResourceId) || this.videoUrlFor(mediaResourceId)) {
-      return;
-    }
-
-    this.videoLoading.update(state => ({ ...state, [mediaResourceId]: true }));
-    this.mediaService
-      .download(mediaResourceId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: blob => {
-          const url = URL.createObjectURL(blob);
-          this.videoUrls.update(state => ({ ...state, [mediaResourceId]: url }));
-          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
-        },
-        error: () => {
-          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
-          this.toastr.error('Nao foi possivel carregar o video do anexo.');
-        }
-      });
-  }
-
-  private fetchStudentSubmission(activityId: string): void {
-    const student = this.currentUser();
-    if (!student) {
-      return;
-    }
-
-    this.submissionLoading.set(true);
-    this.submissionError.set(null);
-    this.submissionsService
-      .getStudentSubmission(activityId, student.id)
-      .pipe(
-        switchMap(submission => {
-          if (!submission) {
-            return of(null);
-          }
-          return this.submissionsService.getById(submission.Id);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: submission => {
-          this.existingSubmission.set(this.normalizeSubmission(submission));
-          this.submissionLoading.set(false);
-        },
-        error: () => {
-          this.submissionError.set('Nao foi possivel verificar envios anteriores.');
-          this.submissionLoading.set(false);
-        }
-      });
-  }
-
-  private resetSubmissionState(): void {
-    this.submissionAttachments.set([]);
-    this.submissionForm.reset();
-    this.existingSubmission.set(null);
-    this.submissionError.set(null);
-    this.submissionLoading.set(false);
-    this.isSubmittingWork.set(false);
-  }
-
-  private generateAttachmentId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return Math.random().toString(36).slice(2, 11);
-  }
-
-  private normalizeSubmission(submission: ActivitySubmissionDto | null): ActivitySubmissionDto | null {
-    if (!submission) {
-      return null;
-    }
-
-    return {
-      ...submission,
-      Attachments: submission.Attachments ?? []
-    };
-  }
-
-  submissionStatusLabel(status?: number): string {
-    if (!status) {
-      return '';
-    }
-    return this.submissionStatusLabels[status] ?? 'Desconhecido';
-  }
-
-  recommendedActionLabel(action?: string): string | null {
-    if (!action) {
-      return null;
-    }
-    return this.recommendedActionLabels[action] ?? action;
-  }
-
-  feedbackTagsList(tags?: string): string[] {
-    if (!tags) {
-      return [];
-    }
-    return tags
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
-  }
-
-  private buildUiAttachmentsFromDrafts(): SubmissionAttachmentDto[] {
-    return this.submissionAttachments()
-      .filter(item => item.status === 'ready' && item.media)
-      .map((item, index) => ({
-        Id: item.media?.Id ?? this.generateAttachmentId(),
-        MediaResourceId: item.media!.Id,
-        IsPrimary: index === 0,
-        IsVideo: item.media?.Kind === MediaKind.Video,
-        Media: item.media
-      }));
-  }
-
-  private revokeVideoUrls(): void {
-    const urls = Object.values(this.videoUrls());
-    urls.forEach(url => URL.revokeObjectURL(url));
-  }
-}
-````
-
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.css
 ````css
 .courses {
@@ -31676,6 +30733,451 @@ export class CourseActivityViewerComponent implements OnDestroy {
 }
 ````
 
+## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.css
+````css
+.student-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.student-dashboard__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.student-dashboard__header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--surface-900);
+}
+
+.student-dashboard__header .lead {
+  margin: 0.35rem 0 0;
+  color: var(--surface-500);
+}
+
+.enrollment-count {
+  font-weight: 600;
+  color: var(--surface-500);
+}
+
+.student-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(410px, 100%), 460px));
+  justify-content: start;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+
+.student-course-card {
+  min-height: 100%;
+  border-radius: 20px;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 60px -48px rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.student-course-card__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+}
+
+.student-course-card .badge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+}
+
+.student-course-card .mode {
+  font-weight: 600;
+}
+
+.student-course-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--surface-900);
+}
+
+.student-course-card .instructor {
+  margin: 0;
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.student-dashboard .enrollment-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--surface-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.student-dashboard .status-badge {
+  border-radius: 999px;
+  padding: 0.15rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.student-dashboard .status-badge--success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.student-dashboard .status-badge--warning {
+  background: rgba(250, 204, 21, 0.2);
+  color: #a16207;
+}
+
+.student-dashboard .status-badge--danger {
+  background: rgba(248, 113, 113, 0.2);
+  color: #b91c1c;
+}
+
+.student-dashboard .status-badge--neutral {
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--surface-600);
+}
+
+.student-course-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.student-course-card__stats div {
+  min-width: 0;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  padding: 0.75rem;
+}
+
+.student-course-card__stats dt {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--surface-500);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.student-course-card__stats dd {
+  margin: 0.35rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--surface-900);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.student-course-card__cta {
+  margin-top: auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.4rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: var(--accent-600);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.student-course-card__cta:disabled {
+  background: rgba(148, 163, 184, 0.6);
+  cursor: not-allowed;
+}
+
+.student-course-card__cta:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(15, 23, 42, 0.6);
+}
+
+.student-course-card__actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.student-course-card__leave {
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(254, 226, 226, 0.65);
+  color: #b91c1c;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.student-course-card__leave:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.student-course-card__leave:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(185, 28, 28, 0.45);
+}
+
+.student-course-card__hint {
+  font-size: 0.72rem;
+  color: var(--surface-500);
+}
+
+.state {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--surface-600);
+}
+
+.state--error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+.state--info {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+}
+
+@media (max-width: 720px) {
+  .student-course-card__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard__insights,
+.dashboard__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.insight-card {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.65);
+}
+
+.insight-card h4,
+.insight-card p {
+  margin: 0;
+}
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insight-card__tag {
+  align-self: flex-start;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.insight-card__question {
+  color: var(--surface-800);
+  line-height: 1.5;
+}
+
+.insight-card__meta {
+  color: var(--surface-500);
+  font-size: 0.9rem;
+}
+
+.insight-card__action {
+  color: var(--surface-700);
+  line-height: 1.5;
+}
+
+.dashboard__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard__header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--surface-900);
+}
+
+.dashboard__header .lead {
+  margin: 0.25rem 0 0;
+  color: var(--surface-500);
+}
+
+.dashboard__header .action {
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: 0;
+  background: var(--accent-500);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard__header .action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(98, 99, 226, 0.25);
+}
+
+.dashboard__highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.highlight {
+  background: linear-gradient(135deg, rgba(98, 99, 226, 0.12), rgba(143, 149, 255, 0.05));
+  border-radius: 18px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+.highlight__label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--surface-500);
+}
+
+.highlight__value {
+  font-size: 2rem;
+  color: var(--surface-900);
+}
+
+.highlight__context {
+  font-size: 0.85rem;
+  color: var(--surface-500);
+}
+
+.highlight[data-trend='up'] {
+  background: linear-gradient(135deg, rgba(38, 192, 171, 0.18), rgba(38, 192, 171, 0.05));
+}
+
+.highlight[data-trend='down'] {
+  background: linear-gradient(135deg, rgba(243, 112, 85, 0.2), rgba(243, 112, 85, 0.05));
+}
+
+.dashboard__timeline {
+  background: #fff;
+  border-radius: 24px;
+  padding: 1.75rem;
+  box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.6);
+}
+
+.dashboard__timeline h3 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--surface-900);
+}
+
+.dashboard__timeline ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard__timeline li {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) 1fr;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.timeline__date {
+  font-weight: 600;
+  color: var(--accent-500);
+}
+
+.timeline__details h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--surface-900);
+}
+
+.timeline__details p {
+  margin: 0.35rem 0 0;
+  color: var(--surface-500);
+}
+
+@media (max-width: 860px) {
+  .dashboard__timeline li {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline__date {
+    order: -1;
+  }
+}
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.html
 ````html
 <section class="forum">
@@ -31822,6 +31324,51 @@ export class CourseActivityViewerComponent implements OnDestroy {
 <ng-template #emptyState>
   <div class="state state--info">Nenhum topico cadastrado por enquanto.</div>
 </ng-template>
+````
+
+## File: src/ProjetoFinal.Infra.CrossCutting/ConfigurationEnvironment/appsettings.Development.json
+````json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "UploadsConfiguration" : {
+    "PathDir": "Uploads"
+  },
+  "Minio": {
+    "Endpoint": "https://minio.dadyilha.com.br",
+    "AccessKey": "admin",
+    "SecretKey": "admin123",
+    "Region": "us-east-1",
+    "BucketName": "meajudaai-development"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=link-internet.dadyilha.com.br,3035;Initial Catalog=ProjetoFinal_Development;User Id=sa;Password=Abc242526@2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+  },
+  "Jwt": {
+    "Secret": "SES-EAD-AuthSecretKey-ChangeMe-2025!",
+    "Issuer": "ProjetoFinal.Api",
+    "Audience": "ProjetoFinal.Client",
+    "ExpiresInMinutes": 1202
+  },
+  "AiProvider": {
+    "BaseUrl": "https://api.deepseek.com",
+    "ApiKey": "",
+    "Model": "deepseek-chat",
+    "Temperature": 0.2,
+    "MaxTokens": 900
+  },
+  "RhbkConfiguration": {
+    "Realm": "",
+    "ClientId": "",
+    "ClientSecret": "",
+    "KeycloakBaseUrl": "",
+    "RedirectUri": ""
+  }
+}
 ````
 
 ## File: src/ProjetoFinal.Infra.Data/Migrations/AppDbContextModelSnapshot.cs
@@ -33563,420 +33110,457 @@ namespace ProjetoFinal.Infra.Data.Migrations
 }
 ````
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.html
-````html
-<section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
-  <header class="activity-viewer__header">
-    <a class="back-link" [routerLink]="backLink()">← Voltar</a>
-    <h2>{{ pageTitle() }}</h2>
-    <span class="badge">{{ current.ClassGroupName }}</span>
-  </header>
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.ts
+````typescript
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-  <div class="meta">
-    <p><strong>Entrega:</strong> {{ dueDateLabel() }}</p>
-    <p><strong>Visivel aos alunos:</strong> {{ current.VisibleToStudents ? 'Sim' : 'Nao' }}</p>
-    <p><strong>Atrasos:</strong> {{ current.AllowLateSubmissions ? 'Aceita' : 'Nao aceita' }}</p>
-    <p *ngIf="current.MaxScore"><strong>Nota máxima:</strong> {{ current.MaxScore }}</p>
-  </div>
+import { ActivitiesService } from '../../core/services/activities.service';
+import { ActivityAttachmentDto, ActivityDto } from '../../core/api/activities.api';
+import { MediaKind, MediaResource } from '../../core/api/media.api';
+import { MediaService } from '../../core/services/media.service';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
+import { AuthService } from '../../core/services/auth.service';
+import { ActivitySubmissionsService } from '../../core/services/activity-submissions.service';
+import {
+  ActivitySubmissionDto,
+  SubmissionAttachmentDto
+} from '../../core/api/activity-submissions.api';
 
-  <article class="activity-card">
-    <h3>Descricao</h3>
-    <div class="rich-content" [innerHTML]="safeHtml(current.Description)"></div>
-  </article>
+interface SubmissionAttachmentDraft {
+  id: string;
+  fileName: string;
+  status: 'uploading' | 'ready' | 'error';
+  media?: MediaResource;
+}
 
-  <section class="attachments-section">
-    <header>
-      <h3>Anexos</h3>
-      <span>{{ current.Attachments.length }} arquivo(s)</span>
-    </header>
+@Component({
+  selector: 'app-course-activity-viewer',
+  standalone: true,
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, RichTextEditorComponent],
+  templateUrl: './course-activity-viewer.component.html',
+  styleUrl: './course-activity-viewer.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CourseActivityViewerComponent implements OnDestroy {
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly activitiesService = inject(ActivitiesService);
+  private readonly mediaService = inject(MediaService);
+  private readonly toastr = inject(ToastrService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly authService = inject(AuthService);
+  private readonly submissionsService = inject(ActivitySubmissionsService);
 
-    <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
-      <ul class="attachments-list">
-        <li
-          *ngFor="let attachment of current.Attachments"
-          [class.attachment-item--video]="isVideoActivityAttachment(attachment)"
-        >
-          <div>
-            <strong>{{ attachment.Caption || 'Anexo' }}</strong>
-            <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
-            <div class="attachment-video" *ngIf="isVideoActivityAttachment(attachment)">
-              <video
-                *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl; else videoLoadingState"
-                controls
-                [src]="videoUrl"
-              ></video>
-              <ng-template #videoLoadingState>
-                <p class="muted">{{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando video...' : 'Video indisponivel.' }}</p>
-              </ng-template>
-            </div>
-          </div>
-          <button
-            *ngIf="!isVideoActivityAttachment(attachment)"
-            type="button"
-            class="button button--ghost"
-            (click)="downloadAttachment(attachment)"
-            [disabled]="downloading() === attachment.MediaResourceId"
-          >
-            {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-          </button>
-        </li>
-      </ul>
-    </ng-container>
-  </section>
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly activity = signal<ActivityDto | null>(null);
+  readonly courseId = signal<string | null>(null);
+  readonly downloading = signal<string | null>(null);
+  readonly videoUrls = signal<Record<string, string>>({});
+  readonly videoLoading = signal<Record<string, boolean>>({});
+  readonly existingSubmission = signal<ActivitySubmissionDto | null>(null);
+  readonly submissionLoading = signal(false);
+  readonly submissionError = signal<string | null>(null);
+  readonly submissionAttachments = signal<SubmissionAttachmentDraft[]>([]);
+  readonly isSubmittingWork = signal(false);
 
-  <section class="submission-module" *ngIf="isStudent()">
-    <header class="submission-module__header">
-      <div>
-        <h3>Realizar atividade</h3>
-        <p class="muted">
-          Envie uma observacao e adicione arquivos de apoio para concluir esta atividade.
-        </p>
-      </div>
-      <span class="badge badge--accent">Area do aluno</span>
-    </header>
+  readonly pageTitle = computed(() => this.activity()?.Title ?? 'Atividade');
+  readonly dueDateLabel = computed(() => this.formatDate(this.activity()?.DueDate));
+  readonly currentUser = this.authService.currentUser;
+  readonly isStudent = computed(() => this.currentUser()?.role === 1);
+  readonly isInstructor = computed(() => this.currentUser()?.role === 2);
+  readonly hasUploadingSubmissionAttachments = computed(() =>
+    this.submissionAttachments().some(item => item.status === 'uploading')
+  );
+  readonly canResubmit = computed(() => this.existingSubmission()?.Status === 4);
+  readonly shouldShowSubmissionForm = computed(() => !this.existingSubmission() || this.canResubmit());
+  readonly submissionForm = this.fb.group({
+    textAnswer: this.fb.control('', { validators: [Validators.maxLength(5000)] })
+  });
+  private readonly submissionStatusLabels: Record<number, string> = {
+    1: 'Rascunho',
+    2: 'Submetida',
+    3: 'Corrigida',
+    4: 'Devolvida'
+  };
+  private readonly recommendedActionLabels: Record<string, string> = {
+    reforco: 'Reforco de conteudo',
+    refazer_atividade: 'Refazer atividade',
+    monitoria: 'Encaminhar para monitoria',
+    proximo_modulo: 'Liberar proximo modulo'
+  };
+  private readonly videoExtensions = ['mp4', 'mkv', 'mpg', 'mpeg', 'mov', 'webm', 'avi'];
 
-    <ng-container *ngIf="submissionLoading(); else submissionContent">
-      <div class="state state--info">Verificando envios anteriores...</div>
-    </ng-container>
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(params => {
+          const courseId = params.get('courseId');
+          const activityId = params.get('activityId');
+          this.courseId.set(courseId);
+          if (!activityId) {
+            throw new Error('Atividade nao encontrada.');
+          }
+          this.loading.set(true);
+          return this.activitiesService.getActivityById(activityId);
+        })
+      )
+      .subscribe({
+        next: activity => {
+          this.revokeVideoUrls();
+          this.videoUrls.set({});
+          this.videoLoading.set({});
+          this.activity.set(activity);
+          this.preloadActivityVideos(activity.Attachments ?? []);
+          this.error.set(null);
+          this.loading.set(false);
+          this.resetSubmissionState();
+          if (this.isStudent()) {
+            this.fetchStudentSubmission(activity.Id);
+          }
+        },
+        error: () => {
+          this.activity.set(null);
+          this.error.set('Nao foi possivel carregar a atividade selecionada.');
+          this.loading.set(false);
+        }
+      });
+  }
 
-    <ng-template #submissionContent>
-      <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
+  ngOnDestroy(): void {
+    this.revokeVideoUrls();
+  }
 
-        <article class="submission-summary" *ngIf="existingSubmission() as submission">
-          <header>
-            <div>
-              <h4>Envio registrado</h4>
-              <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
-            </div>
-            <span class="status-badge" data-status="enviado">{{ submissionStatusLabel(submission.Status) }}</span>
-          </header>
+  readonly backLink = computed(() => {
+    const id = this.courseId();
+    if (this.isInstructor()) {
+      return ['/courses', id ?? '', 'manage'];
+    }
+    return id ? ['/student/courses', id] : ['/dashboard'];
+  });
 
-          <section class="submission-summary__grading">
-            <h5>Correção</h5>
-            <ng-container *ngIf="submission.Status !== 2 || submission.Score != null || submission.Feedback; else notReviewed">
-              <dl>
-                <div>
-                  <dt>Status</dt>
-                  <dd>{{ submissionStatusLabel(submission.Status) }}</dd>
-                </div>
-                <div *ngIf="submission.Score != null">
-                  <dt>Nota</dt>
-                  <dd>{{ submission.Score }}</dd>
-                </div>
-                <div *ngIf="submission.MasteryScore != null">
-                  <dt>Rubrica: Dominio</dt>
-                  <dd>{{ submission.MasteryScore }}/5</dd>
-                </div>
-                <div *ngIf="submission.ApplicationScore != null">
-                  <dt>Rubrica: Aplicacao</dt>
-                  <dd>{{ submission.ApplicationScore }}/5</dd>
-                </div>
-                <div *ngIf="submission.CommunicationScore != null">
-                  <dt>Rubrica: Comunicacao</dt>
-                  <dd>{{ submission.CommunicationScore }}/5</dd>
-                </div>
-                <div *ngIf="recommendedActionLabel(submission.RecommendedAction) as actionLabel">
-                  <dt>Acao recomendada</dt>
-                  <dd>{{ actionLabel }}</dd>
-                </div>
-                <div *ngIf="feedbackTagsList(submission.FeedbackTags).length">
-                  <dt>Tags diagnosticas</dt>
-                  <dd>{{ feedbackTagsList(submission.FeedbackTags).join(', ') }}</dd>
-                </div>
-                <div *ngIf="submission.Feedback">
-                  <dt>Feedback do instrutor</dt>
-                  <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>
-                </div>
-              </dl>
-            </ng-container>
-          </section>
+  downloadAttachment(attachment: ActivityAttachmentDto): void {
+    this.downloadMedia(attachment.MediaResourceId, attachment.Caption || 'anexo');
+  }
 
-          <section *ngIf="submission.TextAnswer">
-            <h5>Observacao enviada</h5>
-            <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
-          </section>
+  downloadSubmissionAttachment(attachment: SubmissionAttachmentDto): void {
+    const fallback = attachment.Media?.OriginalFileName ?? 'Envio do aluno';
+    this.downloadMedia(attachment.MediaResourceId, fallback);
+  }
 
-        <section>
-          <h5>Anexos do aluno</h5>
-          <ng-container *ngIf="submission.Attachments.length; else noStudentAttachments">
-            <ul class="attachments-list">
-              <li *ngFor="let attachment of submission.Attachments">
-                <div>
-                  <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
-                  <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
-                </div>
-                <button
-                  type="button"
-                  class="button button--ghost"
-                  (click)="downloadSubmissionAttachment(attachment)"
-                  [disabled]="downloading() === attachment.MediaResourceId"
-                >
-                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
-                </button>
-              </li>
-            </ul>
-          </ng-container>
-        </section>
-      </article>
+  isVideoActivityAttachment(attachment: ActivityAttachmentDto): boolean {
+    const contentType = attachment.Media?.ContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('video/')) {
+      return true;
+    }
 
-      <div class="state state--info" *ngIf="canResubmit()">
-        Esta atividade foi devolvida. Ajuste sua resposta e envie novamente.
-      </div>
+    const fileName = (attachment.Media?.OriginalFileName ?? attachment.Media?.FileName ?? attachment.Caption ?? '').toLowerCase();
+    const extension = fileName.split('.').pop() ?? '';
+    return this.videoExtensions.includes(extension);
+  }
 
-      <ng-container *ngIf="shouldShowSubmissionForm()">
-        <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
-          <label for="textAnswer">Observacao</label>
-          <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
-          <small class="field-hint">Descreva sua resposta ou contextualize os anexos enviados.</small>
+  videoUrlFor(mediaResourceId: string): string | null {
+    return this.videoUrls()[mediaResourceId] ?? null;
+  }
 
-          <div class="submission-form__attachments">
-            <div class="submission-form__attachments-header">
-              <div>
-                <h4>Seus anexos</h4>
-                <p class="muted">Adicione os arquivos em PDF, imagem, audio ou video.</p>
-              </div>
-              <label class="upload-button">
-                <input type="file" multiple (change)="handleSubmissionFiles($event)" [disabled]="isSubmittingWork()" />
-                Adicionar arquivos
-              </label>
-            </div>
+  videoIsLoading(mediaResourceId: string): boolean {
+    return Boolean(this.videoLoading()[mediaResourceId]);
+  }
 
-            <ng-container *ngIf="submissionAttachments().length; else noDrafts">
-              <ul class="attachment-drafts">
-                <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
-                  <div>
-                    <strong>{{ attachment.fileName }}</strong>
-                    <p class="muted" *ngIf="attachment.status === 'uploading'">
-                      Enviando<span class="loading-dots" aria-hidden="true"></span>
-                    </p>
-                    <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
-                      Falha no envio
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    class="button button--ghost"
-                    (click)="removeSubmissionAttachment(attachment.id)"
-                    [disabled]="attachment.status === 'uploading' || isSubmittingWork()"
-                  >
-                    Remover
-                  </button>
-                </li>
-              </ul>
-            </ng-container>
-          </div>
+  handleSubmissionFiles(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files?.length) {
+      return;
+    }
 
-          <button
-            type="submit"
-            class="primary-button"
-            [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
-          >
-            {{ isSubmittingWork() ? 'Enviando...' : (canResubmit() ? 'Reenviar atividade' : 'Enviar atividade') }}
-          </button>
-        </form>
-      </ng-container>
-    </ng-template>
-  </section>
-</section>
+    Array.from(files).forEach(file => this.uploadSubmissionFile(file));
+    input.value = '';
+  }
 
-<ng-template #stateBlock>
-  <div class="state state--info" *ngIf="loading(); else errorState">Carregando atividade...</div>
-</ng-template>
+  removeSubmissionAttachment(id: string): void {
+    this.submissionAttachments.update(list => list.filter(item => item.id !== id));
+  }
 
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
+  trackSubmissionAttachment(_: number, item: SubmissionAttachmentDraft): string {
+    return item.id;
+  }
 
-<ng-template #noAttachments>
-  <p class="muted">Nenhum anexo publicado para esta atividade.</p>
-</ng-template>
+  submitActivityWork(): void {
+    const currentActivity = this.activity();
+    const student = this.currentUser();
+    if (!currentActivity || !student) {
+      this.toastr.error('Atividade ou usuario invalido.');
+      return;
+    }
 
-<ng-template #noStudentAttachments>
-  <p class="muted">Nenhum arquivo foi anexado neste envio.</p>
-</ng-template>
+    if (this.existingSubmission() && !this.canResubmit()) {
+      this.toastr.info('Voce ja enviou esta atividade.');
+      return;
+    }
 
-<ng-template #noDrafts>
-  <p class="muted">Nenhum arquivo adicionado.</p>
-</ng-template>
+    if (this.hasUploadingSubmissionAttachments()) {
+      this.toastr.info('Aguarde o envio completo dos anexos.');
+      return;
+    }
 
-<ng-template #notReviewed>
-  <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
-</ng-template>
-````
+    const textAnswer = (this.submissionForm.controls.textAnswer.value ?? '').trim();
+    const readyAttachments = this.submissionAttachments()
+      .filter(item => item.status === 'ready' && item.media)
+      .map((item, index) => ({
+        MediaResourceId: item.media!.Id,
+        IsPrimary: index === 0,
+        IsVideo: item.media?.Kind === MediaKind.Video
+      }));
 
-## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.html
-````html
-<section class="student-dashboard" *ngIf="isStudentView(); else instructorView">
-  <header class="student-dashboard__header">
-    <div>
-      <h2>Meus cursos</h2>
-      <p class="lead">Continue acompanhando as trilhas em que você já está matriculado.</p>
-    </div>
-    <span class="enrollment-count">
-      {{ studentCourses().length }} curso{{ studentCourses().length === 1 ? '' : 's' }} matriculado{{ studentCourses().length === 1 ? '' : 's' }}
-    </span>
-  </header>
+    if (!textAnswer && readyAttachments.length === 0) {
+      this.toastr.warning('Adicione uma observacao ou pelo menos um anexo.');
+      return;
+    }
 
-  <ng-container *ngIf="!loading(); else loadingState">
-    <ng-container *ngIf="!error(); else errorState">
-      <ng-container *ngIf="studentCourses().length; else emptyState">
-        <div class="student-dashboard__grid">
-          <article *ngFor="let course of studentCourses(); trackBy: trackByCourse" class="student-course-card">
-            <div class="student-course-card__head">
-              <span class="badge">{{ course.category || 'Sem categoria' }}</span>
-              <span class="mode">{{ course.modeLabel }}</span>
-            </div>
+    const payload = {
+      ActivityId: currentActivity.Id,
+      StudentId: student.id,
+      ClassGroupId: currentActivity.ClassGroupId,
+      TextAnswer: textAnswer || undefined,
+      Attachments: readyAttachments
+    };
 
-            <h3>{{ course.title }}</h3>
-            <p class="instructor">Instrutor: <strong>{{ course.instructor || 'Nao informado' }}</strong></p>
-            <p class="enrollment-meta" *ngIf="course.enrollmentType === 'distribution'">
-              Distribuicao de materiais
-            </p>
-            <p class="enrollment-meta" *ngIf="course.enrollmentType === 'interactive'">
-              Turma {{ course.classGroupName || 'interativa' }}
-              <span [class]="enrollmentStatusClass(course.enrollmentStatus)">
-                {{ enrollmentStatusLabel(course.enrollmentStatus) }}
-              </span>
-            </p>
+    this.isSubmittingWork.set(true);
+    this.submissionsService
+      .submit(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: submission => {
+          this.toastr.success(this.canResubmit() ? 'Atividade reenviada com sucesso.' : 'Atividade enviada com sucesso.');
+          const submissionWithLocalAttachments = {
+            ...submission,
+            Attachments: this.buildUiAttachmentsFromDrafts()
+          };
+          this.existingSubmission.set(this.normalizeSubmission(submissionWithLocalAttachments));
+          this.submissionAttachments.set([]);
+          this.submissionForm.reset();
+          this.isSubmittingWork.set(false);
+          this.fetchStudentSubmission(currentActivity.Id);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel enviar sua atividade.');
+          this.isSubmittingWork.set(false);
+        }
+      });
+  }
 
-            <dl class="student-course-card__stats">
-              <div>
-                <dt>Turmas</dt>
-                <dd>{{ course.classGroups }}</dd>
-              </div>
-              <div>
-                <dt>Vagas ocupadas</dt>
-                <dd>{{ course.enrolledStudents }}/{{ course.capacity || 'Ilimitado' }}</dd>
-              </div>
-              <div>
-                <dt>
-                  {{ course.enrollmentType === 'interactive' && course.enrollmentStatus === 1 ? 'Solicitado em' : 'Matriculado em' }}
-                </dt>
-                <dd>{{ course.subscribedAt | date:'dd/MM/yyyy' }}</dd>
-              </div>
-            </dl>
+  private formatDate(value?: string): string {
+    if (!value) {
+      return 'Sem data definida';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'Sem data definida';
+    }
+    return parsed.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 
-            <div class="student-course-card__actions">
-              <button
-                type="button"
-                class="student-course-card__cta"
-                (click)="openCourse(course.id)"
-                [disabled]="!canAccessCourse(course) || isLeavingCourse(course.id)"
-              >
-                {{ canAccessCourse(course) ? 'Acessar curso' : 'Aguardando aprovacao' }}
-              </button>
-              <button
-                type="button"
-                class="student-course-card__leave"
-                (click)="leaveCourse(course)"
-                [disabled]="isLeavingCourse(course.id)"
-              >
-                {{ isLeavingCourse(course.id) ? 'Saindo...' : 'Sair do curso' }}
-              </button>
-            </div>
-            <small
-              class="student-course-card__hint"
-              *ngIf="!canAccessCourse(course) && course.enrollmentType === 'interactive'"
-            >
-              Aguarde a aprovacao da turma para acessar os materiais.
-            </small>
-          </article>
-        </div>
-      </ng-container>
-    </ng-container>
-  </ng-container>
-</section>
 
-<ng-template #instructorView>
-  <section class="dashboard">
-    <header class="dashboard__header">
-      <div>
-        <h2>Bem-vindo de volta!</h2>
-        <p class="lead">Aqui estão alguns indicadores rápidos para acompanhar o aprendizado dos seus alunos.</p>
-      </div>
-      <button type="button" class="action" (click)="goToCreateCourse()">Criar novo curso</button>
-    </header>
+  safeHtml(content?: string | null): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(content ?? '');
+  }
 
-    <div class="dashboard__highlights">
-      <article *ngFor="let card of highlightCards()" class="highlight" [attr.data-trend]="card.trend">
-        <span class="highlight__label">{{ card.label }}</span>
-        <strong class="highlight__value">{{ card.value }}</strong>
-        <span class="highlight__context">{{ card.context }}</span>
-      </article>
-    </div>
+  private downloadMedia(mediaResourceId: string, fileName: string): void {
+    if (!mediaResourceId || this.downloading() === mediaResourceId) {
+      return;
+    }
 
-    <section class="dashboard__timeline">
-      <h3>Atividade recente em fóruns</h3>
-      <ng-container *ngIf="forumActivityLoading(); else forumActivityList">
-        <div class="state state--info">Carregando atividades do fórum...</div>
-      </ng-container>
-      <ng-template #forumActivityList>
-        <ng-container *ngIf="!forumActivityError(); else forumActivityErrorState">
-          <ng-container *ngIf="forumActivities().length; else forumActivityEmpty">
-            <ol>
-              <li *ngFor="let item of forumActivities(); trackBy: trackByForumActivity">
-                <div class="timeline__date">{{ item.lastActivityAt | date:'dd/MM/yyyy HH:mm' }}</div>
-                <div class="timeline__details">
-                  <h4>{{ item.title }}</h4>
-                  <p>
-                    Última interação: <strong>{{ item.lastAuthorName }}</strong> ·
-                    {{ item.courseTitle }} · {{ item.classGroupName }}
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </ng-container>
-        </ng-container>
-      </ng-template>
-      <ng-template #forumActivityErrorState>
-        <div class="state state--error">{{ forumActivityError() }}</div>
-      </ng-template>
-      <ng-template #forumActivityEmpty>
-        <div class="state">Nenhuma atividade recente no fórum.</div>
-      </ng-template>
-    </section>
+    this.downloading.set(mediaResourceId);
+    this.mediaService
+      .download(mediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = fileName || 'anexo';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.downloading.set(null);
+        },
+        error: () => {
+          this.toastr.error('Nao foi possivel baixar o anexo.');
+          this.downloading.set(null);
+        }
+      });
+  }
 
-    <section class="dashboard__insights">
-      <h3>Dúvidas frequentes com IA</h3>
-      <ng-container *ngIf="frequentQuestionsLoading(); else frequentQuestionsList">
-        <div class="state state--info">Analisando dúvidas do fórum...</div>
-      </ng-container>
-      <ng-template #frequentQuestionsList>
-        <ng-container *ngIf="!frequentQuestionsError(); else frequentQuestionsErrorState">
-          <ng-container *ngIf="frequentQuestions().length; else frequentQuestionsEmpty">
-            <div class="insights-grid">
-              <article class="insight-card" *ngFor="let item of frequentQuestions(); trackBy: trackByFrequentQuestion">
-                <span class="insight-card__tag">{{ item.EstimatedMentions }} menção(ões)</span>
-                <h4>{{ item.Topic || 'Tema recorrente' }}</h4>
-                <p class="insight-card__question">{{ item.Question }}</p>
-                <p class="insight-card__meta">{{ item.CourseTitle }} · {{ item.ClassGroupName || 'Turma nao informada' }}</p>
-                <p class="insight-card__action"><strong>Ação sugerida:</strong> {{ item.SuggestedAction }}</p>
-              </article>
-            </div>
-          </ng-container>
-        </ng-container>
-      </ng-template>
-      <ng-template #frequentQuestionsErrorState>
-        <div class="state state--error">{{ frequentQuestionsError() }}</div>
-      </ng-template>
-      <ng-template #frequentQuestionsEmpty>
-        <div class="state">Ainda não há dúvidas suficientes para análise.</div>
-      </ng-template>
-    </section>
-  </section>
-</ng-template>
+  private uploadSubmissionFile(file: File): void {
+    const draft: SubmissionAttachmentDraft = {
+      id: this.generateAttachmentId(),
+      fileName: file.name,
+      status: 'uploading'
+    };
 
-<ng-template #loadingState>
-  <div class="state state--info">Carregando seus cursos...</div>
-</ng-template>
+    this.submissionAttachments.update(list => [...list, draft]);
+    this.mediaService
+      .upload(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: media => {
+          this.submissionAttachments.update(list =>
+            list.map(item => (item.id === draft.id ? { ...item, status: 'ready', media } : item))
+          );
+        },
+        error: () => {
+          this.submissionAttachments.update(list =>
+            list.map(item => (item.id === draft.id ? { ...item, status: 'error' } : item))
+          );
+          this.toastr.error(`Nao foi possivel enviar ${file.name}.`);
+        }
+      });
+  }
 
-<ng-template #errorState>
-  <div class="state state--error">{{ error() }}</div>
-</ng-template>
+  private preloadActivityVideos(attachments: ActivityAttachmentDto[]): void {
+    attachments
+      .filter(attachment => this.isVideoActivityAttachment(attachment))
+      .forEach(attachment => this.loadActivityVideo(attachment.MediaResourceId));
+  }
 
-<ng-template #emptyState>
-  <div class="state">Você ainda não está matriculado em nenhum curso.</div>
-</ng-template>
+  private loadActivityVideo(mediaResourceId: string): void {
+    if (!mediaResourceId || this.videoIsLoading(mediaResourceId) || this.videoUrlFor(mediaResourceId)) {
+      return;
+    }
+
+    this.videoLoading.update(state => ({ ...state, [mediaResourceId]: true }));
+    this.mediaService
+      .download(mediaResourceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => {
+          const url = URL.createObjectURL(blob);
+          this.videoUrls.update(state => ({ ...state, [mediaResourceId]: url }));
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+        },
+        error: () => {
+          this.videoLoading.update(state => ({ ...state, [mediaResourceId]: false }));
+          this.toastr.error('Nao foi possivel carregar o video do anexo.');
+        }
+      });
+  }
+
+  private fetchStudentSubmission(activityId: string): void {
+    const student = this.currentUser();
+    if (!student) {
+      return;
+    }
+
+    this.submissionLoading.set(true);
+    this.submissionError.set(null);
+    this.submissionsService
+      .getStudentSubmission(activityId, student.id)
+      .pipe(
+        switchMap(submission => {
+          if (!submission) {
+            return of(null);
+          }
+          return this.submissionsService.getById(submission.Id);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: submission => {
+          this.existingSubmission.set(this.normalizeSubmission(submission));
+          this.submissionLoading.set(false);
+        },
+        error: () => {
+          this.submissionError.set('Nao foi possivel verificar envios anteriores.');
+          this.submissionLoading.set(false);
+        }
+      });
+  }
+
+  private resetSubmissionState(): void {
+    this.submissionAttachments.set([]);
+    this.submissionForm.reset();
+    this.existingSubmission.set(null);
+    this.submissionError.set(null);
+    this.submissionLoading.set(false);
+    this.isSubmittingWork.set(false);
+  }
+
+  private generateAttachmentId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return Math.random().toString(36).slice(2, 11);
+  }
+
+  private normalizeSubmission(submission: ActivitySubmissionDto | null): ActivitySubmissionDto | null {
+    if (!submission) {
+      return null;
+    }
+
+    return {
+      ...submission,
+      Attachments: submission.Attachments ?? []
+    };
+  }
+
+  submissionStatusLabel(status?: number): string {
+    if (!status) {
+      return '';
+    }
+    return this.submissionStatusLabels[status] ?? 'Desconhecido';
+  }
+
+  recommendedActionLabel(action?: string): string | null {
+    if (!action) {
+      return null;
+    }
+    return this.recommendedActionLabels[action] ?? action;
+  }
+
+  feedbackTagsList(tags?: string): string[] {
+    if (!tags) {
+      return [];
+    }
+    return tags
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+
+  private buildUiAttachmentsFromDrafts(): SubmissionAttachmentDto[] {
+    return this.submissionAttachments()
+      .filter(item => item.status === 'ready' && item.media)
+      .map((item, index) => ({
+        Id: item.media?.Id ?? this.generateAttachmentId(),
+        MediaResourceId: item.media!.Id,
+        IsPrimary: index === 0,
+        IsVideo: item.media?.Kind === MediaKind.Video,
+        Media: item.media
+      }));
+  }
+
+  private revokeVideoUrls(): void {
+    const urls = Object.values(this.videoUrls());
+    urls.forEach(url => URL.revokeObjectURL(url));
+  }
+}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/forum/forum.component.ts
@@ -34533,6 +34117,247 @@ export class CoursesService {
 }
 ````
 
+## File: src/ProjetoFinal.ClientApp/src/app/pages/course-activity-viewer/course-activity-viewer.component.html
+````html
+<section class="activity-viewer" *ngIf="activity() as current; else stateBlock">
+  <header class="activity-viewer__header">
+    <a class="back-link" [routerLink]="backLink()">← Voltar</a>
+    <h2>{{ pageTitle() }}</h2>
+    <span class="badge">{{ current.ClassGroupName }}</span>
+  </header>
+
+  <div class="meta">
+    <p><strong>Entrega:</strong> {{ dueDateLabel() }}</p>
+    <p><strong>Visivel aos alunos:</strong> {{ current.VisibleToStudents ? 'Sim' : 'Nao' }}</p>
+    <p><strong>Atrasos:</strong> {{ current.AllowLateSubmissions ? 'Aceita' : 'Nao aceita' }}</p>
+    <p *ngIf="current.MaxScore"><strong>Nota máxima:</strong> {{ current.MaxScore }}</p>
+  </div>
+
+  <article class="activity-card">
+    <h3>Descricao</h3>
+    <div class="rich-content" [innerHTML]="safeHtml(current.Description)"></div>
+  </article>
+
+  <section class="attachments-section">
+    <header>
+      <h3>Anexos</h3>
+      <span>{{ current.Attachments.length }} arquivo(s)</span>
+    </header>
+
+    <ng-container *ngIf="current.Attachments.length > 0; else noAttachments">
+      <ul class="attachments-list">
+        <li
+          *ngFor="let attachment of current.Attachments"
+          [class.attachment-item--video]="isVideoActivityAttachment(attachment)"
+        >
+          <div>
+            <strong>{{ attachment.Caption || 'Anexo' }}</strong>
+            <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+            <div class="attachment-video" *ngIf="isVideoActivityAttachment(attachment)">
+              <video
+                *ngIf="videoUrlFor(attachment.MediaResourceId) as videoUrl; else videoLoadingState"
+                controls
+                [src]="videoUrl"
+              ></video>
+              <ng-template #videoLoadingState>
+                <p class="muted">{{ videoIsLoading(attachment.MediaResourceId) ? 'Carregando video...' : 'Video indisponivel.' }}</p>
+              </ng-template>
+            </div>
+          </div>
+          <button
+            *ngIf="!isVideoActivityAttachment(attachment)"
+            type="button"
+            class="button button--ghost"
+            (click)="downloadAttachment(attachment)"
+            [disabled]="downloading() === attachment.MediaResourceId"
+          >
+            {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+          </button>
+        </li>
+      </ul>
+    </ng-container>
+  </section>
+
+  <section class="submission-module" *ngIf="isStudent()">
+    <header class="submission-module__header">
+      <div>
+        <h3>Realizar atividade</h3>
+        <p class="muted">
+          Envie uma observacao e adicione arquivos de apoio para concluir esta atividade.
+        </p>
+      </div>
+      <span class="badge badge--accent">Area do aluno</span>
+    </header>
+
+    <ng-container *ngIf="submissionLoading(); else submissionContent">
+      <div class="state state--info">Verificando envios anteriores...</div>
+    </ng-container>
+
+    <ng-template #submissionContent>
+      <div class="state state--error" *ngIf="submissionError()">{{ submissionError() }}</div>
+
+        <article class="submission-summary" *ngIf="existingSubmission() as submission">
+          <header>
+            <div>
+              <h4>Envio registrado</h4>
+              <p class="muted">Enviado em {{ submission.SubmittedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <span class="status-badge" data-status="enviado">{{ submissionStatusLabel(submission.Status) }}</span>
+          </header>
+
+          <section class="submission-summary__grading">
+            <h5>Correção</h5>
+            <ng-container *ngIf="submission.Status !== 2 || submission.Score != null || submission.Feedback; else notReviewed">
+              <dl>
+                <div>
+                  <dt>Status</dt>
+                  <dd>{{ submissionStatusLabel(submission.Status) }}</dd>
+                </div>
+                <div *ngIf="submission.Score != null">
+                  <dt>Nota</dt>
+                  <dd>{{ submission.Score }}</dd>
+                </div>
+                <div *ngIf="submission.MasteryScore != null">
+                  <dt>Rubrica: Dominio</dt>
+                  <dd>{{ submission.MasteryScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.ApplicationScore != null">
+                  <dt>Rubrica: Aplicacao</dt>
+                  <dd>{{ submission.ApplicationScore }}/5</dd>
+                </div>
+                <div *ngIf="submission.CommunicationScore != null">
+                  <dt>Rubrica: Comunicacao</dt>
+                  <dd>{{ submission.CommunicationScore }}/5</dd>
+                </div>
+                <div *ngIf="recommendedActionLabel(submission.RecommendedAction) as actionLabel">
+                  <dt>Acao recomendada</dt>
+                  <dd>{{ actionLabel }}</dd>
+                </div>
+                <div *ngIf="feedbackTagsList(submission.FeedbackTags).length">
+                  <dt>Tags diagnosticas</dt>
+                  <dd>{{ feedbackTagsList(submission.FeedbackTags).join(', ') }}</dd>
+                </div>
+                <div *ngIf="submission.Feedback">
+                  <dt>Feedback do instrutor</dt>
+                  <dd class="rich-content" [innerHTML]="safeHtml(submission.Feedback)"></dd>
+                </div>
+              </dl>
+            </ng-container>
+          </section>
+
+          <section *ngIf="submission.TextAnswer">
+            <h5>Observacao enviada</h5>
+            <div class="rich-content" [innerHTML]="safeHtml(submission.TextAnswer)"></div>
+          </section>
+
+        <section>
+          <h5>Anexos do aluno</h5>
+          <ng-container *ngIf="submission.Attachments.length; else noStudentAttachments">
+            <ul class="attachments-list">
+              <li *ngFor="let attachment of submission.Attachments">
+                <div>
+                  <strong>{{ attachment.Media?.OriginalFileName || 'Anexo' }}</strong>
+                  <p class="muted">ID: {{ attachment.MediaResourceId }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="button button--ghost"
+                  (click)="downloadSubmissionAttachment(attachment)"
+                  [disabled]="downloading() === attachment.MediaResourceId"
+                >
+                  {{ downloading() === attachment.MediaResourceId ? 'Baixando...' : 'Baixar' }}
+                </button>
+              </li>
+            </ul>
+          </ng-container>
+        </section>
+      </article>
+
+      <div class="state state--info" *ngIf="canResubmit()">
+        Esta atividade foi devolvida. Ajuste sua resposta e envie novamente.
+      </div>
+
+      <ng-container *ngIf="shouldShowSubmissionForm()">
+        <form class="submission-form" [formGroup]="submissionForm" (ngSubmit)="submitActivityWork()">
+          <label for="textAnswer">Observacao</label>
+          <app-rich-text-editor formControlName="textAnswer" id="textAnswer"></app-rich-text-editor>
+          <small class="field-hint">Descreva sua resposta ou contextualize os anexos enviados.</small>
+
+          <div class="submission-form__attachments">
+            <div class="submission-form__attachments-header">
+              <div>
+                <h4>Seus anexos</h4>
+                <p class="muted">Adicione os arquivos em PDF, imagem, audio ou video.</p>
+              </div>
+              <label class="upload-button">
+                <input type="file" multiple (change)="handleSubmissionFiles($event)" [disabled]="isSubmittingWork()" />
+                Adicionar arquivos
+              </label>
+            </div>
+
+            <ng-container *ngIf="submissionAttachments().length; else noDrafts">
+              <ul class="attachment-drafts">
+                <li *ngFor="let attachment of submissionAttachments(); trackBy: trackSubmissionAttachment">
+                  <div>
+                    <strong>{{ attachment.fileName }}</strong>
+                    <p class="muted" *ngIf="attachment.status === 'uploading'">
+                      Enviando<span class="loading-dots" aria-hidden="true"></span>
+                    </p>
+                    <p class="muted attachment-error" *ngIf="attachment.status === 'error'">
+                      Falha no envio
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="button button--ghost"
+                    (click)="removeSubmissionAttachment(attachment.id)"
+                    [disabled]="attachment.status === 'uploading' || isSubmittingWork()"
+                  >
+                    Remover
+                  </button>
+                </li>
+              </ul>
+            </ng-container>
+          </div>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isSubmittingWork() || hasUploadingSubmissionAttachments()"
+          >
+            {{ isSubmittingWork() ? 'Enviando...' : (canResubmit() ? 'Reenviar atividade' : 'Enviar atividade') }}
+          </button>
+        </form>
+      </ng-container>
+    </ng-template>
+  </section>
+</section>
+
+<ng-template #stateBlock>
+  <div class="state state--info" *ngIf="loading(); else errorState">Carregando atividade...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #noAttachments>
+  <p class="muted">Nenhum anexo publicado para esta atividade.</p>
+</ng-template>
+
+<ng-template #noStudentAttachments>
+  <p class="muted">Nenhum arquivo foi anexado neste envio.</p>
+</ng-template>
+
+<ng-template #noDrafts>
+  <p class="muted">Nenhum arquivo adicionado.</p>
+</ng-template>
+
+<ng-template #notReviewed>
+  <p class="state state--info">Esta submissao ainda nao foi corrigida.</p>
+</ng-template>
+````
+
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/courses/courses.component.html
 ````html
 <section class="courses">
@@ -34800,6 +34625,289 @@ export class CoursesService {
 <ng-template #enrollmentEmptyState>
   <div class="state">Este curso ainda nao possui turmas ativas.</div>
 </ng-template>
+````
+
+## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.html
+````html
+<section class="student-dashboard" *ngIf="isStudentView(); else instructorView">
+  <header class="student-dashboard__header">
+    <div>
+      <h2>Meus cursos</h2>
+      <p class="lead">Continue acompanhando as trilhas em que você já está matriculado.</p>
+    </div>
+    <span class="enrollment-count">
+      {{ studentCourses().length }} curso{{ studentCourses().length === 1 ? '' : 's' }} matriculado{{ studentCourses().length === 1 ? '' : 's' }}
+    </span>
+  </header>
+
+  <ng-container *ngIf="!loading(); else loadingState">
+    <ng-container *ngIf="!error(); else errorState">
+      <ng-container *ngIf="studentCourses().length; else emptyState">
+        <div class="student-dashboard__grid">
+          <article *ngFor="let course of studentCourses(); trackBy: trackByCourse" class="student-course-card">
+            <div class="student-course-card__head">
+              <span class="badge">{{ course.category || 'Sem categoria' }}</span>
+              <span class="mode">{{ course.modeLabel }}</span>
+            </div>
+
+            <h3>{{ course.title }}</h3>
+            <p class="instructor">Instrutor: <strong>{{ course.instructor || 'Nao informado' }}</strong></p>
+            <p class="enrollment-meta" *ngIf="course.enrollmentType === 'distribution'">
+              Distribuicao de materiais
+            </p>
+            <p class="enrollment-meta" *ngIf="course.enrollmentType === 'interactive'">
+              Turma {{ course.classGroupName || 'interativa' }}
+              <span [class]="enrollmentStatusClass(course.enrollmentStatus)">
+                {{ enrollmentStatusLabel(course.enrollmentStatus) }}
+              </span>
+            </p>
+
+            <dl class="student-course-card__stats">
+              <div>
+                <dt>Turmas</dt>
+                <dd>{{ course.classGroups }}</dd>
+              </div>
+              <div>
+                <dt>Vagas ocupadas</dt>
+                <dd>{{ course.enrolledStudents }}/{{ course.capacity || 'Ilimitado' }}</dd>
+              </div>
+              <div>
+                <dt>
+                  {{ course.enrollmentType === 'interactive' && course.enrollmentStatus === 1 ? 'Solicitado em' : 'Matriculado em' }}
+                </dt>
+                <dd>{{ course.subscribedAt | date:'dd/MM/yyyy' }}</dd>
+              </div>
+            </dl>
+
+            <div class="student-course-card__actions">
+              <button
+                type="button"
+                class="student-course-card__cta"
+                (click)="openCourse(course.id)"
+                [disabled]="!canAccessCourse(course) || isLeavingCourse(course.id)"
+              >
+                {{ canAccessCourse(course) ? 'Acessar curso' : 'Aguardando aprovacao' }}
+              </button>
+              <button
+                type="button"
+                class="student-course-card__leave"
+                (click)="leaveCourse(course)"
+                [disabled]="isLeavingCourse(course.id)"
+              >
+                {{ isLeavingCourse(course.id) ? 'Saindo...' : 'Sair do curso' }}
+              </button>
+            </div>
+            <small
+              class="student-course-card__hint"
+              *ngIf="!canAccessCourse(course) && course.enrollmentType === 'interactive'"
+            >
+              Aguarde a aprovacao da turma para acessar os materiais.
+            </small>
+          </article>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</section>
+
+<ng-template #instructorView>
+  <section class="dashboard">
+    <header class="dashboard__header">
+      <div>
+        <h2>Bem-vindo de volta!</h2>
+        <p class="lead">Aqui estão alguns indicadores rápidos para acompanhar o aprendizado dos seus alunos.</p>
+      </div>
+      <button type="button" class="action" (click)="goToCreateCourse()">Criar novo curso</button>
+    </header>
+
+    <div class="dashboard__highlights">
+      <article *ngFor="let card of highlightCards()" class="highlight" [attr.data-trend]="card.trend">
+        <span class="highlight__label">{{ card.label }}</span>
+        <strong class="highlight__value">{{ card.value }}</strong>
+        <span class="highlight__context">{{ card.context }}</span>
+      </article>
+    </div>
+
+    <section class="dashboard__timeline">
+      <h3>Atividade recente em fóruns</h3>
+      <ng-container *ngIf="forumActivityLoading(); else forumActivityList">
+        <div class="state state--info">Carregando atividades do fórum...</div>
+      </ng-container>
+      <ng-template #forumActivityList>
+        <ng-container *ngIf="!forumActivityError(); else forumActivityErrorState">
+          <ng-container *ngIf="forumActivities().length; else forumActivityEmpty">
+            <ol>
+              <li *ngFor="let item of forumActivities(); trackBy: trackByForumActivity">
+                <div class="timeline__date">{{ item.lastActivityAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                <div class="timeline__details">
+                  <h4>{{ item.title }}</h4>
+                  <p>
+                    Última interação: <strong>{{ item.lastAuthorName }}</strong> ·
+                    {{ item.courseTitle }} · {{ item.classGroupName }}
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+      <ng-template #forumActivityErrorState>
+        <div class="state state--error">{{ forumActivityError() }}</div>
+      </ng-template>
+      <ng-template #forumActivityEmpty>
+        <div class="state">Nenhuma atividade recente no fórum.</div>
+      </ng-template>
+    </section>
+
+    <section class="dashboard__insights">
+      <h3>Dúvidas frequentes com IA</h3>
+      <ng-container *ngIf="frequentQuestionsLoading(); else frequentQuestionsList">
+        <div class="state state--info">Analisando dúvidas do fórum...</div>
+      </ng-container>
+      <ng-template #frequentQuestionsList>
+        <ng-container *ngIf="!frequentQuestionsError(); else frequentQuestionsErrorState">
+          <ng-container *ngIf="frequentQuestions().length; else frequentQuestionsEmpty">
+            <div class="insights-grid">
+              <article class="insight-card" *ngFor="let item of frequentQuestions(); trackBy: trackByFrequentQuestion">
+                <span class="insight-card__tag">{{ item.EstimatedMentions }} menção(ões)</span>
+                <h4>{{ item.Topic || 'Tema recorrente' }}</h4>
+                <p class="insight-card__question">{{ item.Question }}</p>
+                <p class="insight-card__meta">{{ item.CourseTitle }} · {{ item.ClassGroupName || 'Turma nao informada' }}</p>
+                <p class="insight-card__action"><strong>Ação sugerida:</strong> {{ item.SuggestedAction }}</p>
+              </article>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+      <ng-template #frequentQuestionsErrorState>
+        <div class="state state--error">{{ frequentQuestionsError() }}</div>
+      </ng-template>
+      <ng-template #frequentQuestionsEmpty>
+        <div class="state">Ainda não há dúvidas suficientes para análise.</div>
+      </ng-template>
+    </section>
+  </section>
+</ng-template>
+
+<ng-template #loadingState>
+  <div class="state state--info">Carregando seus cursos...</div>
+</ng-template>
+
+<ng-template #errorState>
+  <div class="state state--error">{{ error() }}</div>
+</ng-template>
+
+<ng-template #emptyState>
+  <div class="state">Você ainda não está matriculado em nenhum curso.</div>
+</ng-template>
+````
+
+## File: src/ProjetoFinal.Aplication.Services/AutoMapperProfiles/AutoMapperProfileDto.cs
+````csharp
+using System.Linq;
+using AutoMapper;
+using ProjetoFinal.Application.Contracts.Dto;
+using ProjetoFinal.Application.Contracts.Dto.Activities;
+using ProjetoFinal.Application.Contracts.Dto.Chat;
+using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
+using ProjetoFinal.Application.Contracts.Dto.Contents;
+using ProjetoFinal.Application.Contracts.Dto.Courses;
+using ProjetoFinal.Application.Contracts.Dto.Forum;
+using ProjetoFinal.Application.Contracts.Dto.Media;
+using ProjetoFinal.Application.Contracts.Dto.Users;
+using ProjetoFinal.Domain.Entities;
+using ProjetoFinal.Domain.Shared.Pagination;
+
+namespace ProjetoFinal.Aplication.Services.AutoMapperProfiles;
+
+public class AutoMapperProfileDto : Profile
+{
+    public AutoMapperProfileDto()
+    {
+        CreateMap(typeof(PagedResult<>), typeof(PagedResultDto<>))
+            .ReverseMap()
+            .PreserveReferences();
+
+        CreateMap<PageInfo, PageInfoDto>()
+            .ReverseMap();
+
+        CreateMap<User, UserDto>().ReverseMap();
+
+        CreateMap<Course, CourseDto>()
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
+            .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty))
+            .ForMember(dest => dest.ClassGroups, opt => opt.MapFrom(src => src.ClassGroups))
+            .ReverseMap();
+
+        CreateMap<Course, CourseSummaryDto>()
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
+            .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty));
+
+        CreateMap<CourseSubscription, CourseSubscriptionDto>().ReverseMap();
+
+        CreateMap<ClassGroup, ClassGroupDto>()
+            .ForMember(dest => dest.ApprovedEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Approved)))
+            .ForMember(dest => dest.PendingEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Pending)))
+            .ForMember(dest => dest.Enrollments, opt => opt.MapFrom(src => src.Enrollments));
+
+        CreateMap<ClassEnrollment, ClassEnrollmentDto>()
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty))
+            .ReverseMap();
+
+        CreateMap<CourseContent, CourseContentDto>()
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
+            .ReverseMap();
+
+        CreateMap<ContentAttachment, ContentAttachmentDto>()
+            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+
+        CreateMap<ContentVideoAnnotation, ContentVideoAnnotationDto>().ReverseMap();
+        CreateMap<ContentVideoAnnotationCreateDto, ContentVideoAnnotation>();
+        CreateMap<ContentVideoAnnotationUpdateDto, ContentVideoAnnotation>();
+
+        CreateMap<Activity, ActivityDto>()
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
+            .ForMember(dest => dest.Audiences, opt => opt.MapFrom(src => src.Audiences))
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments));
+
+        CreateMap<ActivityAudience, ActivityAudienceDto>()
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty));
+
+        CreateMap<ActivityAttachment, ActivityAttachmentDto>()
+            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+
+        CreateMap<ActivitySubmission, ActivitySubmissionDto>()
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
+            .ForMember(dest => dest.VideoAnnotations, opt => opt.MapFrom(src => src.VideoAnnotations))
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty));
+
+        CreateMap<SubmissionAttachment, SubmissionAttachmentDto>()
+            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+
+        CreateMap<VideoAnnotation, VideoAnnotationDto>().ReverseMap();
+
+        CreateMap<ForumThread, ForumThreadDto>()
+            .ForMember(dest => dest.Posts, opt => opt.MapFrom(src => src.Posts))
+            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
+            .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.FullName : string.Empty));
+
+        CreateMap<ForumPost, ForumPostDto>()
+            .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author != null ? src.Author.FullName : string.Empty));
+
+        CreateMap<ForumPostAttachment, ForumPostAttachmentDto>()
+            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+
+        CreateMap<MediaResource, MediaResourceDto>().ReverseMap();
+
+        CreateMap<ChatMessage, ChatMessageDto>()
+            .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender != null ? src.Sender.FullName : string.Empty))
+            .ForMember(dest => dest.RecipientName, opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.FullName : null))
+            .ForMember(dest => dest.IsDirectMessage, opt => opt.MapFrom(src => src.RecipientId != null))
+            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+    }
+}
 ````
 
 ## File: src/ProjetoFinal.ClientApp/src/app/pages/dashboard/dashboard.component.ts
@@ -35339,114 +35447,6 @@ export class DashboardComponent {
 
     return fallback;
   }
-}
-````
-
-## File: src/ProjetoFinal.Aplication.Services/AutoMapperProfiles/AutoMapperProfileDto.cs
-````csharp
-using System.Linq;
-using AutoMapper;
-using ProjetoFinal.Application.Contracts.Dto;
-using ProjetoFinal.Application.Contracts.Dto.Activities;
-using ProjetoFinal.Application.Contracts.Dto.Chat;
-using ProjetoFinal.Application.Contracts.Dto.ClassGroups;
-using ProjetoFinal.Application.Contracts.Dto.Contents;
-using ProjetoFinal.Application.Contracts.Dto.Courses;
-using ProjetoFinal.Application.Contracts.Dto.Forum;
-using ProjetoFinal.Application.Contracts.Dto.Media;
-using ProjetoFinal.Application.Contracts.Dto.Users;
-using ProjetoFinal.Domain.Entities;
-using ProjetoFinal.Domain.Shared.Pagination;
-
-namespace ProjetoFinal.Aplication.Services.AutoMapperProfiles;
-
-public class AutoMapperProfileDto : Profile
-{
-    public AutoMapperProfileDto()
-    {
-        CreateMap(typeof(PagedResult<>), typeof(PagedResultDto<>))
-            .ReverseMap()
-            .PreserveReferences();
-
-        CreateMap<PageInfo, PageInfoDto>()
-            .ReverseMap();
-
-        CreateMap<User, UserDto>().ReverseMap();
-
-        CreateMap<Course, CourseDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
-            .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty))
-            .ForMember(dest => dest.ClassGroups, opt => opt.MapFrom(src => src.ClassGroups))
-            .ReverseMap();
-
-        CreateMap<Course, CourseSummaryDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
-            .ForMember(dest => dest.InstructorName, opt => opt.MapFrom(src => src.Instructor != null ? src.Instructor.FullName : string.Empty));
-
-        CreateMap<CourseSubscription, CourseSubscriptionDto>().ReverseMap();
-
-        CreateMap<ClassGroup, ClassGroupDto>()
-            .ForMember(dest => dest.ApprovedEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Approved)))
-            .ForMember(dest => dest.PendingEnrollments, opt => opt.MapFrom(src => src.Enrollments.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Pending)))
-            .ForMember(dest => dest.Enrollments, opt => opt.MapFrom(src => src.Enrollments));
-
-        CreateMap<ClassEnrollment, ClassEnrollmentDto>()
-            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty))
-            .ReverseMap();
-
-        CreateMap<CourseContent, CourseContentDto>()
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
-            .ReverseMap();
-
-        CreateMap<ContentAttachment, ContentAttachmentDto>()
-            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
-
-        CreateMap<ContentVideoAnnotation, ContentVideoAnnotationDto>().ReverseMap();
-        CreateMap<ContentVideoAnnotationCreateDto, ContentVideoAnnotation>();
-        CreateMap<ContentVideoAnnotationUpdateDto, ContentVideoAnnotation>();
-
-        CreateMap<Activity, ActivityDto>()
-            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
-            .ForMember(dest => dest.Audiences, opt => opt.MapFrom(src => src.Audiences))
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments));
-
-        CreateMap<ActivityAudience, ActivityAudienceDto>()
-            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty));
-
-        CreateMap<ActivityAttachment, ActivityAttachmentDto>()
-            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
-
-        CreateMap<ActivitySubmission, ActivitySubmissionDto>()
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
-            .ForMember(dest => dest.VideoAnnotations, opt => opt.MapFrom(src => src.VideoAnnotations))
-            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : string.Empty));
-
-        CreateMap<SubmissionAttachment, SubmissionAttachmentDto>()
-            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
-
-        CreateMap<VideoAnnotation, VideoAnnotationDto>().ReverseMap();
-
-        CreateMap<ForumThread, ForumThreadDto>()
-            .ForMember(dest => dest.Posts, opt => opt.MapFrom(src => src.Posts))
-            .ForMember(dest => dest.ClassGroupName, opt => opt.MapFrom(src => src.ClassGroup != null ? src.ClassGroup.Name : string.Empty))
-            .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.FullName : string.Empty));
-
-        CreateMap<ForumPost, ForumPostDto>()
-            .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
-            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author != null ? src.Author.FullName : string.Empty));
-
-        CreateMap<ForumPostAttachment, ForumPostAttachmentDto>()
-            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
-
-        CreateMap<MediaResource, MediaResourceDto>().ReverseMap();
-
-        CreateMap<ChatMessage, ChatMessageDto>()
-            .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender != null ? src.Sender.FullName : string.Empty))
-            .ForMember(dest => dest.RecipientName, opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.FullName : null))
-            .ForMember(dest => dest.IsDirectMessage, opt => opt.MapFrom(src => src.RecipientId != null))
-            .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
-    }
 }
 ````
 
@@ -36972,6 +36972,8 @@ pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 [2026-04-24 15:13:11] User: Leia o AGENTS.md e faça os commits
 
 [2026-04-24 15:13:11] Assistant: Li o AGENTS.md, revisei o estado atual do repositório e iniciei o processo de commit das alterações pendentes seguindo as regras do projeto.
+
+[2026-04-24 15:15:32] Assistant: Executei `dotnet build ProjetoFinal.sln` e `npm run build`, atualizei o `docs/repomix-output.md` com `npx repomix --style markdown -o docs/repomix-output.md` e concluí o commit `bac1942` com as alterações pendentes.
 ````
 
 ## File: docs/context.md
