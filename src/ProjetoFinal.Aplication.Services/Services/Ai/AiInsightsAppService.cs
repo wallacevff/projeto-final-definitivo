@@ -6,16 +6,22 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using ProjetoFinal.Application.Contracts.Dto.Ai;
 using ProjetoFinal.Application.Contracts.Services;
+using ProjetoFinal.Domain.Entities;
 using ProjetoFinal.Domain.Filters;
 using ProjetoFinal.Domain.Repositories;
 using ProjetoFinal.Domain.Shared.Enums;
 using ProjetoFinal.Domain.Shared.Exceptions;
 using ProjetoFinal.Infra.CrossCutting.ConfigurationModels;
+using ProjetoFinal.Infra.CrossCutting.Storage;
+using UglyToad.PdfPig;
 
 namespace ProjetoFinal.Aplication.Services.Services.Ai;
 
 public class AiInsightsAppService : IAiInsightsAppService
 {
+    private const int MaxPdfAttachmentsToRead = 2;
+    private const int MaxPdfCharacters = 12000;
+
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
@@ -25,17 +31,23 @@ public class AiInsightsAppService : IAiInsightsAppService
     private readonly AiProviderConfiguration _configuration;
     private readonly ICourseContentRepository _courseContentRepository;
     private readonly IForumPostRepository _forumPostRepository;
+    private readonly IObjectStorageService _objectStorageService;
+    private readonly MinioConfiguration _minioConfiguration;
 
     public AiInsightsAppService(
         HttpClient httpClient,
         IOptions<AiProviderConfiguration> configuration,
+        IOptions<MinioConfiguration> minioConfiguration,
         ICourseContentRepository courseContentRepository,
-        IForumPostRepository forumPostRepository)
+        IForumPostRepository forumPostRepository,
+        IObjectStorageService objectStorageService)
     {
         _httpClient = httpClient;
         _configuration = configuration.Value;
+        _minioConfiguration = minioConfiguration.Value;
         _courseContentRepository = courseContentRepository;
         _forumPostRepository = forumPostRepository;
+        _objectStorageService = objectStorageService;
     }
 
     public async Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default)
@@ -48,7 +60,8 @@ public class AiInsightsAppService : IAiInsightsAppService
             throw new BusinessException("Conteudo nao encontrado para resumo.", ECodigo.NaoEncontrado);
         }
 
-        var sourceText = BuildContentSource(content.Title, content.Summary, content.Body);
+        var pdfText = await BuildPdfSourceAsync(content, cancellationToken);
+        var sourceText = BuildContentSource(content.Title, content.Summary, content.Body, pdfText);
         if (string.IsNullOrWhiteSpace(sourceText))
         {
             throw new BusinessException("O conteudo nao possui texto suficiente para gerar resumo.", ECodigo.NaoPermitido);
@@ -224,7 +237,137 @@ public class AiInsightsAppService : IAiInsightsAppService
         return result;
     }
 
-    private static string BuildContentSource(string? title, string? summary, string? body)
+    private async Task<string> BuildPdfSourceAsync(CourseContent content, CancellationToken cancellationToken)
+    {
+        var pdfAttachments = content.Attachments
+            .Where(attachment => attachment.MediaResource is not null)
+            .Select(attachment => attachment.MediaResource!)
+            .Where(IsPdfDocument)
+            .Take(MaxPdfAttachmentsToRead)
+            .ToList();
+
+        if (pdfAttachments.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var source = new StringBuilder();
+        foreach (var media in pdfAttachments)
+        {
+            var extractedText = await TryExtractPdfTextAsync(media, cancellationToken);
+            if (string.IsNullOrWhiteSpace(extractedText))
+            {
+                continue;
+            }
+
+            source.AppendLine($"Documento: {media.OriginalFileName}");
+            source.AppendLine(extractedText);
+            source.AppendLine();
+
+            if (source.Length >= MaxPdfCharacters)
+            {
+                break;
+            }
+        }
+
+        if (source.Length > MaxPdfCharacters)
+        {
+            source.Length = MaxPdfCharacters;
+        }
+
+        return NormalizeWhitespace(source.ToString());
+    }
+
+    private async Task<string> TryExtractPdfTextAsync(MediaResource media, CancellationToken cancellationToken)
+    {
+        var parsedStorage = ParseStoragePath(media.StoragePath);
+        if (parsedStorage is null)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var (bucketName, objectName) = parsedStorage.Value;
+            var download = await _objectStorageService.DownloadAsync(bucketName, objectName, cancellationToken);
+
+            await using var contentStream = download.Content;
+            await using var memoryStream = new MemoryStream();
+            await contentStream.CopyToAsync(memoryStream, cancellationToken);
+            memoryStream.Position = 0;
+
+            using var document = PdfDocument.Open(memoryStream);
+            var source = new StringBuilder();
+
+            foreach (var page in document.GetPages())
+            {
+                source.AppendLine(page.Text);
+                if (source.Length >= MaxPdfCharacters)
+                {
+                    break;
+                }
+            }
+
+            if (source.Length > MaxPdfCharacters)
+            {
+                source.Length = MaxPdfCharacters;
+            }
+
+            return NormalizeWhitespace(source.ToString());
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private bool IsPdfDocument(MediaResource media)
+    {
+        if (!string.IsNullOrWhiteSpace(media.ContentType) &&
+            media.ContentType.Contains("pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return media.OriginalFileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+               || media.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private (string bucketName, string objectName)? ParseStoragePath(string? storagePath)
+    {
+        if (string.IsNullOrWhiteSpace(storagePath))
+        {
+            return null;
+        }
+
+        var normalizedPath = storagePath.Trim().TrimStart('/');
+        if (string.IsNullOrWhiteSpace(normalizedPath))
+        {
+            return null;
+        }
+
+        var configuredBucket = _minioConfiguration.BucketName?.Trim();
+        if (!string.IsNullOrWhiteSpace(configuredBucket)
+            && normalizedPath.StartsWith(configuredBucket + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            var objectKey = normalizedPath.Substring(configuredBucket.Length + 1);
+            return string.IsNullOrWhiteSpace(objectKey) ? null : (configuredBucket, objectKey);
+        }
+
+        var separatorIndex = normalizedPath.IndexOf('/');
+        if (separatorIndex <= 0 || separatorIndex >= normalizedPath.Length - 1)
+        {
+            return null;
+        }
+
+        var bucketName = normalizedPath[..separatorIndex];
+        var objectName = normalizedPath[(separatorIndex + 1)..];
+        return string.IsNullOrWhiteSpace(bucketName) || string.IsNullOrWhiteSpace(objectName)
+            ? null
+            : (bucketName, objectName);
+    }
+
+    private static string BuildContentSource(string? title, string? summary, string? body, string? pdfText)
     {
         var source = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(title))
@@ -240,6 +383,11 @@ public class AiInsightsAppService : IAiInsightsAppService
         if (!string.IsNullOrWhiteSpace(body))
         {
             source.AppendLine(StripHtml(body));
+        }
+
+        if (!string.IsNullOrWhiteSpace(pdfText))
+        {
+            source.AppendLine(pdfText);
         }
 
         return NormalizeWhitespace(source.ToString());

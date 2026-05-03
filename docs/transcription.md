@@ -628,3 +628,15 @@ pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 [2026-04-24 15:19:59] User: POde incluir
 
 [2026-04-24 15:19:59] Assistant: Vou incluir também o arquivo local `ProjetoFinal.sln.DotSettings.user` no versionamento e registrar a atualização da sessão na documentação obrigatória antes do novo commit.
+
+[2026-05-03 23:06:22] User: Quando for um pdf, quero que a ia faça um resumo do conteúdo.
+
+[2026-05-03 23:06:22] Assistant: Implementei o enriquecimento do resumo com extracao de texto de anexos PDF do conteudo antes de enviar o prompt para a IA, com limite de tamanho e fallback seguro em falhas de leitura.
+
+[2026-05-03 23:13:15] User: Compartilhou log de build com erro NU1103 para `UglyToad.PdfPig` (versao 0.1.11 nao encontrada).
+
+[2026-05-03 23:13:15] Assistant: Ajustei a referencia do pacote `UglyToad.PdfPig` para a versao disponivel no feed (`1.7.0-custom-5`) para destravar o restore/build.
+
+[2026-05-03 23:19:29] User: Esse resumo fica salvo no banco?
+
+[2026-05-03 23:19:29] Assistant: Esclareci que o resumo de IA nao e persistido no banco na implementacao atual; ele e gerado sob demanda por chamada e retornado direto na resposta da API.
