@@ -16,6 +16,12 @@ public class CourseContent : AuditableEntity
     public bool IsDraft { get; set; }
     public DateTime? PublishedAt { get; set; }
     public int DisplayOrder { get; set; }
+    public string? AiSummary { get; set; }
+    public string? AiKeyPointsJson { get; set; }
+    public string? AiAttentionPointsJson { get; set; }
+    public string? AiSummaryModel { get; set; }
+    public DateTime? AiSummaryGeneratedAt { get; set; }
+    public Guid? AiSummaryGeneratedById { get; set; }
 
     public Course? Course { get; set; }
     public ClassGroup? ClassGroup { get; set; }

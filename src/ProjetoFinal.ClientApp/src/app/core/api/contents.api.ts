@@ -1,5 +1,6 @@
 ﻿import { ApiPagedResponse, normalizePagedResponse } from './api.types';
 import { MediaResource } from './media.api';
+import { AiContentSummaryDto } from './ai.api';
 
 export enum ContentItemType {
   Text = 1,
@@ -20,6 +21,7 @@ export interface CourseContentDto {
   IsDraft: boolean;
   DisplayOrder: number;
   PublishedAt?: string;
+  AiSummaryData?: AiContentSummaryDto;
   Attachments: ContentAttachmentDto[];
 }
 

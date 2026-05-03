@@ -24,10 +24,13 @@
               type="button"
               (click)="generateSummary()"
               [disabled]="aiSummaryLoading()"
+              *ngIf="canGenerateAiSummary()"
             >
               {{ aiSummaryLoading() ? 'Gerando...' : 'Gerar resumo' }}
             </button>
           </div>
+
+          <p class="muted" *ngIf="!canGenerateAiSummary()">Resumo gerado pelo instrutor.</p>
 
           <div class="state state--error" *ngIf="aiSummaryError()">{{ aiSummaryError() }}</div>
 

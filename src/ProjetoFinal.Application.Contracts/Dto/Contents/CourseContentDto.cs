@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ProjetoFinal.Application.Contracts.Dto.Ai;
 using ProjetoFinal.Application.Contracts.Dto.Media;
 using ProjetoFinal.Domain.Enums;
 
@@ -18,6 +19,7 @@ public class CourseContentDto
     public bool IsDraft { get; set; }
     public int DisplayOrder { get; set; }
     public DateTime? PublishedAt { get; set; }
+    public AiContentSummaryDto? AiSummaryData { get; set; }
 
     public IList<ContentAttachmentDto> Attachments { get; set; } = new List<ContentAttachmentDto>();
 }

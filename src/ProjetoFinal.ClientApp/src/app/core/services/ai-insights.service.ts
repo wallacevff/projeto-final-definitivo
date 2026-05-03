@@ -16,6 +16,12 @@ export class AiInsightsService {
       .pipe(catchError(error => throwError(() => error)));
   }
 
+  generateContentSummary(contentId: string) {
+    return this.http
+      .post<AiContentSummaryDto>(`${this.baseUrl}/ai-insights/contents/${contentId}/summary`, {})
+      .pipe(catchError(error => throwError(() => error)));
+  }
+
   getInstructorFrequentQuestions() {
     return this.http
       .get<AiInstructorFrequentQuestionsDto>(`${this.baseUrl}/ai-insights/instructor/frequent-questions`)

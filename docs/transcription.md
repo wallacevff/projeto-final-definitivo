@@ -640,3 +640,11 @@ pm.cmd run build, mantendo apenas os warnings conhecidos do projeto.
 [2026-05-03 23:19:29] User: Esse resumo fica salvo no banco?
 
 [2026-05-03 23:19:29] Assistant: Esclareci que o resumo de IA nao e persistido no banco na implementacao atual; ele e gerado sob demanda por chamada e retornado direto na resposta da API.
+
+[2026-05-03 23:22:32] User: Implemente para gerar esse resumo, salvar no banco e que os alunos possam visualizar, obs, o resumo sera acionado pelo instrutor/professor somente.
+
+[2026-05-03 23:22:32] Assistant: Implementei a persistencia do resumo de IA no `CourseContent`, criei migration com as novas colunas, ajustei o endpoint para geracao via POST restrita ao instrutor do curso e mantive GET para leitura do resumo salvo pelos alunos.
+
+[2026-05-03 23:32:38] User: Compartilhou erro de runtime `Invalid column name` para colunas de resumo de IA em `CourseContents`.
+
+[2026-05-03 23:32:38] Assistant: Identifiquei que o schema do banco nao recebeu a migration nova e orientei aplicar `database update` (ou executar SQL equivalente) antes de subir a API.

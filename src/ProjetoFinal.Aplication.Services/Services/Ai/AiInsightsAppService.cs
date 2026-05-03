@@ -30,6 +30,7 @@ public class AiInsightsAppService : IAiInsightsAppService
     private readonly HttpClient _httpClient;
     private readonly AiProviderConfiguration _configuration;
     private readonly ICourseContentRepository _courseContentRepository;
+    private readonly ICourseRepository _courseRepository;
     private readonly IForumPostRepository _forumPostRepository;
     private readonly IObjectStorageService _objectStorageService;
     private readonly MinioConfiguration _minioConfiguration;
@@ -39,6 +40,7 @@ public class AiInsightsAppService : IAiInsightsAppService
         IOptions<AiProviderConfiguration> configuration,
         IOptions<MinioConfiguration> minioConfiguration,
         ICourseContentRepository courseContentRepository,
+        ICourseRepository courseRepository,
         IForumPostRepository forumPostRepository,
         IObjectStorageService objectStorageService)
     {
@@ -46,11 +48,30 @@ public class AiInsightsAppService : IAiInsightsAppService
         _configuration = configuration.Value;
         _minioConfiguration = minioConfiguration.Value;
         _courseContentRepository = courseContentRepository;
+        _courseRepository = courseRepository;
         _forumPostRepository = forumPostRepository;
         _objectStorageService = objectStorageService;
     }
 
-    public async Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default)
+    public async Task<AiContentSummaryDto?> GetContentSummaryAsync(Guid contentId, CancellationToken cancellationToken = default)
+    {
+        var content = await _courseContentRepository.GetByIdAsync(contentId, cancellationToken);
+        if (content is null || string.IsNullOrWhiteSpace(content.AiSummary) || content.AiSummaryGeneratedAt is null)
+        {
+            return null;
+        }
+
+        return new AiContentSummaryDto
+        {
+            Summary = content.AiSummary,
+            KeyPoints = DeserializeList(content.AiKeyPointsJson),
+            AttentionPoints = DeserializeList(content.AiAttentionPointsJson),
+            Model = content.AiSummaryModel ?? string.Empty,
+            GeneratedAt = content.AiSummaryGeneratedAt.Value
+        };
+    }
+
+    public async Task<AiContentSummaryDto> GenerateContentSummaryAsync(Guid contentId, Guid instructorId, CancellationToken cancellationToken = default)
     {
         EnsureConfiguration();
 
@@ -58,6 +79,12 @@ public class AiInsightsAppService : IAiInsightsAppService
         if (content is null)
         {
             throw new BusinessException("Conteudo nao encontrado para resumo.", ECodigo.NaoEncontrado);
+        }
+
+        var course = await _courseRepository.GetByIdAsync(content.CourseId, cancellationToken);
+        if (course is null || course.InstructorId != instructorId)
+        {
+            throw new BusinessException("Apenas o instrutor do curso pode gerar o resumo com IA.", ECodigo.NaoPermitido);
         }
 
         var pdfText = await BuildPdfSourceAsync(content, cancellationToken);
@@ -86,7 +113,7 @@ public class AiInsightsAppService : IAiInsightsAppService
         var completion = await CreateCompletionAsync(prompt, cancellationToken);
         var parsed = DeserializeOrThrow<AiContentSummaryPayload>(completion);
 
-        return new AiContentSummaryDto
+        var result = new AiContentSummaryDto
         {
             Summary = parsed.Summary?.Trim() ?? string.Empty,
             KeyPoints = SanitizeList(parsed.KeyPoints, 5),
@@ -94,6 +121,19 @@ public class AiInsightsAppService : IAiInsightsAppService
             Model = _configuration.Model,
             GeneratedAt = DateTime.UtcNow
         };
+
+        content.AiSummary = result.Summary;
+        content.AiKeyPointsJson = JsonSerializer.Serialize(result.KeyPoints);
+        content.AiAttentionPointsJson = JsonSerializer.Serialize(result.AttentionPoints);
+        content.AiSummaryModel = result.Model;
+        content.AiSummaryGeneratedAt = result.GeneratedAt;
+        content.AiSummaryGeneratedById = instructorId;
+        content.UpdatedAt = DateTime.UtcNow;
+
+        await _courseContentRepository.UpdateAsync(content, cancellationToken);
+        await _courseContentRepository.SaveChangesAsync(cancellationToken);
+
+        return result;
     }
 
     public async Task<AiInstructorFrequentQuestionsDto> GetInstructorFrequentQuestionsAsync(Guid instructorId, CancellationToken cancellationToken = default)
@@ -417,6 +457,23 @@ public class AiInsightsAppService : IAiInsightsAppService
             .Take(maxItems)
             .Cast<string>()
             .ToList() ?? new List<string>();
+    }
+
+    private static IList<string> DeserializeList(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<IList<string>>(json) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
 
     private static string EnsureTrailingSlash(string url)

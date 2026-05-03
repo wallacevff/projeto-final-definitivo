@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ContentAnnotationsService } from '../../core/services/content-annotations.service';
 import { AiInsightsService } from '../../core/services/ai-insights.service';
 import { AiContentSummaryDto } from '../../core/api/ai.api';
+import { AuthService } from '../../core/services/auth.service';
 
 interface LocalVideoAnnotation {
   id: string;
@@ -37,6 +38,7 @@ export class CourseContentViewerComponent {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly annotationsService = inject(ContentAnnotationsService);
   private readonly aiInsightsService = inject(AiInsightsService);
+  private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -50,6 +52,7 @@ export class CourseContentViewerComponent {
   readonly aiSummary = signal<AiContentSummaryDto | null>(null);
   readonly aiSummaryLoading = signal(false);
   readonly aiSummaryError = signal<string | null>(null);
+  readonly canGenerateAiSummary = computed(() => this.authService.isInstructorRole());
 
   readonly pageTitle = computed(() => this.content()?.Title ?? 'Conteudo');
   readonly statusLabel = computed(() => (this.content()?.IsDraft ? 'Rascunho' : 'Publicado'));
@@ -74,7 +77,7 @@ export class CourseContentViewerComponent {
         next: content => {
           this.content.set(content);
           this.loadPersistedAnnotations(content.Attachments ?? []);
-          this.aiSummary.set(null);
+          this.aiSummary.set(content.AiSummaryData ?? null);
           this.aiSummaryError.set(null);
           this.loading.set(false);
           this.error.set(null);
@@ -235,12 +238,19 @@ export class CourseContentViewerComponent {
     this.aiSummaryLoading.set(true);
     this.aiSummaryError.set(null);
 
+    if (!this.canGenerateAiSummary()) {
+      this.aiSummaryError.set('Apenas instrutores podem gerar o resumo com IA.');
+      this.aiSummaryLoading.set(false);
+      return;
+    }
+
     this.aiInsightsService
-      .getContentSummary(contentId)
+      .generateContentSummary(contentId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: summary => {
           this.aiSummary.set(summary);
+          this.content.update(current => (current ? { ...current, AiSummaryData: summary } : current));
           this.aiSummaryLoading.set(false);
         },
         error: error => {

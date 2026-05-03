@@ -24,11 +24,36 @@ public class AiInsightsController : ControllerBase
     }
 
     [HttpGet("contents/{contentId:guid}/summary")]
+    public async Task<ActionResult<AiContentSummaryDto>> GetContentSummaryAsync(
+        [FromRoute] Guid contentId,
+        CancellationToken cancellationToken = default)
+    {
+        var summary = await _service.GetContentSummaryAsync(contentId, cancellationToken);
+        if (summary is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(summary);
+    }
+
+    [HttpPost("contents/{contentId:guid}/summary")]
     public Task<AiContentSummaryDto> GenerateContentSummaryAsync(
         [FromRoute] Guid contentId,
         CancellationToken cancellationToken = default)
     {
-        return _service.GenerateContentSummaryAsync(contentId, cancellationToken);
+        if (!IsInstructor() || IsAdministrator())
+        {
+            throw new BusinessException("Apenas instrutores podem gerar resumo com IA.", ECodigo.NaoPermitido);
+        }
+
+        var instructorId = ResolveCurrentUserId();
+        if (instructorId == Guid.Empty)
+        {
+            throw new BusinessException("Instrutor nao identificado.", ECodigo.NaoAutenticado);
+        }
+
+        return _service.GenerateContentSummaryAsync(contentId, instructorId, cancellationToken);
     }
 
     [HttpGet("instructor/frequent-questions")]

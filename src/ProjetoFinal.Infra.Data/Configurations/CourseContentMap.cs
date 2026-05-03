@@ -21,6 +21,18 @@ public class CourseContentMap : IContextEntityMap<CourseContent>
         builder.Property(p => p.Summary)
             .HasMaxLength(500);
 
+        builder.Property(p => p.AiSummary)
+            .HasMaxLength(4000);
+
+        builder.Property(p => p.AiKeyPointsJson)
+            .HasMaxLength(4000);
+
+        builder.Property(p => p.AiAttentionPointsJson)
+            .HasMaxLength(3000);
+
+        builder.Property(p => p.AiSummaryModel)
+            .HasMaxLength(80);
+
         builder.Property(p => p.ItemType)
             .HasConversion<int>()
             .IsRequired();

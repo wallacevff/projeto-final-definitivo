@@ -1,5 +1,7 @@
 using System.Linq;
+using System.Text.Json;
 using AutoMapper;
+using ProjetoFinal.Application.Contracts.Dto.Ai;
 using ProjetoFinal.Application.Contracts.Dto;
 using ProjetoFinal.Application.Contracts.Dto.Activities;
 using ProjetoFinal.Application.Contracts.Dto.Chat;
@@ -50,6 +52,7 @@ public class AutoMapperProfileDto : Profile
 
         CreateMap<CourseContent, CourseContentDto>()
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments))
+            .ForMember(dest => dest.AiSummaryData, opt => opt.MapFrom(src => MapAiSummary(src)))
             .ReverseMap();
 
         CreateMap<ContentAttachment, ContentAttachmentDto>()
@@ -100,5 +103,39 @@ public class AutoMapperProfileDto : Profile
             .ForMember(dest => dest.RecipientName, opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.FullName : null))
             .ForMember(dest => dest.IsDirectMessage, opt => opt.MapFrom(src => src.RecipientId != null))
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.MediaResource));
+    }
+
+    private static AiContentSummaryDto? MapAiSummary(CourseContent source)
+    {
+        if (string.IsNullOrWhiteSpace(source.AiSummary) || source.AiSummaryGeneratedAt is null)
+        {
+            return null;
+        }
+
+        return new AiContentSummaryDto
+        {
+            Summary = source.AiSummary,
+            KeyPoints = DeserializeList(source.AiKeyPointsJson),
+            AttentionPoints = DeserializeList(source.AiAttentionPointsJson),
+            Model = source.AiSummaryModel ?? string.Empty,
+            GeneratedAt = source.AiSummaryGeneratedAt.Value
+        };
+    }
+
+    private static IList<string> DeserializeList(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<IList<string>>(json) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
 }
